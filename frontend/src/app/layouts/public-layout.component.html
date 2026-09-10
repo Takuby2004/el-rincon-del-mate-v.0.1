@@ -1,0 +1,307 @@
+<div class="min-h-screen flex flex-col bg-cream-50 text-darkness-900 overflow-x-hidden">
+  <!-- Top Bar with Sucursales and Socials -->
+  <div class="bg-darkness-950 text-cream-100 text-xs py-2 px-3 sm:px-4 font-medium tracking-wide border-b border-darkness-900">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
+      <!-- Sucursales Direct Links -->
+      <div class="flex flex-wrap items-center justify-center gap-2 sm:gap-4 text-2xs sm:text-xs">
+        <span class="flex items-center gap-1.5 text-gold-400 font-extrabold">
+          <i class="fa-solid fa-store"></i> <span class="hidden xs:inline">Sucursales:</span>
+        </span>
+        <a 
+          href="https://wa.me/59169891494?text=Hola%20El%20Rinc%C3%B3n%20del%20Mate%20Tarija,%20quisiera%20consultar%20sobre%20sus%20productos" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-darkness-900 text-cream-100 hover:text-gold-300 transition-colors group"
+          title="WhatsApp Tarija"
+        >
+          <i class="fa-brands fa-whatsapp text-emerald-400"></i>
+          <span>Tarija: <strong>69891494</strong></span>
+        </a>
+        <span class="text-darkness-800 hidden sm:inline">|</span>
+        <a 
+          href="https://wa.me/59164014507?text=Hola%20El%20Rinc%C3%B3n%20del%20Mate%20La%20Paz,%20quisiera%20consultar%20sobre%20sus%20productos" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-darkness-900 text-cream-100 hover:text-gold-300 transition-colors group"
+          title="WhatsApp La Paz"
+        >
+          <i class="fa-brands fa-whatsapp text-emerald-400"></i>
+          <span>La Paz: <strong>64014507</strong></span>
+        </a>
+      </div>
+
+      <!-- Socials -->
+      <div class="hidden sm:flex items-center gap-4 text-2xs sm:text-xs text-cream-200">
+        <a href="https://www.tiktok.com/@rincon_delmate_tarija" target="_blank" rel="noopener noreferrer" class="hover:text-gold-300 flex items-center gap-1 transition-colors">
+          <i class="fa-brands fa-tiktok"></i> &#64;rincon_delmate_tarija
+        </a>
+        <a href="https://www.instagram.com/rincon_delmate_bolivia/" target="_blank" rel="noopener noreferrer" class="hover:text-gold-300 flex items-center gap-1 transition-colors">
+          <i class="fa-brands fa-instagram"></i> &#64;rincon_delmate_bolivia
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Header / Navbar with Official Emblem -->
+  <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-cream-300/60 shadow-xs">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 sm:h-20 flex items-center justify-between">
+      <!-- Logo with Exact Official Emblem SVG -->
+      <a routerLink="/" (click)="closeMobileMenu()" class="flex items-center gap-2.5 sm:gap-3.5 group">
+        <div class="w-11 h-11 sm:w-14 sm:h-14 rounded-full bg-darkness-900 p-0.5 shadow-md group-hover:scale-105 transition-transform duration-300 border-2 border-gold-400 shrink-0">
+          <img src="assets/logo-emblem.svg" alt="El Rincón del Mate Logo Oficial" class="w-full h-full object-contain">
+        </div>
+        <div>
+          <span class="text-base sm:text-xl font-black tracking-tight text-darkness-900 block leading-none">EL RINCÓN DEL MATE</span>
+          <span class="text-3xs sm:text-xs text-gold-600 font-extrabold tracking-widest uppercase mt-0.5 block">Tradición &amp; Calidad • Bolivia</span>
+        </div>
+      </a>
+
+      <!-- Desktop Navigation Links -->
+      <nav class="hidden md:flex items-center gap-8 font-bold text-sm">
+        <a routerLink="/" routerLinkActive="text-gold-600 font-extrabold border-b-2 border-gold-400" [routerLinkActiveOptions]="{exact: true}" class="text-darkness-900 hover:text-gold-600 py-1 transition-colors">Inicio</a>
+        <a routerLink="/productos" routerLinkActive="text-gold-600 font-extrabold border-b-2 border-gold-400" class="text-darkness-900 hover:text-gold-600 py-1 transition-colors">Productos</a>
+        <a routerLink="/categorias" routerLinkActive="text-gold-600 font-extrabold border-b-2 border-gold-400" class="text-darkness-900 hover:text-gold-600 py-1 transition-colors">Categorías</a>
+      </nav>
+
+      <!-- Action Buttons -->
+      <div class="flex items-center gap-2.5 sm:gap-4">
+        <!-- Cart Button -->
+        <a 
+          routerLink="/carrito" 
+          (click)="closeMobileMenu()"
+          class="relative bg-cream-100 hover:bg-cream-200 active:scale-95 p-2.5 sm:p-3 rounded-2xl text-darkness-900 transition-all border border-gold-300/60 flex items-center justify-center shadow-xs"
+          title="Ver Carrito de Compras"
+        >
+          <i class="fa-solid fa-cart-shopping text-base sm:text-lg text-darkness-900"></i>
+          @if (cartService.totalItems() > 0) {
+            <span class="absolute -top-1.5 -right-1.5 bg-gold-600 text-white text-3xs sm:text-2xs font-black w-5 h-5 rounded-full flex items-center justify-center animate-badge-pop shadow-md">
+              {{ cartService.totalItems() }}
+            </span>
+          }
+        </a>
+
+        <!-- Desktop Admin Button -->
+        <a routerLink="/admin/login" class="text-xs font-bold text-cream-100 hover:text-white px-4 py-2.5 rounded-xl bg-darkness-900 hover:bg-darkness-800 transition-all hidden sm:flex items-center gap-2 border border-gold-400/40 shadow-sm hover:scale-105 active:scale-95">
+          <i class="fa-solid fa-user-shield text-gold-400"></i>
+          <span>Panel Dueño</span>
+        </a>
+
+        <!-- Mobile Hamburger Button (Visible on < md) -->
+        <button 
+          (click)="toggleMobileMenu()" 
+          class="md:hidden w-11 h-11 rounded-2xl bg-cream-100 hover:bg-cream-200 text-darkness-900 border border-gold-300/60 flex items-center justify-center text-lg transition-all active:scale-95"
+          aria-label="Abrir menú de navegación"
+        >
+          <i class="fa-solid" [class.fa-bars]="!mobileMenuOpen" [class.fa-xmark]="mobileMenuOpen"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile Drawer Menu (Visible when mobileMenuOpen is true) -->
+    @if (mobileMenuOpen) {
+      <div class="md:hidden bg-white/98 backdrop-blur-xl border-b border-wood-200 px-5 py-6 space-y-4 shadow-2xl animate-fade-in">
+        <nav class="flex flex-col space-y-2">
+          <a 
+            routerLink="/" 
+            (click)="closeMobileMenu()"
+            routerLinkActive="bg-gold-50 text-gold-700 font-extrabold border-l-4 border-gold-500" 
+            [routerLinkActiveOptions]="{exact: true}"
+            class="px-4 py-3 rounded-xl text-sm font-bold text-darkness-900 hover:bg-cream-100 flex items-center gap-3 transition-all"
+          >
+            <i class="fa-solid fa-house text-gold-600 text-base w-5"></i>
+            <span>Inicio</span>
+          </a>
+
+          <a 
+            routerLink="/productos" 
+            (click)="closeMobileMenu()"
+            routerLinkActive="bg-gold-50 text-gold-700 font-extrabold border-l-4 border-gold-500" 
+            class="px-4 py-3 rounded-xl text-sm font-bold text-darkness-900 hover:bg-cream-100 flex items-center gap-3 transition-all"
+          >
+            <i class="fa-solid fa-mug-hot text-gold-600 text-base w-5"></i>
+            <span>Catálogo de Productos</span>
+          </a>
+
+          <a 
+            routerLink="/categorias" 
+            (click)="closeMobileMenu()"
+            routerLinkActive="bg-gold-50 text-gold-700 font-extrabold border-l-4 border-gold-500" 
+            class="px-4 py-3 rounded-xl text-sm font-bold text-darkness-900 hover:bg-cream-100 flex items-center gap-3 transition-all"
+          >
+            <i class="fa-solid fa-layer-group text-gold-600 text-base w-5"></i>
+            <span>Categorías</span>
+          </a>
+
+          <a 
+            routerLink="/carrito" 
+            (click)="closeMobileMenu()"
+            routerLinkActive="bg-gold-50 text-gold-700 font-extrabold border-l-4 border-gold-500" 
+            class="px-4 py-3 rounded-xl text-sm font-bold text-darkness-900 hover:bg-cream-100 flex items-center justify-between transition-all"
+          >
+            <span class="flex items-center gap-3">
+              <i class="fa-solid fa-cart-shopping text-gold-600 text-base w-5"></i>
+              <span>Carrito de Compras</span>
+            </span>
+            @if (cartService.totalItems() > 0) {
+              <span class="bg-gold-600 text-white text-3xs font-black px-2.5 py-0.5 rounded-full shadow-xs">
+                {{ cartService.totalItems() }} items
+              </span>
+            }
+          </a>
+        </nav>
+
+        <div class="pt-4 border-t border-wood-100 space-y-3">
+          <a 
+            routerLink="/admin/login" 
+            (click)="closeMobileMenu()"
+            class="w-full py-3.5 px-4 rounded-2xl bg-darkness-900 hover:bg-darkness-800 text-white font-extrabold text-xs flex items-center justify-center gap-2 border border-gold-400/40 shadow-md"
+          >
+            <i class="fa-solid fa-user-shield text-gold-400 text-sm"></i>
+            <span>Acceso Panel de Administración (Dueño)</span>
+          </a>
+
+          <!-- Mobile Social Icons in Drawer -->
+          <div class="flex items-center justify-center gap-6 pt-2 text-darkness-900">
+            <a href="https://www.tiktok.com/@rincon_delmate_tarija" target="_blank" rel="noopener noreferrer" class="hover:text-gold-600 text-xs flex items-center gap-1.5 font-bold">
+              <i class="fa-brands fa-tiktok text-base"></i> TikTok Tarija
+            </a>
+            <a href="https://www.instagram.com/rincon_delmate_bolivia/" target="_blank" rel="noopener noreferrer" class="hover:text-gold-600 text-xs flex items-center gap-1.5 font-bold">
+              <i class="fa-brands fa-instagram text-base"></i> Instagram Bolivia
+            </a>
+          </div>
+        </div>
+      </div>
+    }
+  </header>
+
+  <!-- Main Content Outlet -->
+  <main class="flex-grow">
+    <router-outlet></router-outlet>
+  </main>
+
+  <!-- Footer with Official Emblem -->
+  <footer class="bg-darkness-950 text-cream-200 pt-16 pb-12 border-t border-darkness-900">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-10">
+      <!-- Brand Info -->
+      <div class="space-y-4 sm:col-span-2 md:col-span-1">
+        <div class="flex items-center gap-3">
+          <div class="w-14 h-14 rounded-full bg-darkness-900 p-0.5 border-2 border-gold-400 shadow shrink-0">
+            <img src="assets/logo-emblem.svg" alt="Emblema Oficial" class="w-full h-full object-contain">
+          </div>
+          <div>
+            <span class="font-extrabold text-lg text-white block leading-none">EL RINCÓN DEL MATE</span>
+            <span class="text-2xs text-gold-400 font-bold uppercase mt-1 block tracking-wider">Tarija &amp; La Paz • Bolivia</span>
+          </div>
+        </div>
+        <p class="text-xs text-cream-300 leading-relaxed">
+          Comercialización oficial de mates artesanales imperiales, torpedos de calabaza con virola de alpaca cincelada, bombillas finas y termos térmicos.
+        </p>
+      </div>
+
+      <!-- Navigation Links -->
+      <div>
+        <h4 class="text-gold-400 font-bold mb-4 text-sm tracking-wide border-b border-darkness-800 pb-2 uppercase">Navegación</h4>
+        <ul class="space-y-2.5 text-xs text-cream-200 font-medium">
+          <li><a routerLink="/" class="hover:text-gold-300 transition-colors">Inicio</a></li>
+          <li><a routerLink="/productos" class="hover:text-gold-300 transition-colors">Catálogo de Productos</a></li>
+          <li><a routerLink="/categorias" class="hover:text-gold-300 transition-colors">Categorías</a></li>
+          <li><a routerLink="/carrito" class="hover:text-gold-300 transition-colors">Carrito de Compras</a></li>
+        </ul>
+      </div>
+
+      <!-- Sucursales -->
+      <div>
+        <h4 class="text-gold-400 font-bold mb-4 text-sm tracking-wide border-b border-darkness-800 pb-2 uppercase">Sucursales</h4>
+        <ul class="space-y-3 text-xs text-cream-200">
+          <!-- Sucursal Tarija -->
+          <li class="p-3.5 rounded-2xl bg-darkness-900 border border-gold-400/30 space-y-2 hover:border-gold-400/60 transition-all hover-lift">
+            <div class="font-bold text-white flex items-center justify-between text-xs">
+              <span class="flex items-center gap-1.5"><i class="fa-solid fa-store text-gold-400"></i> Sucursal Tarija</span>
+              <span class="text-3xs bg-mate-900 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/30">Abierto</span>
+            </div>
+            <a 
+              href="https://wa.me/59169891494?text=Hola%20El%20Rinc%C3%B3n%20del%20Mate%20Tarija,%20quisiera%20consultar%20sobre%20sus%20productos" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              class="text-2xs text-cream-100 flex items-center justify-between p-2 rounded-xl bg-darkness-950/70 border border-darkness-800 hover:border-emerald-500/50 hover:text-white transition-all group"
+              title="Abrir WhatsApp Tarija"
+            >
+              <span class="flex items-center gap-1.5">
+                <i class="fa-brands fa-whatsapp text-emerald-400 text-sm group-hover:scale-110 transition-transform"></i>
+                <span>Cel: <strong>69891494</strong></span>
+              </span>
+              <i class="fa-solid fa-arrow-up-right-from-square text-3xs text-cream-400 group-hover:text-emerald-400 transition-colors"></i>
+            </a>
+            <a 
+              href="https://www.tiktok.com/@rincon_delmate_tarija" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              class="text-3xs text-cream-400 hover:text-gold-300 flex items-center gap-1.5 pt-0.5 transition-colors"
+            >
+              <i class="fa-brands fa-tiktok text-xs"></i>
+              <span>TikTok: &#64;rincon_delmate_tarija</span>
+            </a>
+          </li>
+
+          <!-- Sucursal La Paz -->
+          <li class="p-3.5 rounded-2xl bg-darkness-900 border border-gold-400/30 space-y-2 hover:border-gold-400/60 transition-all hover-lift">
+            <div class="font-bold text-white flex items-center justify-between text-xs">
+              <span class="flex items-center gap-1.5"><i class="fa-solid fa-store text-gold-400"></i> Sucursal La Paz</span>
+              <span class="text-3xs bg-mate-900 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/30">Abierto</span>
+            </div>
+            <a 
+              href="https://wa.me/59164014507?text=Hola%20El%20Rinc%C3%B3n%20del%20Mate%20La%20Paz,%20quisiera%20consultar%20sobre%20sus%20productos" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              class="text-2xs text-cream-100 flex items-center justify-between p-2 rounded-xl bg-darkness-950/70 border border-darkness-800 hover:border-emerald-500/50 hover:text-white transition-all group"
+              title="Abrir WhatsApp La Paz"
+            >
+              <span class="flex items-center gap-1.5">
+                <i class="fa-brands fa-whatsapp text-emerald-400 text-sm group-hover:scale-110 transition-transform"></i>
+                <span>Cel: <strong>64014507</strong></span>
+              </span>
+              <i class="fa-solid fa-arrow-up-right-from-square text-3xs text-cream-400 group-hover:text-emerald-400 transition-colors"></i>
+            </a>
+            <a 
+              href="https://www.instagram.com/rincon_delmate_bolivia/" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              class="text-3xs text-cream-400 hover:text-gold-300 flex items-center gap-1.5 pt-0.5 transition-colors"
+            >
+              <i class="fa-brands fa-instagram text-xs"></i>
+              <span>Instagram: &#64;rincon_delmate_bolivia</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Payment and Logistics -->
+      <div>
+        <h4 class="text-gold-400 font-bold mb-4 text-sm tracking-wide border-b border-darkness-800 pb-2 uppercase">Cobertura</h4>
+        <div class="space-y-3 text-xs text-cream-200">
+          <div class="p-3.5 rounded-2xl bg-darkness-900 border border-gold-400/30 space-y-1">
+            <div class="font-bold text-white flex items-center gap-1.5">
+              <i class="fa-solid fa-truck-fast text-gold-400"></i> Envíos a Toda Bolivia
+            </div>
+            <div class="text-2xs text-cream-300 leading-relaxed">Santa Cruz, Cochabamba, Oruro, Sucre y todo el país.</div>
+          </div>
+
+          <div class="p-3.5 rounded-2xl bg-darkness-900 border border-gold-400/30 space-y-1">
+            <div class="font-bold text-white flex items-center gap-1.5">
+              <i class="fa-solid fa-qrcode text-gold-400"></i> Pago por QR Bancario
+            </div>
+            <div class="text-2xs text-cream-300 leading-relaxed">Con la imagen oficial del QR del dueño y comprobante.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 pt-6 border-t border-darkness-900 flex flex-col sm:flex-row justify-between items-center text-xs text-cream-400 gap-4">
+      <div class="text-center sm:text-left">&copy; 2026 El Rincón del Mate (Tarija &amp; La Paz). Todos los derechos reservados.</div>
+      <div class="flex items-center gap-4">
+        <a href="https://www.tiktok.com/@rincon_delmate_tarija" target="_blank" rel="noopener noreferrer" class="hover:text-gold-400 transition-colors"><i class="fa-brands fa-tiktok text-base"></i></a>
+        <a href="https://www.instagram.com/rincon_delmate_bolivia/" target="_blank" rel="noopener noreferrer" class="hover:text-gold-400 transition-colors"><i class="fa-brands fa-instagram text-base"></i></a>
+      </div>
+    </div>
+  </footer>
+</div>

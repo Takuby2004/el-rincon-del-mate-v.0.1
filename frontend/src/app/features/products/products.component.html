@@ -1,0 +1,118 @@
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 animate-fade-in">
+  <!-- Header -->
+  <div class="mb-8">
+    <span class="text-xs font-extrabold uppercase tracking-widest text-wood-600 block mb-1">Catálogo Oficial</span>
+    <h1 class="text-3xl sm:text-4xl font-black text-mate-900 tracking-tight">Colección de Mates &amp; Accesorios</h1>
+    <p class="text-wood-600 text-sm mt-1">Explora nuestros mates artesanales, termos térmicos y bombillas de alpaca con entrega garantizada.</p>
+  </div>
+
+  <!-- Filters & Search Bar -->
+  <div class="bg-white p-4 rounded-3xl shadow-sm border border-wood-200 mb-8 flex flex-col md:flex-row gap-4 items-center justify-between">
+    <!-- Search Input -->
+    <div class="relative flex-1 w-full">
+      <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-wood-400 text-sm"></i>
+      <input
+        type="text"
+        [(ngModel)]="searchQuery"
+        (ngModelChange)="onFilterChange()"
+        placeholder="Buscar por nombre, tipo de mate o descripción..."
+        class="w-full pl-11 pr-4 py-3 rounded-2xl border border-wood-200 focus:outline-none focus:ring-2 focus:ring-wood-500 text-sm bg-wood-50/50 transition-all"
+      />
+    </div>
+
+    <!-- Category Dropdown Filter -->
+    <div class="w-full md:w-72">
+      <select
+        [(ngModel)]="selectedCategory"
+        (ngModelChange)="onFilterChange()"
+        class="w-full px-4 py-3 rounded-2xl border border-wood-200 focus:outline-none focus:ring-2 focus:ring-wood-500 text-sm bg-white font-medium text-mate-900 cursor-pointer transition-all shadow-xs"
+      >
+        <option value="">Todas las Categorías</option>
+        @for (cat of categories; track cat.id) {
+          <option [value]="cat.id">{{ cat.name }}</option>
+        }
+      </select>
+    </div>
+  </div>
+
+  <!-- Products Grid & Skeleton Loading -->
+  @if (loading) {
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      @for (n of [1, 2, 3, 4, 5, 6, 7, 8]; track n) {
+        <div class="bg-white rounded-3xl overflow-hidden border border-wood-200/80 p-4 space-y-4 shadow-sm">
+          <div class="skeleton-box h-56 rounded-2xl w-full"></div>
+          <div class="space-y-2">
+            <div class="skeleton-box h-3 w-1/3 rounded"></div>
+            <div class="skeleton-box h-5 w-3/4 rounded"></div>
+            <div class="skeleton-box h-3 w-full rounded"></div>
+          </div>
+          <div class="pt-2 border-t border-wood-100 flex gap-2">
+            <div class="skeleton-box h-10 flex-1 rounded-xl"></div>
+            <div class="skeleton-box h-10 w-10 rounded-xl"></div>
+          </div>
+        </div>
+      }
+    </div>
+  } @else if (products.length === 0) {
+    <div class="bg-white rounded-3xl p-14 text-center border border-wood-200 my-8 shadow-sm animate-pop-in">
+      <div class="w-16 h-16 rounded-2xl bg-wood-100 text-wood-500 mx-auto flex items-center justify-center text-3xl mb-4">
+        <i class="fa-solid fa-box-open"></i>
+      </div>
+      <h3 class="font-extrabold text-mate-900 text-xl">No se encontraron productos</h3>
+      <p class="text-wood-600 text-sm mt-1 max-w-md mx-auto">No hay artículos disponibles con los criterios seleccionados. Prueba buscando otra palabra clave o limpiando los filtros.</p>
+      <button (click)="resetFilters()" class="mt-5 px-6 py-2.5 rounded-xl bg-mate-800 hover:bg-mate-900 text-white font-bold text-xs transition-all shadow-md">
+        Restablecer Filtros
+      </button>
+    </div>
+  } @else {
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      @for (product of products; track product.id; let idx = $index) {
+        <div 
+          class="bg-white rounded-3xl overflow-hidden shadow-sm hover-lift border border-wood-200/80 flex flex-col group animate-fade-in"
+          [ngClass]="'stagger-' + ((idx % 6) + 1)"
+        >
+          <div class="relative h-60 bg-wood-50 overflow-hidden">
+            <img 
+              [src]="product.imageUrl | assetUrl" 
+              [alt]="product.name" 
+              appImgFallback
+              class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            >
+            <span class="absolute top-3 right-3 bg-mate-950/85 backdrop-blur-md text-white text-xs font-black px-3 py-1.5 rounded-full shadow border border-mate-700/50">
+              Bs. {{ product.price.toFixed(2) }}
+            </span>
+            @if (product.stock <= 0) {
+              <span class="absolute top-3 left-3 bg-red-600/90 backdrop-blur-md text-white text-xs font-black px-3 py-1 rounded-full shadow">
+                Agotado
+              </span>
+            }
+          </div>
+
+          <div class="p-6 flex-1 flex flex-col justify-between space-y-4">
+            <div>
+              <span class="text-2xs font-black text-wood-600 uppercase tracking-widest">{{ product.category?.name }}</span>
+              <a [routerLink]="['/productos', product.slug]" class="block font-black text-base text-mate-900 hover:text-wood-700 transition-colors mt-1 line-clamp-1">
+                {{ product.name }}
+              </a>
+              <p class="text-xs text-wood-500 mt-1 line-clamp-2 leading-relaxed">{{ product.description }}</p>
+            </div>
+
+            <div class="flex items-center gap-2 pt-3 border-t border-wood-100">
+              <button
+                [disabled]="product.stock <= 0"
+                (click)="addToCart(product)"
+                class="flex-1 bg-mate-700 hover:bg-mate-800 active:scale-95 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed text-white font-extrabold py-3 px-4 rounded-2xl text-xs flex items-center justify-center gap-2 shadow-md transition-all"
+              >
+                <i class="fa-solid fa-cart-plus"></i>
+                <span>{{ product.stock > 0 ? (addedProductId === product.id ? '¡Agregado!' : 'Agregar') : 'Sin Stock' }}</span>
+              </button>
+              <a [routerLink]="['/productos', product.slug]" class="p-3 rounded-2xl border border-wood-200 text-wood-700 hover:bg-wood-100 text-xs transition-all flex items-center justify-center">
+                <i class="fa-solid fa-eye"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

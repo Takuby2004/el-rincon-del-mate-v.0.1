@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 120" width="100%" height="100%">
+  <defs>
+    <radialGradient id="bgGradFull" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#2d5036" />
+      <stop offset="70%" stop-color="#142618" />
+      <stop offset="100%" stop-color="#0a140d" />
+    </radialGradient>
+    <linearGradient id="goldGradFull" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f3e0aa" />
+      <stop offset="50%" stop-color="#d4af37" />
+      <stop offset="100%" stop-color="#aa820a" />
+    </linearGradient>
+    <linearGradient id="alpacaGradFull" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#e6ece8" />
+      <stop offset="50%" stop-color="#ffffff" />
+      <stop offset="100%" stop-color="#90a4ae" />
+    </linearGradient>
+  </defs>
+
+  <!-- Left Emblem Icon -->
+  <g transform="translate(10, 10)">
+    <circle cx="50" cy="50" r="48" fill="url(#bgGradFull)" stroke="url(#goldGradFull)" stroke-width="2.5" />
+    <!-- Bombilla -->
+    <rect x="48" y="15" width="4" height="48" rx="2" fill="url(#alpacaGradFull)" transform="rotate(18 50 50)" />
+    <!-- Mate Cup -->
+    <path d="M 31 52 C 27 65, 34 79, 50 79 C 66 79, 73 65, 69 52 Z" fill="#3d271e" stroke="#1f140f" stroke-width="1" />
+    <ellipse cx="50" cy="52" rx="19" ry="5" fill="#38533c" />
+    <path d="M 29 52 Q 50 56 71 52 Q 50 48 29 52 Z" fill="url(#alpacaGradFull)" stroke="url(#goldGradFull)" stroke-width="1" />
+  </g>
+
+  <!-- Typography -->
+  <text x="125" y="52" font-family="'Outfit', 'Inter', 'Segoe UI', sans-serif" font-size="28" font-weight="900" fill="#1e2e21" letter-spacing="1">EL RINCÓN DEL MATE</text>
+  <text x="126" y="76" font-family="'Outfit', 'Inter', 'Segoe UI', sans-serif" font-size="12" font-weight="700" fill="#b28459" letter-spacing="4">TRADICIÓN &amp; CALIDAD • BOLIVIA</text>
+  
+  <!-- Decorative Accent Line -->
+  <line x1="125" y1="88" x2="440" y2="88" stroke="url(#goldGradFull)" stroke-width="2" stroke-linecap="round" />
+</svg>

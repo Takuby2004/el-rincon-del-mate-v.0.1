@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 120" width="100%" height="100%">
+  <defs>
+    <linearGradient id="goldGradFullLogo" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#e2c984" />
+      <stop offset="50%" stop-color="#c5a059" />
+      <stop offset="100%" stop-color="#9a7732" />
+    </linearGradient>
+    <path id="topArcMini" d="M 33 50 A 32 32 0 0 1 87 50" fill="none" />
+    <path id="bottomArcMini" d="M 28 72 A 34 34 0 0 0 92 72" fill="none" />
+  </defs>
+
+  <!-- Left Official Emblem -->
+  <g transform="translate(10, 10)">
+    <circle cx="50" cy="50" r="48" fill="#141414" stroke="#0a0a0a" stroke-width="1.5" />
+    <circle cx="50" cy="50" r="44" fill="none" stroke="url(#goldGradFullLogo)" stroke-width="1" />
+    <circle cx="50" cy="50" r="41" fill="none" stroke="url(#goldGradFullLogo)" stroke-width="0.8" />
+
+    <!-- Upper Cream Banner -->
+    <path d="M 12 48 C 12 48, 30 18, 50 18 C 70 18, 88 48, 88 48 C 78 56, 68 57, 50 57 C 32 57, 22 56, 12 48 Z" fill="#eee5d3" />
+    <text font-family="'Outfit', sans-serif" font-size="5.5" font-weight="900" fill="#141414" letter-spacing="0.8">
+      <textPath href="#topArcMini" startOffset="50%" text-anchor="middle">
+        — EL RINCÓN DEL —
+      </textPath>
+    </text>
+
+    <!-- Inner Circle & Mate Icon -->
+    <circle cx="50" cy="48" r="18" fill="#141414" stroke="url(#goldGradFullLogo)" stroke-width="1" />
+    <path d="M 43 35 L 48 41 L 48 46" stroke="#ffffff" stroke-width="1.2" fill="none" stroke-linecap="round" />
+    <path d="M 44 46 C 42 48, 42 53, 45 56 C 47 58, 53 58, 55 56 C 58 53, 58 48, 56 46 Z" stroke="#ffffff" stroke-width="1.2" fill="#141414" />
+
+    <!-- Bottom MATE Text -->
+    <text font-family="'Outfit', sans-serif" font-size="13" font-weight="900" fill="#ffffff" letter-spacing="2.5">
+      <textPath href="#bottomArcMini" startOffset="50%" text-anchor="middle">
+        MATE
+      </textPath>
+    </text>
+  </g>
+
+  <!-- Typography Right -->
+  <text x="125" y="52" font-family="'Outfit', 'Montserrat', sans-serif" font-size="28" font-weight="900" fill="#141414" letter-spacing="1">EL RINCÓN DEL MATE</text>
+  <text x="126" y="76" font-family="'Outfit', 'Montserrat', sans-serif" font-size="12" font-weight="800" fill="#c5a059" letter-spacing="3.5">TRADICIÓN &amp; CALIDAD • TARIJA &amp; LA PAZ</text>
+  
+  <line x1="125" y1="88" x2="480" y2="88" stroke="url(#goldGradFullLogo)" stroke-width="2" stroke-linecap="round" />
+</svg>

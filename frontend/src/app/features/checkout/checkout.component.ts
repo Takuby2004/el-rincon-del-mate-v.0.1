@@ -1,0 +1,109 @@
+import { Component, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Router, RouterLink } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+import { CartService } from '../../core/services/cart.service';
+
+@Component({
+  selector: 'app-checkout',
+  standalone: true,
+  imports: [CommonModule, RouterLink, FormsModule],
+  template: `
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <!-- Steps Indicator -->
+      <div class="flex items-center justify-center mb-10 text-xs font-bold text-wood-600 gap-4">
+        <div class="flex items-center gap-2 text-mate-700">
+          <span class="w-6 h-6 rounded-full bg-mate-700 text-white flex items-center justify-center">1</span>
+          <span>Datos del Cliente</span>
+        </div>
+        <div class="w-12 h-0.5 bg-wood-300"></div>
+        <div class="flex items-center gap-2 text-wood-400">
+          <span class="w-6 h-6 rounded-full bg-wood-200 text-wood-600 flex items-center justify-center">2</span>
+          <span>Pago QR y Comprobante</span>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-3xl p-8 border border-wood-200 shadow-sm space-y-6">
+        <h1 class="text-2xl font-bold text-mate-900 border-b border-wood-100 pb-4">Datos del Cliente y Envío</h1>
+
+        <form (ngSubmit)="proceedToPayment()" class="space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-wood-700 mb-1">Nombre Completo *</label>
+              <input type="text" [(ngModel)]="clientData.clientName" name="clientName" required placeholder="Ej. Juan Pérez" class="w-full px-4 py-2.5 rounded-xl border border-wood-300 focus:outline-none focus:ring-2 focus:ring-mate-600 text-sm">
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-wood-700 mb-1">Correo Electrónico *</label>
+              <input type="email" [(ngModel)]="clientData.clientEmail" name="clientEmail" required placeholder="juan@ejemplo.com" class="w-full px-4 py-2.5 rounded-xl border border-wood-300 focus:outline-none focus:ring-2 focus:ring-mate-600 text-sm">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-wood-700 mb-1">Teléfono / WhatsApp *</label>
+              <input type="tel" [(ngModel)]="clientData.clientPhone" name="clientPhone" required placeholder="+591 70000000" class="w-full px-4 py-2.5 rounded-xl border border-wood-300 focus:outline-none focus:ring-2 focus:ring-mate-600 text-sm">
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-wood-700 mb-1">CI / NIT (Opcional)</label>
+              <input type="text" [(ngModel)]="clientData.clientCiNit" name="clientCiNit" placeholder="Ej. 1234567" class="w-full px-4 py-2.5 rounded-xl border border-wood-300 focus:outline-none focus:ring-2 focus:ring-mate-600 text-sm">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="md:col-span-2">
+              <label class="block text-xs font-bold text-wood-700 mb-1">Dirección de Entrega *</label>
+              <input type="text" [(ngModel)]="clientData.clientAddress" name="clientAddress" required placeholder="Calle / Avenida, Número, Barrio..." class="w-full px-4 py-2.5 rounded-xl border border-wood-300 focus:outline-none focus:ring-2 focus:ring-mate-600 text-sm">
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-wood-700 mb-1">Ciudad *</label>
+              <input type="text" [(ngModel)]="clientData.clientCity" name="clientCity" required placeholder="Santa Cruz" class="w-full px-4 py-2.5 rounded-xl border border-wood-300 focus:outline-none focus:ring-2 focus:ring-mate-600 text-sm">
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-wood-700 mb-1">Notas del Pedido (Opcional)</label>
+            <textarea [(ngModel)]="clientData.notes" name="notes" rows="2" placeholder="Indicaciones especiales de entrega..." class="w-full px-4 py-2.5 rounded-xl border border-wood-300 focus:outline-none focus:ring-2 focus:ring-mate-600 text-sm"></textarea>
+          </div>
+
+          <div class="pt-4 flex justify-between items-center border-t border-wood-100">
+            <a routerLink="/carrito" class="text-xs font-bold text-wood-700 hover:text-mate-700 flex items-center gap-1">
+              <i class="fa-solid fa-arrow-left"></i> Volver al Carrito
+            </a>
+            <button type="submit" [disabled]="!isValid()" class="bg-mate-700 hover:bg-mate-800 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-bold px-6 py-3.5 rounded-2xl text-sm flex items-center gap-2 shadow transition-all">
+              <span>Ir a Pantalla de Pago</span>
+              <i class="fa-solid fa-arrow-right text-xs"></i>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  `
+})
+export class CheckoutDataFeatureComponent {
+  private router = inject(Router);
+  cartService = inject(CartService);
+
+  clientData = {
+    clientName: '',
+    clientEmail: '',
+    clientPhone: '',
+    clientAddress: '',
+    clientCity: 'Santa Cruz',
+    clientCiNit: '',
+    notes: ''
+  };
+
+  isValid(): boolean {
+    return !!(this.clientData.clientName && this.clientData.clientEmail && this.clientData.clientPhone && this.clientData.clientAddress);
+  }
+
+  proceedToPayment() {
+    if (this.isValid()) {
+      sessionStorage.setItem('mate_checkout_client', JSON.stringify(this.clientData));
+      this.router.navigate(['/checkout/pago']);
+    }
+  }
+}

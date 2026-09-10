@@ -1,0 +1,97 @@
+import { Component, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+import { AuthService } from '../../core/services/auth.service';
+
+@Component({
+  selector: 'app-admin-login',
+  standalone: true,
+  imports: [CommonModule, FormsModule],
+  template: `
+    <div class="min-h-screen bg-wood-100 flex items-center justify-center p-4">
+      <div class="max-w-md w-full bg-white rounded-3xl p-8 border border-wood-200 shadow-xl space-y-6">
+        <div class="text-center space-y-2">
+          <div class="w-14 h-14 rounded-2xl bg-mate-800 text-wood-300 mx-auto flex items-center justify-center text-2xl shadow">
+            <i class="fa-solid fa-mug-hot"></i>
+          </div>
+          <h1 class="text-2xl font-bold text-mate-900">Iniciar Sesión - Administración</h1>
+          <p class="text-xs text-wood-600">Ingresa tus credenciales para administrar la tienda</p>
+        </div>
+
+        @if (errorMessage) {
+          <div class="bg-red-50 border border-red-200 text-red-800 p-3.5 rounded-xl text-xs font-medium flex items-center gap-2">
+            <i class="fa-solid fa-triangle-exclamation text-sm"></i>
+            <span>{{ errorMessage }}</span>
+          </div>
+        }
+
+        <form (ngSubmit)="login()" class="space-y-4">
+          <div>
+            <label class="block text-xs font-bold text-wood-700 mb-1">Correo Electrónico</label>
+            <input
+              type="email"
+              [(ngModel)]="email"
+              name="email"
+              required
+              placeholder="admin@elrincondelmate.com"
+              class="w-full px-4 py-2.5 rounded-xl border border-wood-300 focus:outline-none focus:ring-2 focus:ring-mate-600 text-sm"
+            />
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-wood-700 mb-1">Contraseña</label>
+            <input
+              type="password"
+              [(ngModel)]="password"
+              name="password"
+              required
+              placeholder="••••••••"
+              class="w-full px-4 py-2.5 rounded-xl border border-wood-300 focus:outline-none focus:ring-2 focus:ring-mate-600 text-sm"
+            />
+          </div>
+
+          <button
+            type="submit"
+            [disabled]="loading || !email || !password"
+            class="w-full bg-mate-700 hover:bg-mate-800 disabled:bg-gray-300 text-white font-bold py-3 px-4 rounded-xl text-sm shadow transition-all flex items-center justify-center gap-2"
+          >
+            @if (loading) {
+              <i class="fa-solid fa-spinner fa-spin"></i>
+            }
+            <span>Ingresar al Panel</span>
+          </button>
+        </form>
+
+        <div class="text-center text-xs text-wood-500 pt-2 border-t border-wood-100">
+          Credenciales por defecto: <code class="bg-wood-100 px-1.5 py-0.5 rounded font-mono">admin&#64;elrincondelmate.com</code> / <code class="bg-wood-100 px-1.5 py-0.5 rounded font-mono">admin123</code>
+        </div>
+      </div>
+    </div>
+  `
+})
+export class AdminLoginFeatureComponent {
+  private authService = inject(AuthService);
+  private router = inject(Router);
+
+  email = 'admin@elrincondelmate.com';
+  password = '';
+  loading = false;
+  errorMessage = '';
+
+  login() {
+    this.loading = true;
+    this.errorMessage = '';
+
+    this.authService.login({ email: this.email, password: this.password }).subscribe({
+      next: () => {
+        this.loading = false;
+        this.router.navigate(['/admin/dashboard']);
+      },
+      error: (err) => {
+        this.loading = false;
+        this.errorMessage = err.error?.error || 'Error al iniciar sesión. Verifique sus datos.';
+      }
+    });
+  }
+}

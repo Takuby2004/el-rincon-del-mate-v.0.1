@@ -1,0 +1,125 @@
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 animate-fade-in">
+  <!-- If viewing all categories -->
+  @if (!selectedCategorySlug) {
+    <div class="mb-8">
+      <span class="text-xs font-extrabold uppercase tracking-widest text-wood-600 block mb-1">Colecciones</span>
+      <h1 class="text-3xl sm:text-4xl font-black text-mate-900 tracking-tight">Categorías de Productos</h1>
+      <p class="text-wood-600 text-sm mt-1">Explora nuestras colecciones especializadas para equipar tu ritual matero con calidad superior.</p>
+    </div>
+
+    @if (loading) {
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        @for (n of [1, 2, 3]; track n) {
+          <div class="bg-white rounded-3xl overflow-hidden border border-wood-200 p-4 space-y-4 shadow-sm">
+            <div class="skeleton-box h-52 rounded-2xl w-full"></div>
+            <div class="skeleton-box h-6 w-1/2 rounded"></div>
+            <div class="skeleton-box h-3 w-full rounded"></div>
+          </div>
+        }
+      </div>
+    } @else {
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        @for (cat of categories; track cat.id; let idx = $index) {
+          <a 
+            [routerLink]="['/categorias', cat.slug]" 
+            class="bg-white rounded-3xl overflow-hidden shadow-sm hover-lift border border-wood-200 group transition-all flex flex-col animate-fade-in"
+            [ngClass]="'stagger-' + ((idx % 3) + 1)"
+          >
+            <div class="h-56 overflow-hidden bg-wood-100 relative">
+              <img 
+                [src]="cat.imageUrl | assetUrl" 
+                [alt]="cat.name" 
+                appImgFallback
+                class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+              >
+              <div class="absolute inset-0 bg-gradient-to-t from-mate-950/60 via-transparent to-transparent"></div>
+            </div>
+            <div class="p-6 flex-1 flex flex-col justify-between space-y-4">
+              <div>
+                <h3 class="text-xl font-bold text-mate-900 group-hover:text-wood-700 transition-colors">{{ cat.name }}</h3>
+                <p class="text-xs text-wood-600 mt-2 line-clamp-2 leading-relaxed">{{ cat.description }}</p>
+              </div>
+              <div class="mt-4 flex items-center justify-between text-xs font-bold text-wood-700 pt-3 border-t border-wood-100 group-hover:text-mate-700">
+                <span>Explorar categoría</span>
+                <i class="fa-solid fa-arrow-right group-hover:translate-x-1.5 transition-transform duration-300"></i>
+              </div>
+            </div>
+          </a>
+        }
+      </div>
+    }
+  } @else {
+    <!-- If viewing a single category by slug -->
+    <div class="mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div>
+        <nav class="flex text-xs font-medium text-wood-600 mb-2 gap-2 items-center">
+          <a routerLink="/" class="hover:text-wood-800 transition-colors">Inicio</a>
+          <i class="fa-solid fa-chevron-right text-3xs text-wood-400"></i>
+          <a routerLink="/categorias" class="hover:text-wood-800 transition-colors">Categorías</a>
+          <i class="fa-solid fa-chevron-right text-3xs text-wood-400"></i>
+          <span class="text-mate-900 font-bold">{{ categoryDetail?.name || 'Cargando...' }}</span>
+        </nav>
+        <h1 class="text-3xl sm:text-4xl font-black text-mate-900 tracking-tight">{{ categoryDetail?.name }}</h1>
+        <p class="text-wood-600 text-sm mt-1">{{ categoryDetail?.description }}</p>
+      </div>
+      <a routerLink="/categorias" class="text-xs font-extrabold px-5 py-2.5 bg-wood-100 hover:bg-wood-200 rounded-2xl text-wood-800 border border-wood-200 transition-all flex items-center gap-2">
+        <i class="fa-solid fa-chevron-left text-2xs"></i>
+        <span>Ver Todas las Categorías</span>
+      </a>
+    </div>
+
+    @if (loading) {
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        @for (n of [1, 2, 3, 4]; track n) {
+          <div class="bg-white rounded-3xl overflow-hidden border border-wood-200 p-4 space-y-4 shadow-sm">
+            <div class="skeleton-box h-56 rounded-2xl w-full"></div>
+            <div class="skeleton-box h-4 w-1/2 rounded"></div>
+            <div class="skeleton-box h-3 w-full rounded"></div>
+          </div>
+        }
+      </div>
+    } @else if (categoryProducts.length === 0) {
+      <div class="bg-white rounded-3xl p-14 text-center border border-wood-200 my-8 shadow-sm animate-pop-in">
+        <i class="fa-solid fa-box-open text-4xl text-wood-300 mb-3"></i>
+        <h3 class="font-extrabold text-mate-900 text-xl">No hay productos en esta categoría</h3>
+        <p class="text-wood-600 text-sm mt-1">Pronto agregaremos nuevos modelos y accesorios a esta colección.</p>
+      </div>
+    } @else {
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        @for (product of categoryProducts; track product.id; let idx = $index) {
+          <div 
+            class="bg-white rounded-3xl overflow-hidden shadow-sm hover-lift border border-wood-200 flex flex-col group animate-fade-in"
+            [ngClass]="'stagger-' + ((idx % 4) + 1)"
+          >
+            <div class="relative h-56 bg-wood-50 overflow-hidden">
+              <img 
+                [src]="product.imageUrl | assetUrl" 
+                [alt]="product.name" 
+                appImgFallback
+                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              >
+              <span class="absolute top-3 right-3 bg-mate-950/85 backdrop-blur-md text-white text-xs font-black px-3 py-1.5 rounded-full shadow border border-mate-700/50">
+                Bs. {{ product.price.toFixed(2) }}
+              </span>
+            </div>
+            <div class="p-5 flex-1 flex flex-col justify-between space-y-4">
+              <div>
+                <a [routerLink]="['/productos', product.slug]" class="block font-black text-base text-mate-900 hover:text-wood-700 transition-colors line-clamp-1">
+                  {{ product.name }}
+                </a>
+                <p class="text-xs text-wood-500 mt-1 line-clamp-2 leading-relaxed">{{ product.description }}</p>
+              </div>
+              <button 
+                (click)="addToCart(product)" 
+                class="w-full bg-mate-700 hover:bg-mate-800 active:scale-95 text-white font-extrabold py-3 px-4 rounded-2xl text-xs flex items-center justify-center gap-2 shadow-md transition-all"
+              >
+                <i class="fa-solid fa-cart-plus"></i>
+                <span>{{ addedProductId === product.id ? '¡Agregado!' : 'Agregar al Carrito' }}</span>
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  }
+</div>

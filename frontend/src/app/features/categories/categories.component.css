@@ -1,0 +1,4 @@
+/* Estilos para el componente de categorías */
+:host {
+  display: block;
+}

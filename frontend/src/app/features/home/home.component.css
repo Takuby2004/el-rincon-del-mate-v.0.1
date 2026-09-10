@@ -1,0 +1,112 @@
+/* ==========================================================
+   WINDOWS VISTA FLIP 3D HERO CAROUSEL STYLES (RESPONSIVE)
+   ========================================================== */
+
+.flip3d-scene {
+  perspective: 1400px;
+  perspective-origin: 50% 45%;
+  transform-style: preserve-3d;
+  width: 100%;
+  max-width: 480px;
+  height: 420px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.flip3d-card {
+  position: absolute;
+  width: 310px;
+  height: 360px;
+  border-radius: 1.75rem;
+  overflow: hidden;
+  cursor: pointer;
+  transform-origin: center center;
+  transition: transform 0.65s cubic-bezier(0.16, 1, 0.3, 1), 
+              opacity 0.65s ease, 
+              box-shadow 0.65s ease, 
+              filter 0.65s ease,
+              border-color 0.65s ease;
+  will-change: transform, opacity;
+  user-select: none;
+}
+
+/* Aero Glass Glossy Reflection */
+.flip3d-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 45%;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.35) 0%, rgba(255, 255, 255, 0.05) 50%, transparent 100%);
+  border-top-left-radius: 1.75rem;
+  border-top-right-radius: 1.75rem;
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* Active Highlight Card */
+.flip3d-card-active {
+  border: 3px solid rgba(197, 160, 89, 0.85);
+  box-shadow: 0 25px 45px -10px rgba(0, 0, 0, 0.7), 
+              0 0 30px rgba(197, 160, 89, 0.3);
+  cursor: default;
+}
+
+/* Background Inactive Cards */
+.flip3d-card-inactive {
+  border: 2px solid rgba(255, 255, 255, 0.18);
+  filter: brightness(0.65) saturate(0.85);
+  box-shadow: 0 15px 30px -8px rgba(0, 0, 0, 0.6);
+}
+
+.flip3d-card-inactive:hover {
+  filter: brightness(0.85) saturate(1);
+  border-color: rgba(197, 160, 89, 0.5);
+}
+
+/* Floating Flip 3D Controls */
+.flip3d-btn {
+  background: rgba(20, 38, 24, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(197, 160, 89, 0.4);
+  color: #f3e8c5;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.flip3d-btn:hover {
+  background: rgba(45, 80, 54, 0.95);
+  border-color: rgba(197, 160, 89, 0.9);
+  color: #ffffff;
+  transform: scale(1.12);
+  box-shadow: 0 0 18px rgba(197, 160, 89, 0.4);
+}
+
+.flip3d-btn:active {
+  transform: scale(0.94);
+}
+
+/* ==========================================================
+   MOBILE MEDIA QUERIES (< 640px)
+   ========================================================== */
+@media (max-width: 640px) {
+  .flip3d-scene {
+    perspective: 1000px;
+    height: 380px;
+    max-width: 100%;
+  }
+
+  .flip3d-card {
+    width: 265px;
+    height: 320px;
+    border-radius: 1.5rem;
+  }
+
+  .flip3d-card::before {
+    border-top-left-radius: 1.5rem;
+    border-top-right-radius: 1.5rem;
+  }
+}

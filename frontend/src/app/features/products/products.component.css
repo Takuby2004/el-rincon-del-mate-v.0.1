@@ -1,0 +1,4 @@
+/* Estilos específicos para catálogo de productos */
+:host {
+  display: block;
+}

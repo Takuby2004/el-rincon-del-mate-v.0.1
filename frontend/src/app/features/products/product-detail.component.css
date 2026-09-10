@@ -1,0 +1,4 @@
+/* Estilos para el detalle de producto */
+:host {
+  display: block;
+}

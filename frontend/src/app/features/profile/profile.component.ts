@@ -1,0 +1,84 @@
+import { Component, OnInit, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { AuthService } from '../../core/services/auth.service';
+
+@Component({
+  selector: 'app-admin-profile',
+  standalone: true,
+  imports: [CommonModule, FormsModule],
+  template: `
+    <div class="space-y-6 max-w-xl">
+      <div>
+        <h1 class="text-2xl font-bold text-mate-900">Perfil del Usuario / Administrador</h1>
+        <p class="text-xs text-wood-600">Actualiza tus datos personales y credenciales de acceso</p>
+      </div>
+
+      @if (successMessage) {
+        <div class="bg-emerald-50 text-emerald-800 p-3.5 rounded-xl text-xs font-medium border border-emerald-200 flex items-center gap-2">
+          <i class="fa-solid fa-circle-check"></i>
+          <span>{{ successMessage }}</span>
+        </div>
+      }
+
+      <div class="bg-white p-6 rounded-3xl border border-wood-200 shadow-sm space-y-4">
+        <form (ngSubmit)="updateProfile()" class="space-y-4">
+          <div>
+            <label class="block text-xs font-bold text-wood-700 mb-1">Nombre Completo *</label>
+            <input type="text" [(ngModel)]="formData.name" name="name" required class="w-full px-3.5 py-2.5 rounded-xl border border-wood-300 text-xs">
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-wood-700 mb-1">Correo Electrónico (No modificable)</label>
+            <input type="email" [value]="formData.email" disabled class="w-full px-3.5 py-2.5 rounded-xl border border-wood-200 bg-wood-50 text-xs text-wood-500 font-mono">
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-wood-700 mb-1">Teléfono</label>
+            <input type="text" [(ngModel)]="formData.phone" name="phone" class="w-full px-3.5 py-2.5 rounded-xl border border-wood-300 text-xs">
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-wood-700 mb-1">Nueva Contraseña (Dejar en blanco para mantener actual)</label>
+            <input type="password" [(ngModel)]="formData.password" name="password" placeholder="••••••••" class="w-full px-3.5 py-2.5 rounded-xl border border-wood-300 text-xs">
+          </div>
+
+          <div class="pt-2 flex justify-end">
+            <button type="submit" class="px-6 py-3 bg-mate-700 hover:bg-mate-800 text-white font-bold text-xs rounded-xl shadow">
+              Actualizar Perfil
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  `
+})
+export class AdminProfileFeatureComponent implements OnInit {
+  private authService = inject(AuthService);
+
+  formData = {
+    name: '',
+    email: '',
+    phone: '',
+    password: ''
+  };
+  successMessage = '';
+
+  ngOnInit() {
+    const user = this.authService.currentUser();
+    if (user) {
+      this.formData.name = user.name;
+      this.formData.email = user.email;
+      this.formData.phone = user.phone || '';
+    }
+  }
+
+  updateProfile() {
+    this.authService.updateProfile(this.formData).subscribe({
+      next: () => {
+        this.successMessage = 'Perfil actualizado correctamente.';
+        this.formData.password = '';
+      }
+    });
+  }
+}
