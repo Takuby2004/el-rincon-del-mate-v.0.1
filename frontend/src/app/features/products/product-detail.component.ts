@@ -24,7 +24,25 @@ export class ProductDetailFeatureComponent implements OnInit {
   quantity = 1;
   loading = true;
   addedSuccess = false;
+  selectedImageIndex = 0;
   Math = Math;
+
+  get allImages(): string[] {
+    if (!this.product) return [];
+    if (this.product.images && this.product.images.length > 0) {
+      return this.product.images;
+    }
+    return this.product.imageUrl ? [this.product.imageUrl] : [];
+  }
+
+  get currentImageUrl(): string {
+    const images = this.allImages;
+    if (images.length === 0) return '';
+    if (this.selectedImageIndex >= images.length) {
+      this.selectedImageIndex = 0;
+    }
+    return images[this.selectedImageIndex];
+  }
 
   ngOnInit() {
     const slug = this.route.snapshot.paramMap.get('slug');
@@ -32,11 +50,28 @@ export class ProductDetailFeatureComponent implements OnInit {
       this.apiService.getProductBySlug(slug).subscribe({
         next: (res) => {
           this.product = res;
+          this.selectedImageIndex = 0;
           this.loading = false;
         },
         error: () => (this.loading = false)
       });
     }
+  }
+
+  selectImage(index: number) {
+    this.selectedImageIndex = index;
+  }
+
+  prevImage() {
+    const total = this.allImages.length;
+    if (total <= 1) return;
+    this.selectedImageIndex = (this.selectedImageIndex - 1 + total) % total;
+  }
+
+  nextImage() {
+    const total = this.allImages.length;
+    if (total <= 1) return;
+    this.selectedImageIndex = (this.selectedImageIndex + 1) % total;
   }
 
   addToCart() {

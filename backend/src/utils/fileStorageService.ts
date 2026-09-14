@@ -31,6 +31,11 @@ export class FileStorageService {
     };
   }
 
+  public static async saveFiles(files: Express.Multer.File[], folder: string = 'general'): Promise<Array<{ url: string; fileName: string; mimeType: string }>> {
+    if (!files || files.length === 0) return [];
+    return Promise.all(files.map(file => this.saveFile(file, folder)));
+  }
+
   public static async deleteFile(fileUrl: string): Promise<boolean> {
     try {
       if (!fileUrl || !fileUrl.startsWith('/uploads/')) return false;

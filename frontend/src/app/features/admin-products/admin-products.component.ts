@@ -6,6 +6,11 @@ import { Product, Category } from '../../core/models/models';
 import { AssetUrlPipe } from '../../shared/pipes/asset-url.pipe';
 import { ImgFallbackDirective } from '../../shared/directives/img-fallback.directive';
 
+interface LocalFilePreview {
+  file: File;
+  previewUrl: string;
+}
+
 @Component({
   selector: 'app-admin-products',
   standalone: true,
@@ -15,7 +20,7 @@ import { ImgFallbackDirective } from '../../shared/directives/img-fallback.direc
       <div class="flex justify-between items-center">
         <div>
           <h1 class="text-2xl font-bold text-mate-900">Gestión de Productos</h1>
-          <p class="text-xs text-wood-600">Administra el catálogo de mates, termos, bombillas y control de stock</p>
+          <p class="text-xs text-wood-600">Administra el catálogo de mates, termos, bombillas, imágenes y control de stock</p>
         </div>
         <button (click)="openModal()" class="px-4 py-2.5 bg-mate-700 hover:bg-mate-800 text-white font-bold text-xs rounded-xl shadow flex items-center gap-2 transition-all">
           <i class="fa-solid fa-plus"></i>
@@ -29,6 +34,7 @@ import { ImgFallbackDirective } from '../../shared/directives/img-fallback.direc
           <thead>
             <tr class="bg-wood-100/70 border-b border-wood-200 text-2xs font-bold text-wood-700 uppercase tracking-wider">
               <th class="p-4">Producto</th>
+              <th class="p-4">Galería</th>
               <th class="p-4">Categoría</th>
               <th class="p-4">Precio (Bs.)</th>
               <th class="p-4">Costo (Bs.)</th>
@@ -50,6 +56,20 @@ import { ImgFallbackDirective } from '../../shared/directives/img-fallback.direc
                     </div>
                   </div>
                 </td>
+                <td class="p-4">
+                  <div class="flex items-center gap-1.5">
+                    @if (product.images && product.images.length > 0) {
+                      <span class="px-2 py-0.5 rounded-full bg-wood-100 text-wood-700 font-bold text-2xs flex items-center gap-1">
+                        <i class="fa-solid fa-images text-3xs"></i>
+                        {{ product.images.length }} fotos
+                      </span>
+                    } @else if (product.imageUrl) {
+                      <span class="px-2 py-0.5 rounded-full bg-wood-50 text-wood-600 text-2xs">1 foto</span>
+                    } @else {
+                      <span class="text-wood-400 text-2xs italic">Sin fotos</span>
+                    }
+                  </div>
+                </td>
                 <td class="p-4 font-semibold text-wood-700">{{ product.category?.name }}</td>
                 <td class="p-4 font-extrabold text-mate-900">Bs. {{ product.price.toFixed(2) }}</td>
                 <td class="p-4 font-medium text-wood-600">Bs. {{ product.cost.toFixed(2) }}</td>
@@ -69,10 +89,10 @@ import { ImgFallbackDirective } from '../../shared/directives/img-fallback.direc
                   </span>
                 </td>
                 <td class="p-4 text-right space-x-2">
-                  <button (click)="editProduct(product)" class="p-2 text-mate-700 hover:bg-mate-50 rounded-lg transition-colors">
+                  <button (click)="editProduct(product)" class="p-2 text-mate-700 hover:bg-mate-50 rounded-lg transition-colors" title="Editar Producto">
                     <i class="fa-solid fa-pen"></i>
                   </button>
-                  <button (click)="deleteProduct(product.id)" class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                  <button (click)="deleteProduct(product.id)" class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Desactivar Producto">
                     <i class="fa-solid fa-trash-can"></i>
                   </button>
                 </td>
@@ -85,7 +105,7 @@ import { ImgFallbackDirective } from '../../shared/directives/img-fallback.direc
       <!-- Create / Edit Modal -->
       @if (showModal) {
         <div class="fixed inset-0 bg-mate-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div class="bg-white rounded-3xl p-6 max-w-xl w-full border border-wood-200 shadow-2xl space-y-4">
+          <div class="bg-white rounded-3xl p-6 max-w-2xl w-full border border-wood-200 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center border-b border-wood-100 pb-3">
               <h3 class="font-bold text-lg text-mate-900">{{ isEditing ? 'Editar Producto' : 'Nuevo Producto' }}</h3>
               <button (click)="closeModal()" class="text-wood-400 hover:text-wood-700 text-lg">
@@ -96,47 +116,167 @@ import { ImgFallbackDirective } from '../../shared/directives/img-fallback.direc
             <form (ngSubmit)="saveProduct()" class="space-y-4">
               <div>
                 <label class="block text-xs font-bold text-wood-700 mb-1">Nombre del Producto *</label>
-                <input type="text" [(ngModel)]="formData.name" name="name" required class="w-full px-3.5 py-2 rounded-xl border border-wood-300 text-xs">
+                <input type="text" [(ngModel)]="formData.name" name="name" required class="w-full px-3.5 py-2 rounded-xl border border-wood-300 text-xs focus:ring-2 focus:ring-mate-700 outline-none">
               </div>
 
               <div class="grid grid-cols-2 gap-4">
                 <div>
                   <label class="block text-xs font-bold text-wood-700 mb-1">Categoría *</label>
-                  <select [(ngModel)]="formData.categoryId" name="categoryId" required class="w-full px-3.5 py-2 rounded-xl border border-wood-300 text-xs bg-white">
+                  <select [(ngModel)]="formData.categoryId" name="categoryId" required class="w-full px-3.5 py-2 rounded-xl border border-wood-300 text-xs bg-white focus:ring-2 focus:ring-mate-700 outline-none">
                     @for (cat of categories; track cat.id) {
                       <option [value]="cat.id">{{ cat.name }}</option>
                     }
                   </select>
                 </div>
                 <div>
-                  <label class="block text-xs font-bold text-wood-700 mb-1">URL Imagen</label>
-                  <input type="text" [(ngModel)]="formData.imageUrl" name="imageUrl" class="w-full px-3.5 py-2 rounded-xl border border-wood-300 text-xs" placeholder="https://...">
+                  <label class="block text-xs font-bold text-wood-700 mb-1">Estado</label>
+                  <select [(ngModel)]="formData.active" name="active" class="w-full px-3.5 py-2 rounded-xl border border-wood-300 text-xs bg-white focus:ring-2 focus:ring-mate-700 outline-none">
+                    <option [ngValue]="true">Activo (Visible en tienda)</option>
+                    <option [ngValue]="false">Inactivo (Oculto)</option>
+                  </select>
                 </div>
+              </div>
+
+              <!-- Multi-Image Upload Dropzone -->
+              <div class="space-y-2">
+                <div class="flex justify-between items-center">
+                  <label class="block text-xs font-bold text-wood-700">Imágenes del Producto (Una o más)</label>
+                  <span class="text-2xs text-wood-500 font-medium">Formatos: JPG, PNG, WEBP (Máx 5MB c/u)</span>
+                </div>
+
+                <!-- Dropzone Area -->
+                <div 
+                  (dragover)="onDragOver($event)"
+                  (dragleave)="onDragLeave($event)"
+                  (drop)="onDrop($event)"
+                  (click)="fileInput.click()"
+                  [ngClass]="isDragging ? 'border-mate-700 bg-mate-50' : 'border-wood-300 bg-wood-50'"
+                  class="border-2 border-dashed hover:border-mate-600 rounded-2xl p-4 text-center cursor-pointer transition-all duration-200">
+                  
+                  <input 
+                    #fileInput 
+                    type="file" 
+                    multiple 
+                    accept="image/jpeg,image/png,image/webp,image/jpg" 
+                    (change)="onFilesSelected($event)" 
+                    class="hidden">
+
+                  <div class="flex flex-col items-center gap-1.5 py-2">
+                    <div class="w-10 h-10 rounded-full bg-mate-100 text-mate-800 flex items-center justify-center">
+                      <i class="fa-solid fa-cloud-arrow-up text-lg"></i>
+                    </div>
+                    <div class="text-xs font-bold text-mate-900">
+                      Arrastra tus fotos aquí o <span class="text-mate-700 underline">haz clic para examinar</span>
+                    </div>
+                    <div class="text-2xs text-wood-500">Puedes seleccionar varias fotos a la vez</div>
+                  </div>
+                </div>
+
+                @if (uploadError) {
+                  <div class="text-2xs font-semibold text-red-600 bg-red-50 p-2 rounded-lg border border-red-200">
+                    <i class="fa-solid fa-triangle-exclamation mr-1"></i> {{ uploadError }}
+                  </div>
+                }
+
+                <!-- Image Thumbnails Grid (Existing + New Files) -->
+                @if (existingImages.length > 0 || selectedFiles.length > 0) {
+                  <div class="mt-3 space-y-2">
+                    <div class="text-2xs font-bold text-wood-600 uppercase tracking-wider">
+                      Galería seleccionada ({{ existingImages.length + selectedFiles.length }} imágenes - La primera será la portada):
+                    </div>
+                    
+                    <div class="grid grid-cols-4 sm:grid-cols-5 gap-3">
+                      <!-- Existing Images -->
+                      @for (img of existingImages; track $index) {
+                        <div class="relative group rounded-xl overflow-hidden border border-wood-200 bg-wood-100 aspect-square shadow-2xs">
+                          <img [src]="img | assetUrl" appImgFallback class="w-full h-full object-cover">
+                          
+                          @if ($index === 0) {
+                            <span class="absolute top-1 left-1 bg-amber-500 text-white text-3xs font-black px-1.5 py-0.5 rounded shadow">
+                              ★ Portada
+                            </span>
+                          }
+
+                          <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1.5 p-1">
+                            @if ($index !== 0) {
+                              <button type="button" (click)="setAsPrimaryExisting($index); $event.stopPropagation()" title="Hacer Portada" class="w-6 h-6 rounded-full bg-white/90 text-amber-600 hover:bg-white flex items-center justify-center text-3xs">
+                                <i class="fa-solid fa-star"></i>
+                              </button>
+                            }
+                            <button type="button" (click)="removeExistingImage($index); $event.stopPropagation()" title="Eliminar Foto" class="w-6 h-6 rounded-full bg-white/90 text-red-600 hover:bg-white flex items-center justify-center text-3xs">
+                              <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                          </div>
+                        </div>
+                      }
+
+                      <!-- Newly Selected Local Files -->
+                      @for (item of selectedFiles; track $index) {
+                        <div class="relative group rounded-xl overflow-hidden border-2 border-emerald-500/80 bg-emerald-50 aspect-square shadow-2xs">
+                          <img [src]="item.previewUrl" class="w-full h-full object-cover">
+                          
+                          @if (existingImages.length === 0 && $index === 0) {
+                            <span class="absolute top-1 left-1 bg-emerald-600 text-white text-3xs font-black px-1.5 py-0.5 rounded shadow">
+                              ★ Portada (Nueva)
+                            </span>
+                          } @else {
+                            <span class="absolute top-1 left-1 bg-emerald-600 text-white text-3xs font-bold px-1 py-0.5 rounded shadow">
+                              Nueva
+                            </span>
+                          }
+
+                          <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1.5 p-1">
+                            @if (existingImages.length > 0 || $index !== 0) {
+                              <button type="button" (click)="setAsPrimaryNew($index); $event.stopPropagation()" title="Hacer Portada" class="w-6 h-6 rounded-full bg-white/90 text-amber-600 hover:bg-white flex items-center justify-center text-3xs">
+                                <i class="fa-solid fa-star"></i>
+                              </button>
+                            }
+                            <button type="button" (click)="removeSelectedFile($index); $event.stopPropagation()" title="Eliminar Foto" class="w-6 h-6 rounded-full bg-white/90 text-red-600 hover:bg-white flex items-center justify-center text-3xs">
+                              <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                          </div>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                }
               </div>
 
               <div class="grid grid-cols-3 gap-4">
                 <div>
                   <label class="block text-xs font-bold text-wood-700 mb-1">Precio Venta (Bs.) *</label>
-                  <input type="number" step="0.01" [(ngModel)]="formData.price" name="price" required class="w-full px-3.5 py-2 rounded-xl border border-wood-300 text-xs">
+                  <input type="number" step="0.01" [(ngModel)]="formData.price" name="price" required class="w-full px-3.5 py-2 rounded-xl border border-wood-300 text-xs focus:ring-2 focus:ring-mate-700 outline-none">
                 </div>
                 <div>
                   <label class="block text-xs font-bold text-wood-700 mb-1">Costo (Bs.) *</label>
-                  <input type="number" step="0.01" [(ngModel)]="formData.cost" name="cost" required class="w-full px-3.5 py-2 rounded-xl border border-wood-300 text-xs">
+                  <input type="number" step="0.01" [(ngModel)]="formData.cost" name="cost" required class="w-full px-3.5 py-2 rounded-xl border border-wood-300 text-xs focus:ring-2 focus:ring-mate-700 outline-none">
                 </div>
                 <div>
                   <label class="block text-xs font-bold text-wood-700 mb-1">{{ isEditing ? 'Ajustar Stock (+/-)' : 'Stock Inicial' }}</label>
-                  <input type="number" [(ngModel)]="formData.stockInput" name="stockInput" required class="w-full px-3.5 py-2 rounded-xl border border-wood-300 text-xs">
+                  <input type="number" [(ngModel)]="formData.stockInput" name="stockInput" required class="w-full px-3.5 py-2 rounded-xl border border-wood-300 text-xs focus:ring-2 focus:ring-mate-700 outline-none">
                 </div>
               </div>
 
               <div>
                 <label class="block text-xs font-bold text-wood-700 mb-1">Descripción</label>
-                <textarea [(ngModel)]="formData.description" name="description" rows="3" class="w-full px-3.5 py-2 rounded-xl border border-wood-300 text-xs"></textarea>
+                <textarea [(ngModel)]="formData.description" name="description" rows="3" class="w-full px-3.5 py-2 rounded-xl border border-wood-300 text-xs focus:ring-2 focus:ring-mate-700 outline-none"></textarea>
               </div>
 
               <div class="pt-3 flex justify-end gap-3 border-t border-wood-100">
-                <button type="button" (click)="closeModal()" class="px-4 py-2 bg-wood-200 text-wood-800 text-xs font-bold rounded-xl">Cancelar</button>
-                <button type="submit" class="px-5 py-2 bg-mate-700 hover:bg-mate-800 text-white text-xs font-bold rounded-xl shadow">Guardar</button>
+                <button type="button" (click)="closeModal()" class="px-4 py-2 bg-wood-200 hover:bg-wood-300 text-wood-800 text-xs font-bold rounded-xl transition-colors">
+                  Cancelar
+                </button>
+                <button 
+                  type="submit" 
+                  [disabled]="isSaving"
+                  class="px-5 py-2 bg-mate-700 hover:bg-mate-800 disabled:bg-gray-300 text-white text-xs font-bold rounded-xl shadow flex items-center gap-2 transition-all">
+                  @if (isSaving) {
+                    <i class="fa-solid fa-circle-notch fa-spin text-xs"></i>
+                    <span>Guardando...</span>
+                  } @else {
+                    <span>Guardar Producto</span>
+                  }
+                </button>
               </div>
             </form>
           </div>
@@ -152,7 +292,10 @@ export class AdminProductsFeatureComponent implements OnInit {
   categories: Category[] = [];
   showModal = false;
   isEditing = false;
+  isSaving = false;
+  isDragging = false;
   editingId = '';
+  uploadError = '';
 
   formData = {
     name: '',
@@ -161,8 +304,11 @@ export class AdminProductsFeatureComponent implements OnInit {
     price: 0,
     cost: 0,
     stockInput: 0,
-    imageUrl: ''
+    active: true
   };
+
+  existingImages: string[] = [];
+  selectedFiles: LocalFilePreview[] = [];
 
   ngOnInit() {
     this.loadProducts();
@@ -174,14 +320,39 @@ export class AdminProductsFeatureComponent implements OnInit {
   }
 
   openModal() {
+    this.cleanPreviews();
     this.isEditing = false;
-    this.formData = { name: '', categoryId: this.categories[0]?.id || '', description: '', price: 0, cost: 0, stockInput: 10, imageUrl: '' };
+    this.editingId = '';
+    this.uploadError = '';
+    this.existingImages = [];
+    this.selectedFiles = [];
+    this.formData = {
+      name: '',
+      categoryId: this.categories[0]?.id || '',
+      description: '',
+      price: 0,
+      cost: 0,
+      stockInput: 10,
+      active: true
+    };
     this.showModal = true;
   }
 
   editProduct(p: Product) {
+    this.cleanPreviews();
     this.isEditing = true;
     this.editingId = p.id;
+    this.uploadError = '';
+    this.selectedFiles = [];
+    
+    if (p.images && p.images.length > 0) {
+      this.existingImages = [...p.images];
+    } else if (p.imageUrl) {
+      this.existingImages = [p.imageUrl];
+    } else {
+      this.existingImages = [];
+    }
+
     this.formData = {
       name: p.name,
       categoryId: p.categoryId,
@@ -189,46 +360,146 @@ export class AdminProductsFeatureComponent implements OnInit {
       price: p.price,
       cost: p.cost,
       stockInput: 0,
-      imageUrl: p.imageUrl || ''
+      active: p.active
     };
     this.showModal = true;
   }
 
   closeModal() {
+    this.cleanPreviews();
     this.showModal = false;
+    this.isSaving = false;
+  }
+
+  onDragOver(e: DragEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    this.isDragging = true;
+  }
+
+  onDragLeave(e: DragEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    this.isDragging = false;
+  }
+
+  onDrop(e: DragEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    this.isDragging = false;
+    if (e.dataTransfer && e.dataTransfer.files) {
+      this.addFiles(Array.from(e.dataTransfer.files));
+    }
+  }
+
+  onFilesSelected(event: any) {
+    if (event.target.files && event.target.files.length > 0) {
+      this.addFiles(Array.from(event.target.files));
+      event.target.value = '';
+    }
+  }
+
+  addFiles(files: File[]) {
+    this.uploadError = '';
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
+    const maxSizeBytes = 5 * 1024 * 1024; // 5MB
+
+    for (const file of files) {
+      if (!allowedTypes.includes(file.type.toLowerCase())) {
+        this.uploadError = `El archivo "${file.name}" no es una imagen válida (JPG, PNG o WEBP).`;
+        continue;
+      }
+      if (file.size > maxSizeBytes) {
+        this.uploadError = `El archivo "${file.name}" excede el límite máximo de 5 MB.`;
+        continue;
+      }
+
+      const previewUrl = URL.createObjectURL(file);
+      this.selectedFiles.push({ file, previewUrl });
+    }
+  }
+
+  removeExistingImage(index: number) {
+    this.existingImages.splice(index, 1);
+  }
+
+  removeSelectedFile(index: number) {
+    const item = this.selectedFiles[index];
+    if (item?.previewUrl) {
+      URL.revokeObjectURL(item.previewUrl);
+    }
+    this.selectedFiles.splice(index, 1);
+  }
+
+  setAsPrimaryExisting(index: number) {
+    if (index > 0 && index < this.existingImages.length) {
+      const [item] = this.existingImages.splice(index, 1);
+      this.existingImages.unshift(item);
+    }
+  }
+
+  setAsPrimaryNew(index: number) {
+    if (index >= 0 && index < this.selectedFiles.length) {
+      const [item] = this.selectedFiles.splice(index, 1);
+      this.selectedFiles.unshift(item);
+    }
+  }
+
+  cleanPreviews() {
+    for (const item of this.selectedFiles) {
+      if (item.previewUrl) {
+        URL.revokeObjectURL(item.previewUrl);
+      }
+    }
+    this.selectedFiles = [];
   }
 
   saveProduct() {
+    this.isSaving = true;
+    this.uploadError = '';
+
+    const payload = new FormData();
+    payload.append('name', this.formData.name);
+    payload.append('categoryId', this.formData.categoryId);
+    payload.append('description', this.formData.description || '');
+    payload.append('price', this.formData.price.toString());
+    payload.append('cost', this.formData.cost.toString());
+    payload.append('active', this.formData.active.toString());
+
     if (this.isEditing) {
-      this.apiService
-        .updateProduct(this.editingId, {
-          name: this.formData.name,
-          categoryId: this.formData.categoryId,
-          description: this.formData.description,
-          price: this.formData.price,
-          cost: this.formData.cost,
-          stockAdjustment: this.formData.stockInput,
-          imageUrl: this.formData.imageUrl
-        })
-        .subscribe(() => {
-          this.closeModal();
-          this.loadProducts();
-        });
+      payload.append('stockAdjustment', this.formData.stockInput.toString());
     } else {
-      this.apiService
-        .createProduct({
-          name: this.formData.name,
-          categoryId: this.formData.categoryId,
-          description: this.formData.description,
-          price: this.formData.price,
-          cost: this.formData.cost,
-          stock: this.formData.stockInput,
-          imageUrl: this.formData.imageUrl
-        })
-        .subscribe(() => {
+      payload.append('stock', this.formData.stockInput.toString());
+    }
+
+    payload.append('existingImages', JSON.stringify(this.existingImages));
+
+    for (const item of this.selectedFiles) {
+      payload.append('images', item.file);
+    }
+
+    if (this.isEditing) {
+      this.apiService.updateProduct(this.editingId, payload).subscribe({
+        next: () => {
           this.closeModal();
           this.loadProducts();
-        });
+        },
+        error: (err) => {
+          this.isSaving = false;
+          this.uploadError = err.error?.error || 'Error al actualizar el producto.';
+        }
+      });
+    } else {
+      this.apiService.createProduct(payload).subscribe({
+        next: () => {
+          this.closeModal();
+          this.loadProducts();
+        },
+        error: (err) => {
+          this.isSaving = false;
+          this.uploadError = err.error?.error || 'Error al crear el producto.';
+        }
+      });
     }
   }
 

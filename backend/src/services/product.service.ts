@@ -41,6 +41,7 @@ export class ProductService {
     cost: number;
     stock: number;
     imageUrl?: string;
+    images?: string[];
     userId?: string;
   }) {
     const slug = data.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
@@ -49,6 +50,9 @@ export class ProductService {
 
     const qrText = `${process.env.FRONTEND_URL || 'http://localhost:4200'}/productos/${slug}`;
     const qrCodeUrl = await QrGenerator.generateDataUrl(qrText);
+
+    const imagesList = data.images || (data.imageUrl ? [data.imageUrl] : []);
+    const primaryImage = data.imageUrl || (imagesList.length > 0 ? imagesList[0] : '');
 
     return prisma.$transaction(async (tx) => {
       const product = await tx.product.create({
@@ -60,7 +64,8 @@ export class ProductService {
           price: Number(data.price),
           cost: Number(data.cost || 0),
           stock: Number(data.stock || 0),
-          imageUrl: data.imageUrl || '',
+          imageUrl: primaryImage,
+          images: imagesList,
           qrCodeUrl
         },
         include: { category: true }
@@ -92,6 +97,7 @@ export class ProductService {
       cost?: number;
       stockAdjustment?: number;
       imageUrl?: string;
+      images?: string[];
       active?: boolean;
       userId?: string;
     }
@@ -105,6 +111,7 @@ export class ProductService {
     if (data.price !== undefined) updateData.price = Number(data.price);
     if (data.cost !== undefined) updateData.cost = Number(data.cost);
     if (data.imageUrl !== undefined) updateData.imageUrl = data.imageUrl;
+    if (data.images !== undefined) updateData.images = data.images;
     if (data.active !== undefined) updateData.active = Boolean(data.active);
 
     if (data.name && data.name !== currentProduct.name) {

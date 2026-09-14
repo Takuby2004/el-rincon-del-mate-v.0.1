@@ -93,6 +93,7 @@ model Product {
   cost               Float               @default(0)
   stock              Int                 @default(0)
   imageUrl           String?
+  images             String[]            @default([])
   qrCodeUrl          String?
   active             Boolean             @default(true)
   createdAt          DateTime            @default(now())

@@ -100,12 +100,16 @@ export class ApiService {
     return this.http.patch<Order>(`${this.apiUrl}/orders/${orderId}/status`, { status });
   }
 
-  approvePayment(paymentId: string): Observable<any> {
-    return this.http.patch(`${this.apiUrl}/admin/payments/${paymentId}/approve`, {});
+  approvePayment(paymentId: string, notifyEmail: boolean = true): Observable<any> {
+    return this.http.patch(`${this.apiUrl}/admin/payments/${paymentId}/approve`, { notifyEmail });
   }
 
-  rejectPayment(paymentId: string, rejectionReason: string): Observable<any> {
-    return this.http.patch(`${this.apiUrl}/admin/payments/${paymentId}/reject`, { rejectionReason });
+  rejectPayment(paymentId: string, rejectionReason: string, notifyEmail: boolean = true): Observable<any> {
+    return this.http.patch(`${this.apiUrl}/admin/payments/${paymentId}/reject`, { rejectionReason, notifyEmail });
+  }
+
+  sendPaymentEmailNotification(paymentId: string, status?: string, message?: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/admin/payments/${paymentId}/notify-email`, { status, message });
   }
 
   // Clients

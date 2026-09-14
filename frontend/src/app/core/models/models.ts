@@ -40,6 +40,7 @@ export interface Product {
   cost: number;
   stock: number;
   imageUrl?: string;
+  images?: string[];
   qrCodeUrl?: string;
   active: boolean;
 }

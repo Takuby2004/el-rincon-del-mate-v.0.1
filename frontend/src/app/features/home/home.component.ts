@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ApiService } from '../../core/services/api.service';
@@ -7,6 +7,13 @@ import { Product, Category } from '../../core/models/models';
 import { AssetUrlPipe } from '../../shared/pipes/asset-url.pipe';
 import { ImgFallbackDirective } from '../../shared/directives/img-fallback.directive';
 
+export interface HeroSvgSlide {
+  src: string;
+  name: string;
+  subtitle: string;
+  badge: string;
+}
+
 @Component({
   selector: 'app-home',
   standalone: true,
@@ -14,22 +21,52 @@ import { ImgFallbackDirective } from '../../shared/directives/img-fallback.direc
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css']
 })
-export class HomeFeatureComponent implements OnInit {
+export class HomeFeatureComponent implements OnInit, OnDestroy {
   private apiService = inject(ApiService);
   private cartService = inject(CartService);
 
   categories: Category[] = [];
   featuredProducts: Product[] = [];
-  allProducts: Product[] = [];
-
   loadingCategories = true;
   loadingProducts = true;
   addedProductId: string | null = null;
 
-  // Flip 3D State
-  activeIndex = 0;
+  // Hero SVGs Carousel State
+  heroSvgSlides: HeroSvgSlide[] = [
+    {
+      src: 'assets/producto_mate_16.svg',
+      name: 'Mate Imperial Premium',
+      subtitle: 'Calabaza brasilera seleccionada con virola de alpaca cincelada',
+      badge: 'Artesanía Premium'
+    },
+    {
+      src: 'assets/producto_mate_18.svg',
+      name: 'Mate Camionero Tradicional',
+      subtitle: 'Cuero vacuno legítimo con costura reforzada a mano',
+      badge: 'Tradición Gaucha'
+    },
+    {
+      src: 'assets/producto_mate_27.svg',
+      name: 'Mate Torpedo Uruguayo',
+      subtitle: 'Formato estilizado con base de cuatro patas de máxima estabilidad',
+      badge: 'Diseño Clásico'
+    },
+    {
+      src: 'assets/producto_mate_31.svg',
+      name: 'Mate Imperial Guarda Especial',
+      subtitle: 'Detalles ornamentales cincelados con acabado en plata y bronce',
+      badge: 'Edición Exclusiva'
+    }
+  ];
+
+  activeHeroIndex = 0;
+  slideDirection: 'next' | 'prev' = 'next';
+  private autoSlideTimer: any = null;
+  private autoSlideIntervalMs = 5000; // Exactamente cada 5 segundos
 
   ngOnInit() {
+    this.startAutoSlide();
+
     this.apiService.getCategories().subscribe({
       next: (res) => {
         this.categories = res.slice(0, 3);
@@ -40,7 +77,6 @@ export class HomeFeatureComponent implements OnInit {
 
     this.apiService.getProducts({ activeOnly: true }).subscribe({
       next: (res) => {
-        this.allProducts = res;
         this.featuredProducts = res.slice(0, 4);
         this.loadingProducts = false;
       },
@@ -48,71 +84,47 @@ export class HomeFeatureComponent implements OnInit {
     });
   }
 
-  // Windows Vista Flip 3D Methods
-  nextProduct() {
-    if (this.allProducts.length > 0) {
-      this.activeIndex = (this.activeIndex + 1) % this.allProducts.length;
+  ngOnDestroy() {
+    this.stopAutoSlide();
+  }
+
+  startAutoSlide() {
+    this.stopAutoSlide();
+    this.autoSlideTimer = setInterval(() => {
+      this.nextHeroSlide();
+    }, this.autoSlideIntervalMs);
+  }
+
+  stopAutoSlide() {
+    if (this.autoSlideTimer) {
+      clearInterval(this.autoSlideTimer);
+      this.autoSlideTimer = null;
     }
   }
 
-  prevProduct() {
-    if (this.allProducts.length > 0) {
-      this.activeIndex = (this.activeIndex - 1 + this.allProducts.length) % this.allProducts.length;
-    }
+  pauseAutoSlide() {
+    this.stopAutoSlide();
   }
 
-  selectProduct(index: number) {
-    this.activeIndex = index;
+  resumeAutoSlide() {
+    this.startAutoSlide();
   }
 
-  getCardTransform(index: number): string {
-    const total = this.allProducts.length;
-    if (total === 0) return '';
-
-    // Calculate relative distance with wrap-around
-    let offset = index - this.activeIndex;
-    if (offset > total / 2) offset -= total;
-    if (offset < -total / 2) offset += total;
-
-    if (offset === 0) {
-      // Front active card (straight, closest to camera)
-      return 'translateX(0px) translateY(0px) translateZ(60px) rotateY(0deg) scale(1)';
-    } else if (offset > 0) {
-      // Cards behind on the right (Flip 3D cascade)
-      const xOffset = offset * 48;
-      const zOffset = -offset * 110;
-      const scale = Math.max(0.7, 1 - offset * 0.08);
-      return `translateX(${xOffset}px) translateY(${offset * 4}px) translateZ(${zOffset}px) rotateY(-32deg) scale(${scale})`;
-    } else {
-      // Cards behind on the left
-      const xOffset = offset * 48;
-      const zOffset = offset * 110; // offset is negative
-      const scale = Math.max(0.7, 1 + offset * 0.08);
-      return `translateX(${xOffset}px) translateY(${-offset * 4}px) translateZ(${zOffset}px) rotateY(32deg) scale(${scale})`;
-    }
+  nextHeroSlide() {
+    this.slideDirection = 'next';
+    this.activeHeroIndex = (this.activeHeroIndex + 1) % this.heroSvgSlides.length;
   }
 
-  getCardOpacity(index: number): number {
-    const total = this.allProducts.length;
-    if (total === 0) return 1;
-
-    let offset = Math.abs(index - this.activeIndex);
-    if (offset > total / 2) offset = total - offset;
-
-    if (offset === 0) return 1;
-    if (offset === 1) return 0.82;
-    if (offset === 2) return 0.6;
-    return 0.35;
+  prevHeroSlide() {
+    this.slideDirection = 'prev';
+    const total = this.heroSvgSlides.length;
+    this.activeHeroIndex = (this.activeHeroIndex - 1 + total) % total;
   }
 
-  getCardZIndex(index: number): number {
-    const total = this.allProducts.length;
-    if (total === 0) return 10;
-
-    let offset = Math.abs(index - this.activeIndex);
-    if (offset > total / 2) offset = total - offset;
-
-    return 30 - offset * 5;
+  goToHeroSlide(index: number) {
+    this.slideDirection = index > this.activeHeroIndex ? 'next' : 'prev';
+    this.activeHeroIndex = index;
+    this.startAutoSlide(); // Reinicia el temporizador al interactuar
   }
 
   addToCart(product: Product) {

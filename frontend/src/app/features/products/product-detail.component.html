@@ -23,21 +23,58 @@
     </div>
   } @else if (product) {
     <div class="bg-white rounded-3xl p-8 sm:p-10 shadow-sm border border-wood-200/80 grid grid-cols-1 lg:grid-cols-2 gap-12 hover-lift">
-      <!-- Image with Fallback Directive and Smooth Zoom -->
+      <!-- Multi-Image Gallery with Navigation and Thumbnails -->
       <div class="space-y-4">
-        <div class="h-96 sm:h-[420px] rounded-3xl overflow-hidden bg-wood-50 border border-wood-200/80 relative group">
+        <div class="h-96 sm:h-[420px] rounded-3xl overflow-hidden bg-wood-50 border border-wood-200/80 relative group shadow-sm">
           <img 
-            [src]="product.imageUrl | assetUrl" 
+            [src]="currentImageUrl | assetUrl" 
             [alt]="product.name" 
             appImgFallback
-            class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+            class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           >
           @if (product.stock <= 0) {
             <span class="absolute top-4 left-4 bg-red-600/90 backdrop-blur-md text-white text-xs font-black px-3.5 py-1.5 rounded-full shadow">
               Agotado
             </span>
           }
+
+          <!-- Gallery Navigation Arrows (if multiple images) -->
+          @if (allImages.length > 1) {
+            <button 
+              (click)="prevImage(); $event.stopPropagation()"
+              aria-label="Imagen anterior"
+              class="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center backdrop-blur-md shadow-md opacity-0 group-hover:opacity-100 transition-all duration-200">
+              <i class="fa-solid fa-chevron-left text-sm"></i>
+            </button>
+            <button 
+              (click)="nextImage(); $event.stopPropagation()"
+              aria-label="Imagen siguiente"
+              class="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center backdrop-blur-md shadow-md opacity-0 group-hover:opacity-100 transition-all duration-200">
+              <i class="fa-solid fa-chevron-right text-sm"></i>
+            </button>
+
+            <!-- Badge with Image Counter -->
+            <div class="absolute bottom-4 right-4 bg-black/60 backdrop-blur-md text-white font-mono text-2xs px-2.5 py-1 rounded-full shadow">
+              {{ selectedImageIndex + 1 }} / {{ allImages.length }}
+            </div>
+          }
         </div>
+
+        <!-- Thumbnail Carousel / Strip -->
+        @if (allImages.length > 1) {
+          <div class="flex items-center gap-3 overflow-x-auto pb-2 scrollbar-thin">
+            @for (img of allImages; track $index) {
+              <button 
+                (click)="selectImage($index)"
+                [class.ring-2]="selectedImageIndex === $index"
+                [class.ring-mate-700]="selectedImageIndex === $index"
+                [class.scale-105]="selectedImageIndex === $index"
+                class="w-20 h-20 flex-shrink-0 rounded-2xl overflow-hidden border border-wood-200 bg-wood-100/50 transition-all hover:opacity-90 relative">
+                <img [src]="img | assetUrl" [alt]="product.name" appImgFallback class="w-full h-full object-cover">
+              </button>
+            }
+          </div>
+        }
       </div>
 
       <!-- Content Details -->
