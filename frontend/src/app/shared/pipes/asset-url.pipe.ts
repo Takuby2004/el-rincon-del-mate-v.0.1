@@ -1,11 +1,12 @@
 import { Pipe, PipeTransform } from '@angular/core';
+import { environment } from '../../../environments/environment';
 
 @Pipe({
   name: 'assetUrl',
   standalone: true
 })
 export class AssetUrlPipe implements PipeTransform {
-  private readonly baseUrl = 'http://localhost:3000';
+  private readonly baseUrl = environment.baseUrl;
   private readonly defaultFallback = 'https://images.unsplash.com/photo-1517256064527-09c73fc73e38?w=600&q=80';
 
   transform(value: string | null | undefined, fallback: string = this.defaultFallback): string {

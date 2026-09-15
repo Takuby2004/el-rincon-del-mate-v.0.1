@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { CategoryService } from '../services/category.service';
+import { FileStorageService } from '../utils/fileStorageService';
 
 export class CategoryController {
   public static async getAll(req: Request, res: Response) {
@@ -22,7 +23,17 @@ export class CategoryController {
 
   public static async create(req: Request, res: Response) {
     try {
-      const category = await CategoryService.create(req.body);
+      let imageUrl = req.body.imageUrl || '';
+      if (req.file) {
+        const saved = await FileStorageService.saveFile(req.file, 'categories');
+        imageUrl = saved.url;
+      }
+
+      const category = await CategoryService.create({
+        name: req.body.name,
+        description: req.body.description || '',
+        imageUrl
+      });
       res.status(201).json(category);
     } catch (err: any) {
       res.status(400).json({ error: err.message });
@@ -31,7 +42,18 @@ export class CategoryController {
 
   public static async update(req: Request, res: Response) {
     try {
-      const category = await CategoryService.update(req.params.id, req.body);
+      const updatePayload: any = {};
+      if (req.body.name !== undefined) updatePayload.name = req.body.name;
+      if (req.body.description !== undefined) updatePayload.description = req.body.description;
+
+      if (req.file) {
+        const saved = await FileStorageService.saveFile(req.file, 'categories');
+        updatePayload.imageUrl = saved.url;
+      } else if (req.body.imageUrl !== undefined) {
+        updatePayload.imageUrl = req.body.imageUrl;
+      }
+
+      const category = await CategoryService.update(req.params.id, updatePayload);
       res.json(category);
     } catch (err: any) {
       res.status(400).json({ error: err.message });
