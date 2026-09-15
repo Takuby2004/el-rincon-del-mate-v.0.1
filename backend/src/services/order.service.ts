@@ -139,12 +139,17 @@ export class OrderService {
         }
       });
 
-      // Deduct stock and log InventoryMovement for each product
+      // Deduct stock and log InventoryMovement for each product with race-condition protection
       for (const v of validatedItems) {
-        await tx.product.update({
+        const updatedProduct = await tx.product.update({
           where: { id: v.product.id },
           data: { stock: { decrement: v.quantity } }
         });
+
+        // Atomic check: prevent race conditions if multiple users buy simultaneously
+        if (updatedProduct.stock < 0) {
+          throw new Error(`Stock insuficiente para el producto "${v.product.name}" debido a compras simultáneas. Stock disponible agotado.`);
+        }
 
         await tx.inventoryMovement.create({
           data: {
