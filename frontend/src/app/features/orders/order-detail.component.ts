@@ -5,11 +5,10 @@ import { ApiService } from '../../core/services/api.service';
 import { Order } from '../../core/models/models';
 
 @Component({
-  selector: 'app-order-detail',
-  standalone: true,
-  imports: [CommonModule, RouterLink],
-  templateUrl: './order-detail.component.html',
-  styleUrl: './order-detail.component.css'
+    selector: 'app-order-detail',
+    imports: [CommonModule, RouterLink],
+    templateUrl: './order-detail.component.html',
+    styleUrl: './order-detail.component.css'
 })
 export class OrderDetailFeatureComponent implements OnInit {
   private route = inject(ActivatedRoute);

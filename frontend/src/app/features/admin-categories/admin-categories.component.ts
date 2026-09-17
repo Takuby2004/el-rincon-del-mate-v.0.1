@@ -7,11 +7,10 @@ import { AssetUrlPipe } from '../../shared/pipes/asset-url.pipe';
 import { ImgFallbackDirective } from '../../shared/directives/img-fallback.directive';
 
 @Component({
-  selector: 'app-admin-categories',
-  standalone: true,
-  imports: [CommonModule, FormsModule, AssetUrlPipe, ImgFallbackDirective],
-  templateUrl: './admin-categories.component.html',
-  styleUrl: './admin-categories.component.css'
+    selector: 'app-admin-categories',
+    imports: [CommonModule, FormsModule, AssetUrlPipe, ImgFallbackDirective],
+    templateUrl: './admin-categories.component.html',
+    styleUrl: './admin-categories.component.css'
 })
 export class AdminCategoriesFeatureComponent implements OnInit {
   private apiService = inject(ApiService);

@@ -8,11 +8,10 @@ import { AssetUrlPipe } from '../../shared/pipes/asset-url.pipe';
 import { ImgFallbackDirective } from '../../shared/directives/img-fallback.directive';
 
 @Component({
-  selector: 'app-categories',
-  standalone: true,
-  imports: [CommonModule, RouterLink, AssetUrlPipe, ImgFallbackDirective],
-  templateUrl: './categories.component.html',
-  styleUrls: ['./categories.component.css']
+    selector: 'app-categories',
+    imports: [CommonModule, RouterLink, AssetUrlPipe, ImgFallbackDirective],
+    templateUrl: './categories.component.html',
+    styleUrls: ['./categories.component.css']
 })
 export class CategoriesFeatureComponent implements OnInit {
   private route = inject(ActivatedRoute);

@@ -1,0 +1,51 @@
+# ==========================================
+# 🌿 El Rincón del Mate - Reglas de GitIgnore
+# ==========================================
+
+# 1. Dependencias de Node.js (Frontend & Backend)
+node_modules/
+*/node_modules/
+package-lock.json.backup
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# 2. Compilados y Builds (Angular & TypeScript)
+dist/
+*/dist/
+out-tsc/
+*/out-tsc/
+.angular/
+*/.angular/
+.vite/
+*/.vite/
+bazel-out/
+
+# 3. Variables de Entorno y Secretos (Seguridad)
+.env
+.env.*
+!.env.example
+*.local
+
+# 4. Almacenamiento Local de Imágenes y Archivos Temporales
+uploads/
+*/uploads/
+tmp/
+*/tmp/
+scratch/
+
+# 5. Archivos de Configuración de Editores y Sistemas Operativos
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.DS_Store
+Thumbs.db

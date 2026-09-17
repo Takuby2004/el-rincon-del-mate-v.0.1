@@ -4,11 +4,10 @@ import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../core/services/auth.service';
 
 @Component({
-  selector: 'app-admin-profile',
-  standalone: true,
-  imports: [CommonModule, FormsModule],
-  templateUrl: './profile.component.html',
-  styleUrl: './profile.component.css'
+    selector: 'app-admin-profile',
+    imports: [CommonModule, FormsModule],
+    templateUrl: './profile.component.html',
+    styleUrl: './profile.component.css'
 })
 export class AdminProfileFeatureComponent implements OnInit {
   private authService = inject(AuthService);

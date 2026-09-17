@@ -5,11 +5,10 @@ import { ApiService } from '../../core/services/api.service';
 import { DashboardStats } from '../../core/models/models';
 
 @Component({
-  selector: 'app-admin-dashboard',
-  standalone: true,
-  imports: [CommonModule, RouterLink],
-  templateUrl: './dashboard.component.html',
-  styleUrl: './dashboard.component.css'
+    selector: 'app-admin-dashboard',
+    imports: [CommonModule, RouterLink],
+    templateUrl: './dashboard.component.html',
+    styleUrl: './dashboard.component.css'
 })
 export class AdminDashboardFeatureComponent implements OnInit {
   private apiService = inject(ApiService);

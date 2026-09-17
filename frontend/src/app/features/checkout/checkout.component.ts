@@ -5,11 +5,10 @@ import { FormsModule } from '@angular/forms';
 import { CartService } from '../../core/services/cart.service';
 
 @Component({
-  selector: 'app-checkout',
-  standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule],
-  templateUrl: './checkout.component.html',
-  styleUrl: './checkout.component.css'
+    selector: 'app-checkout',
+    imports: [CommonModule, RouterLink, FormsModule],
+    templateUrl: './checkout.component.html',
+    styleUrl: './checkout.component.css'
 })
 export class CheckoutDataFeatureComponent {
   private router = inject(Router);

@@ -6,11 +6,10 @@ import { AssetUrlPipe } from '../../shared/pipes/asset-url.pipe';
 import { ImgFallbackDirective } from '../../shared/directives/img-fallback.directive';
 
 @Component({
-  selector: 'app-cart',
-  standalone: true,
-  imports: [CommonModule, RouterLink, AssetUrlPipe, ImgFallbackDirective],
-  templateUrl: './cart.component.html',
-  styleUrls: ['./cart.component.css']
+    selector: 'app-cart',
+    imports: [CommonModule, RouterLink, AssetUrlPipe, ImgFallbackDirective],
+    templateUrl: './cart.component.html',
+    styleUrls: ['./cart.component.css']
 })
 export class CartFeatureComponent {
   cartService = inject(CartService);

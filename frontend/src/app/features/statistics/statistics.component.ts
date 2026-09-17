@@ -4,11 +4,10 @@ import { ApiService } from '../../core/services/api.service';
 import { DashboardStats } from '../../core/models/models';
 
 @Component({
-  selector: 'app-admin-statistics',
-  standalone: true,
-  imports: [CommonModule],
-  templateUrl: './statistics.component.html',
-  styleUrl: './statistics.component.css'
+    selector: 'app-admin-statistics',
+    imports: [CommonModule],
+    templateUrl: './statistics.component.html',
+    styleUrl: './statistics.component.css'
 })
 export class AdminStatisticsFeatureComponent implements OnInit {
   private apiService = inject(ApiService);

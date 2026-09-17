@@ -8,11 +8,10 @@ import { AssetUrlPipe } from '../../shared/pipes/asset-url.pipe';
 import { ImgFallbackDirective } from '../../shared/directives/img-fallback.directive';
 
 @Component({
-  selector: 'app-checkout-payment',
-  standalone: true,
-  imports: [CommonModule, RouterLink, AssetUrlPipe, ImgFallbackDirective],
-  templateUrl: './checkout-payment.component.html',
-  styleUrl: './checkout-payment.component.css'
+    selector: 'app-checkout-payment',
+    imports: [CommonModule, RouterLink, AssetUrlPipe, ImgFallbackDirective],
+    templateUrl: './checkout-payment.component.html',
+    styleUrl: './checkout-payment.component.css'
 })
 export class CheckoutPaymentFeatureComponent implements OnInit {
   private router = inject(Router);

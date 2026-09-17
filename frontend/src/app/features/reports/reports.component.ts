@@ -3,11 +3,10 @@ import { CommonModule } from '@angular/common';
 import { ApiService } from '../../core/services/api.service';
 
 @Component({
-  selector: 'app-admin-reports',
-  standalone: true,
-  imports: [CommonModule],
-  templateUrl: './reports.component.html',
-  styleUrl: './reports.component.css'
+    selector: 'app-admin-reports',
+    imports: [CommonModule],
+    templateUrl: './reports.component.html',
+    styleUrl: './reports.component.css'
 })
 export class AdminReportsFeatureComponent {
   private apiService = inject(ApiService);

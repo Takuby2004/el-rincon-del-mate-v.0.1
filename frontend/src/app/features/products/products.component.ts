@@ -9,11 +9,10 @@ import { AssetUrlPipe } from '../../shared/pipes/asset-url.pipe';
 import { ImgFallbackDirective } from '../../shared/directives/img-fallback.directive';
 
 @Component({
-  selector: 'app-products',
-  standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, AssetUrlPipe, ImgFallbackDirective],
-  templateUrl: './products.component.html',
-  styleUrls: ['./products.component.css']
+    selector: 'app-products',
+    imports: [CommonModule, RouterLink, FormsModule, AssetUrlPipe, ImgFallbackDirective],
+    templateUrl: './products.component.html',
+    styleUrls: ['./products.component.css']
 })
 export class ProductsFeatureComponent implements OnInit {
   private apiService = inject(ApiService);

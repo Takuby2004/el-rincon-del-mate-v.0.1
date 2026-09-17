@@ -17,7 +17,7 @@
 ## 🛠️ Stack Tecnológico
 
 ### 🎨 Frontend
-- **Framework**: Angular 17 (Arquitectura Standalone Components).
+- **Framework**: Angular 19 (Arquitectura Standalone Components).
 - **Estilos & Diseño**: Tailwind CSS con paleta artesanal personalizada (`wood`, `mate`, `gold`, `cream`, `darkness`).
 - **Iconografía & Tipografía**: FontAwesome 6 + Google Font *Outfit*.
 - **UI/UX & Animaciones**:

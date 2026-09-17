@@ -12,11 +12,10 @@ interface LocalFilePreview {
 }
 
 @Component({
-  selector: 'app-admin-products',
-  standalone: true,
-  imports: [CommonModule, FormsModule, AssetUrlPipe, ImgFallbackDirective],
-  templateUrl: './admin-products.component.html',
-  styleUrl: './admin-products.component.css'
+    selector: 'app-admin-products',
+    imports: [CommonModule, FormsModule, AssetUrlPipe, ImgFallbackDirective],
+    templateUrl: './admin-products.component.html',
+    styleUrl: './admin-products.component.css'
 })
 export class AdminProductsFeatureComponent implements OnInit {
   private apiService = inject(ApiService);

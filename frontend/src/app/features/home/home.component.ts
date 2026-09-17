@@ -15,11 +15,10 @@ export interface HeroSvgSlide {
 }
 
 @Component({
-  selector: 'app-home',
-  standalone: true,
-  imports: [CommonModule, RouterLink, AssetUrlPipe, ImgFallbackDirective],
-  templateUrl: './home.component.html',
-  styleUrls: ['./home.component.css']
+    selector: 'app-home',
+    imports: [CommonModule, RouterLink, AssetUrlPipe, ImgFallbackDirective],
+    templateUrl: './home.component.html',
+    styleUrls: ['./home.component.css']
 })
 export class HomeFeatureComponent implements OnInit, OnDestroy {
   private apiService = inject(ApiService);

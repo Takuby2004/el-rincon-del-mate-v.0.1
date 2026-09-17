@@ -6,11 +6,10 @@ import { AssetUrlPipe } from '../../shared/pipes/asset-url.pipe';
 import { ImgFallbackDirective } from '../../shared/directives/img-fallback.directive';
 
 @Component({
-  selector: 'app-payment-qr-config',
-  standalone: true,
-  imports: [CommonModule, AssetUrlPipe, ImgFallbackDirective],
-  templateUrl: './payment-qr-config.component.html',
-  styleUrl: './payment-qr-config.component.css'
+    selector: 'app-payment-qr-config',
+    imports: [CommonModule, AssetUrlPipe, ImgFallbackDirective],
+    templateUrl: './payment-qr-config.component.html',
+    styleUrl: './payment-qr-config.component.css'
 })
 export class AdminPaymentQrConfigFeatureComponent implements OnInit {
   private apiService = inject(ApiService);
