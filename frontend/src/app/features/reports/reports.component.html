@@ -1,0 +1,26 @@
+<div class="space-y-6 max-w-3xl">
+  <div>
+    <h1 class="text-2xl font-bold text-mate-900">Gestión de Reportes Exportables</h1>
+    <p class="text-xs text-wood-600">Genera y descarga informes en formato PDF con firma y membrete oficial</p>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <!-- Sales PDF Card -->
+    <div class="bg-white p-6 rounded-3xl border border-wood-200 shadow-sm space-y-4 flex flex-col justify-between">
+      <div class="space-y-2">
+        <div class="w-12 h-12 rounded-2xl bg-red-100 text-red-700 flex items-center justify-center text-xl">
+          <i class="fa-solid fa-file-pdf"></i>
+        </div>
+        <h3 class="font-bold text-base text-mate-900">Reporte General de Ventas</h3>
+        <p class="text-xs text-wood-600 leading-relaxed">
+          Exporta el listado completo de transacciones con pagos verificados y aprobados, resumen de ingresos y clientes.
+        </p>
+      </div>
+
+      <button (click)="downloadSalesReport()" class="w-full py-3 bg-mate-700 hover:bg-mate-800 text-white font-bold text-xs rounded-xl shadow flex items-center justify-center gap-2 transition-all">
+        <i class="fa-solid fa-download"></i>
+        <span>Descargar Reporte de Ventas (PDF)</span>
+      </button>
+    </div>
+  </div>
+</div>
