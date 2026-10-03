@@ -2,8 +2,8 @@
   <!-- Steps Indicator -->
   <div class="flex items-center justify-center mb-10 text-xs font-bold text-wood-600 gap-4">
     <div class="flex items-center gap-2 text-mate-700">
-      <span class="w-6 h-6 rounded-full bg-mate-700 text-white flex items-center justify-center">1</span>
-      <span>Datos del Cliente</span>
+      <span class="w-6 h-6 rounded-full bg-mate-700 text-white flex items-center justify-center shadow-xs">1</span>
+      <span class="font-extrabold">Datos del Cliente</span>
     </div>
     <div class="w-12 h-0.5 bg-wood-300"></div>
     <div class="flex items-center gap-2 text-wood-400">
@@ -12,60 +12,136 @@
     </div>
   </div>
 
-  <div class="bg-white rounded-3xl p-8 border border-wood-200 shadow-sm space-y-6">
-    <h1 class="text-2xl font-bold text-mate-900 border-b border-wood-100 pb-4">Datos del Cliente y Envío</h1>
+  <div class="bg-white rounded-3xl p-6 sm:p-8 border border-wood-200 shadow-sm space-y-6">
+    <div class="border-b border-wood-100 pb-4">
+      <h1 class="text-2xl font-black text-mate-900">Datos del Cliente y Dirección de Envío</h1>
+      <p class="text-xs text-wood-600 mt-1">Completa los campos a continuación para procesar y despachar tu pedido a cualquier parte del país.</p>
+    </div>
 
-    <form (ngSubmit)="proceedToPayment()" class="space-y-4">
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label class="block text-xs font-bold text-wood-700 mb-1">Nombre Completo *</label>
-          <input type="text" [(ngModel)]="clientData.clientName" name="clientName" required placeholder="Ej. Juan Pérez" class="w-full px-4 py-2.5 rounded-xl border border-wood-300 focus:outline-none focus:ring-2 focus:ring-mate-600 text-sm">
-        </div>
-
-        <div>
-          <label class="block text-xs font-bold text-wood-700 mb-1">Correo Electrónico *</label>
-          <input type="email" [(ngModel)]="clientData.clientEmail" name="clientEmail" required placeholder="juan@ejemplo.com" class="w-full px-4 py-2.5 rounded-xl border border-wood-300 focus:outline-none focus:ring-2 focus:ring-mate-600 text-sm">
-        </div>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label class="block text-xs font-bold text-wood-700 mb-1">Teléfono / WhatsApp *</label>
-          <input type="tel" [(ngModel)]="clientData.clientPhone" name="clientPhone" required placeholder="+591 70000000" class="w-full px-4 py-2.5 rounded-xl border border-wood-300 focus:outline-none focus:ring-2 focus:ring-mate-600 text-sm">
-        </div>
-
-        <div>
-          <label class="block text-xs font-bold text-wood-700 mb-1">CI / NIT (Opcional)</label>
-          <input type="text" [(ngModel)]="clientData.clientCiNit" name="clientCiNit" placeholder="Ej. 1234567" class="w-full px-4 py-2.5 rounded-xl border border-wood-300 focus:outline-none focus:ring-2 focus:ring-mate-600 text-sm">
-        </div>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div class="md:col-span-2">
-          <label class="block text-xs font-bold text-wood-700 mb-1">Dirección de Entrega *</label>
-          <input type="text" [(ngModel)]="clientData.clientAddress" name="clientAddress" required placeholder="Calle / Avenida, Número, Barrio..." class="w-full px-4 py-2.5 rounded-xl border border-wood-300 focus:outline-none focus:ring-2 focus:ring-mate-600 text-sm">
-        </div>
-
-        <div>
-          <label class="block text-xs font-bold text-wood-700 mb-1">Ciudad *</label>
-          <input type="text" [(ngModel)]="clientData.clientCity" name="clientCity" required placeholder="Santa Cruz" class="w-full px-4 py-2.5 rounded-xl border border-wood-300 focus:outline-none focus:ring-2 focus:ring-mate-600 text-sm">
-        </div>
-      </div>
-
+    <form (ngSubmit)="proceedToPayment()" class="space-y-6">
+      
+      <!-- 1. Sección de Identificación y Nombres Separados -->
       <div>
-        <label class="block text-xs font-bold text-wood-700 mb-1">Notas del Pedido (Opcional)</label>
-        <textarea [(ngModel)]="clientData.notes" name="notes" rows="2" placeholder="Indicaciones especiales de entrega..." class="w-full px-4 py-2.5 rounded-xl border border-wood-300 focus:outline-none focus:ring-2 focus:ring-mate-600 text-sm"></textarea>
+        <h2 class="text-xs font-black uppercase tracking-wider text-gold-700 mb-3 flex items-center gap-1.5">
+          <i class="fa-solid fa-user text-gold-600"></i>
+          <span>Información Personal</span>
+        </h2>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-wood-700 mb-1">Nombre(s) *</label>
+            <input type="text" [(ngModel)]="clientData.firstName" name="firstName" required placeholder="Ej. Leonardo" class="w-full px-4 py-2.5 rounded-xl border border-wood-300 focus:outline-none focus:ring-2 focus:ring-mate-600 text-sm">
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-wood-700 mb-1">Apellido Paterno *</label>
+            <input type="text" [(ngModel)]="clientData.lastNamePaterno" name="lastNamePaterno" required placeholder="Ej. Pérez" class="w-full px-4 py-2.5 rounded-xl border border-wood-300 focus:outline-none focus:ring-2 focus:ring-mate-600 text-sm">
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-wood-700 mb-1">Apellido Materno</label>
+            <input type="text" [(ngModel)]="clientData.lastNameMaterno" name="lastNameMaterno" placeholder="Ej. Gómez" class="w-full px-4 py-2.5 rounded-xl border border-wood-300 focus:outline-none focus:ring-2 focus:ring-mate-600 text-sm">
+          </div>
+        </div>
       </div>
 
-      <div class="pt-4 flex justify-between items-center border-t border-wood-100">
-        <a routerLink="/carrito" class="text-xs font-bold text-wood-700 hover:text-mate-700 flex items-center gap-1">
+      <!-- 2. Sección de Contacto e Identificación (Campos estrictamente numéricos) -->
+      <div>
+        <h2 class="text-xs font-black uppercase tracking-wider text-gold-700 mb-3 flex items-center gap-1.5">
+          <i class="fa-solid fa-address-book text-gold-600"></i>
+          <span>Contacto y Documento</span>
+        </h2>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-wood-700 mb-1">Correo Electrónico *</label>
+            <input type="email" [(ngModel)]="clientData.clientEmail" name="clientEmail" required placeholder="correo@ejemplo.com" class="w-full px-4 py-2.5 rounded-xl border border-wood-300 focus:outline-none focus:ring-2 focus:ring-mate-600 text-sm">
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-wood-700 mb-1">Teléfono / WhatsApp * (Solo números)</label>
+            <input 
+              type="text" 
+              inputmode="numeric" 
+              pattern="[0-9]*" 
+              [(ngModel)]="clientData.clientPhone" 
+              (input)="onNumericInput('clientPhone')" 
+              name="clientPhone" 
+              required 
+              placeholder="Ej. 69891494" 
+              class="w-full px-4 py-2.5 rounded-xl border border-wood-300 focus:outline-none focus:ring-2 focus:ring-mate-600 text-sm"
+            >
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-wood-700 mb-1">CI / NIT (Opcional - Solo números)</label>
+            <input 
+              type="text" 
+              inputmode="numeric" 
+              pattern="[0-9]*" 
+              [(ngModel)]="clientData.clientCiNit" 
+              (input)="onNumericInput('clientCiNit')" 
+              name="clientCiNit" 
+              placeholder="Ej. 12345678" 
+              class="w-full px-4 py-2.5 rounded-xl border border-wood-300 focus:outline-none focus:ring-2 focus:ring-mate-600 text-sm"
+            >
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Sección de Ubicación y Destino de Envío -->
+      <div>
+        <h2 class="text-xs font-black uppercase tracking-wider text-gold-700 mb-3 flex items-center gap-1.5">
+          <i class="fa-solid fa-location-dot text-gold-600"></i>
+          <span>Lugar de Entrega</span>
+        </h2>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <!-- Selector de Departamento con los 9 departamentos de Bolivia -->
+          <div>
+            <label class="block text-xs font-bold text-wood-700 mb-1">Departamento *</label>
+            <select 
+              [(ngModel)]="clientData.clientDepartment" 
+              name="clientDepartment" 
+              required 
+              class="w-full px-4 py-2.5 rounded-xl border border-wood-300 focus:outline-none focus:ring-2 focus:ring-mate-600 text-sm bg-white cursor-pointer font-medium"
+            >
+              @for (dept of boliviaDepartments; track dept) {
+                <option [value]="dept">{{ dept }}</option>
+              }
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-wood-700 mb-1">Ciudad / Localidad *</label>
+            <input type="text" [(ngModel)]="clientData.clientCity" name="clientCity" required placeholder="Ej. Tarija, Cercado / El Alto" class="w-full px-4 py-2.5 rounded-xl border border-wood-300 focus:outline-none focus:ring-2 focus:ring-mate-600 text-sm">
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-wood-700 mb-1">Dirección de Entrega *</label>
+            <input type="text" [(ngModel)]="clientData.clientAddress" name="clientAddress" required placeholder="Calle / Av., Nro, Barrio o Referencia" class="w-full px-4 py-2.5 rounded-xl border border-wood-300 focus:outline-none focus:ring-2 focus:ring-mate-600 text-sm">
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. Notas adicionales -->
+      <div>
+        <label class="block text-xs font-bold text-wood-700 mb-1">Notas o Indicaciones Especiales (Opcional)</label>
+        <textarea [(ngModel)]="clientData.notes" name="notes" rows="2" placeholder="Ej. Entregar en horario de la tarde / Llamar antes de llegar..." class="w-full px-4 py-2.5 rounded-xl border border-wood-300 focus:outline-none focus:ring-2 focus:ring-mate-600 text-sm"></textarea>
+      </div>
+
+      <!-- Botones de Acción -->
+      <div class="pt-4 flex flex-col sm:flex-row justify-between items-center gap-4 border-t border-wood-100">
+        <a routerLink="/carrito" class="text-xs font-bold text-wood-700 hover:text-mate-700 flex items-center gap-1.5 transition-colors">
           <i class="fa-solid fa-arrow-left"></i> Volver al Carrito
         </a>
-        <button type="submit" [disabled]="!isValid()" class="bg-mate-700 hover:bg-mate-800 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-bold px-6 py-3.5 rounded-2xl text-sm flex items-center gap-2 shadow transition-all">
-          <span>Ir a Pantalla de Pago</span>
+        <button 
+          type="submit" 
+          [disabled]="!isValid()" 
+          class="w-full sm:w-auto bg-mate-700 hover:bg-mate-800 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-extrabold px-8 py-3.5 rounded-2xl text-sm flex items-center justify-center gap-2.5 shadow-md hover:shadow-lg transition-all active:scale-98"
+        >
+          <span>Continuar al Pago por QR</span>
           <i class="fa-solid fa-arrow-right text-xs"></i>
         </button>
       </div>
     </form>
   </div>
 </div>
+

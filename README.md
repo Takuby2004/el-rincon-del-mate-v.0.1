@@ -25,6 +25,7 @@
   - **Skeleton Loaders** con efecto *Shimmer Wave* para evitar saltos de diseño (*Cumulative Layout Shift*).
   - Micro-animaciones escalonadas (*staggered*) y rebote interactivo en badge de carrito de compras.
   - Curvas de aceleración Bézier físicas (`cubic-bezier(0.16, 1, 0.3, 1)`) en elevación de tarjetas.
+  - **Sistema de Modales Aislados & Validación Reactiva (Admin)**: Capa de profundidad `z-[100]` con bloqueo de interacción exterior, marcos con gradiente rojo (`linear-gradient`) y mensajes emergentes (*Pop Messages*) interactivos por campo.
 
 ### ⚙️ Backend
 - **Entorno de Ejecución**: Node.js con TypeScript.
@@ -54,7 +55,7 @@
 | **CU10** | Verificación de Pagos | Panel administrativo para inspeccionar el comprobante adjunto y aprobar el pago. |
 | **CU11** | Rechazo con Motivo | Rechazo de pagos no válidos con registro obligatorio de justificación. |
 | **CU12** | Gestión de QR Dueño | Interfaz administrativa para subir y activar una nueva imagen de QR bancario. |
-| **CU13** | CRUD de Catálogo | Gestión de productos, precios, costos, categorías y ajustes manuales de stock. |
+| **CU13** | CRUD de Catálogo | Gestión de productos, búsqueda reactiva, filtros multidimensionales (categoría, estado, stock, precio y costo), KPIs y control de stock. |
 | **CU14** | Dashboard & Métricas | Estadísticas en tiempo real de ingresos totales, pedidos pagados y stock crítico. |
 | **CU15** | Reportes Financieros | Reportes de ventas e inventario con cálculo de margen de ganancia. |
 | **CU16** | Exportación PDF | Generación y descarga de la orden de pedido en formato PDF. |
@@ -183,7 +184,7 @@ el-rincon-del-mate-v.0.1/
 │   │   └── server.ts           # Punto de entrada del backend
 │   └── uploads/                # Directorio de imágenes y comprobantes
 │
-├── frontend/                   # Cliente Angular 17 Standalone
+├── frontend/                   # Cliente Angular 19.2 Standalone
 │   ├── src/
 │   │   ├── app/
 │   │   │   ├── core/           # Servicios (API, Carrito, Auth) y Guards

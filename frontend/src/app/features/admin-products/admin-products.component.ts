@@ -22,12 +22,22 @@ export class AdminProductsFeatureComponent implements OnInit {
 
   products: Product[] = [];
   categories: Category[] = [];
+  loading = false;
   showModal = false;
   isEditing = false;
   isSaving = false;
   isDragging = false;
   editingId = '';
   uploadError = '';
+
+  // Filtros de búsqueda
+  searchTerm = '';
+  selectedCategory = 'Todos';
+  selectedStatus = 'Todos';
+  selectedStock = 'Todos';
+  selectedPriceRange = 'Todos';
+  selectedCostRange = 'Todos';
+  sortBy = 'recent';
 
   formData = {
     name: '',
@@ -41,6 +51,8 @@ export class AdminProductsFeatureComponent implements OnInit {
 
   existingImages: string[] = [];
   selectedFiles: LocalFilePreview[] = [];
+  fieldErrors: { [key: string]: string } = {};
+  touchedFields: { [key: string]: boolean } = {};
 
   ngOnInit() {
     this.loadProducts();
@@ -48,11 +60,234 @@ export class AdminProductsFeatureComponent implements OnInit {
   }
 
   loadProducts() {
-    this.apiService.getProducts().subscribe((res) => (this.products = res));
+    this.loading = true;
+    this.apiService.getProducts().subscribe({
+      next: (res) => {
+        this.products = res;
+        this.loading = false;
+      },
+      error: () => {
+        this.loading = false;
+      }
+    });
+  }
+
+  get filteredProducts(): Product[] {
+    return this.products
+      .filter((p) => {
+        // Filtro por texto
+        if (this.searchTerm.trim()) {
+          const term = this.searchTerm.toLowerCase().trim();
+          const matchName = p.name?.toLowerCase().includes(term);
+          const matchSlug = p.slug?.toLowerCase().includes(term);
+          const matchDesc = p.description?.toLowerCase().includes(term);
+          const matchCat = p.category?.name?.toLowerCase().includes(term);
+          if (!matchName && !matchSlug && !matchDesc && !matchCat) return false;
+        }
+
+        // Filtro por categoría
+        if (this.selectedCategory !== 'Todos') {
+          if (p.categoryId !== this.selectedCategory) return false;
+        }
+
+        // Filtro por estado
+        if (this.selectedStatus !== 'Todos') {
+          if (this.selectedStatus === 'active' && !p.active) return false;
+          if (this.selectedStatus === 'inactive' && p.active) return false;
+        }
+
+        // Filtro por stock
+        if (this.selectedStock !== 'Todos') {
+          if (this.selectedStock === 'in_stock' && p.stock <= 5) return false;
+          if (this.selectedStock === 'low_stock' && (p.stock <= 0 || p.stock > 5)) return false;
+          if (this.selectedStock === 'out_of_stock' && p.stock > 0) return false;
+        }
+
+        // Filtro por precio redondeado / rango
+        if (this.selectedPriceRange !== 'Todos') {
+          const price = p.price;
+          switch (this.selectedPriceRange) {
+            case '50':
+              if (price > 50) return false;
+              break;
+            case '100':
+              if (price > 100) return false;
+              break;
+            case '200':
+              if (price > 200) return false;
+              break;
+            case '500':
+              if (price > 500) return false;
+              break;
+            case 'over500':
+              if (price <= 500) return false;
+              break;
+          }
+        }
+
+        // Filtro por costo redondeado / rango
+        if (this.selectedCostRange !== 'Todos') {
+          const cost = p.cost;
+          switch (this.selectedCostRange) {
+            case '30':
+              if (cost > 30) return false;
+              break;
+            case '50':
+              if (cost > 50) return false;
+              break;
+            case '100':
+              if (cost > 100) return false;
+              break;
+            case '200':
+              if (cost > 200) return false;
+              break;
+            case 'over200':
+              if (cost <= 200) return false;
+              break;
+          }
+        }
+
+        return true;
+      })
+      .sort((a, b) => {
+        switch (this.sortBy) {
+          case 'price_asc':
+            return a.price - b.price;
+          case 'price_desc':
+            return b.price - a.price;
+          case 'cost_asc':
+            return a.cost - b.cost;
+          case 'cost_desc':
+            return b.cost - a.cost;
+          case 'stock_desc':
+            return b.stock - a.stock;
+          case 'name_asc':
+            return a.name.localeCompare(b.name);
+          case 'recent':
+          default:
+            return (new Date(b.createdAt || 0).getTime()) - (new Date(a.createdAt || 0).getTime());
+        }
+      });
+  }
+
+  get activeProductsCount(): number {
+    return this.products.filter(p => p.active && p.stock > 0).length;
+  }
+
+  get criticalStockCount(): number {
+    return this.products.filter(p => p.stock <= 5).length;
+  }
+
+  clearFilters() {
+    this.searchTerm = '';
+    this.selectedCategory = 'Todos';
+    this.selectedStatus = 'Todos';
+    this.selectedStock = 'Todos';
+    this.selectedPriceRange = 'Todos';
+    this.selectedCostRange = 'Todos';
+    this.sortBy = 'recent';
+  }
+
+  clearErrors() {
+    this.fieldErrors = {};
+    this.touchedFields = {};
+  }
+
+  onFieldBlur(field: string) {
+    this.touchedFields[field] = true;
+    this.validateField(field);
+  }
+
+  onFieldInput(field: string) {
+    if (this.touchedFields[field]) {
+      this.validateField(field);
+    }
+  }
+
+  validateField(field: string): boolean {
+    switch (field) {
+      case 'name':
+        if (!this.formData.name || this.formData.name.trim().length < 3) {
+          this.fieldErrors['name'] = 'El nombre es obligatorio y debe tener al menos 3 caracteres.';
+          return false;
+        }
+        delete this.fieldErrors['name'];
+        return true;
+
+      case 'categoryId':
+        if (!this.formData.categoryId || this.formData.categoryId.trim() === '') {
+          this.fieldErrors['categoryId'] = 'Debes seleccionar una categoría para el producto.';
+          return false;
+        }
+        delete this.fieldErrors['categoryId'];
+        return true;
+
+      case 'price':
+        if (
+          this.formData.price === null ||
+          this.formData.price === undefined ||
+          (this.formData.price as any) === '' ||
+          isNaN(Number(this.formData.price)) ||
+          Number(this.formData.price) <= 0
+        ) {
+          this.fieldErrors['price'] = 'El precio debe ser un número válido mayor a 0 (ej: 45.50).';
+          return false;
+        }
+        delete this.fieldErrors['price'];
+        return true;
+
+      case 'cost':
+        if (
+          this.formData.cost === null ||
+          this.formData.cost === undefined ||
+          (this.formData.cost as any) === '' ||
+          isNaN(Number(this.formData.cost)) ||
+          Number(this.formData.cost) < 0
+        ) {
+          this.fieldErrors['cost'] = 'El costo debe ser un número mayor o igual a 0 (ej: 30.00).';
+          return false;
+        }
+        delete this.fieldErrors['cost'];
+        return true;
+
+      case 'stockInput':
+        if (
+          this.formData.stockInput === null ||
+          this.formData.stockInput === undefined ||
+          (this.formData.stockInput as any) === '' ||
+          isNaN(Number(this.formData.stockInput)) ||
+          !Number.isInteger(Number(this.formData.stockInput))
+        ) {
+          this.fieldErrors['stockInput'] = 'El stock debe ser un número entero válido (ej: 10).';
+          return false;
+        }
+        if (!this.isEditing && Number(this.formData.stockInput) < 0) {
+          this.fieldErrors['stockInput'] = 'El stock inicial no puede ser un número negativo.';
+          return false;
+        }
+        delete this.fieldErrors['stockInput'];
+        return true;
+
+      default:
+        return true;
+    }
+  }
+
+  validateAll(): boolean {
+    const fields = ['name', 'categoryId', 'price', 'cost', 'stockInput'];
+    let isValid = true;
+    for (const field of fields) {
+      this.touchedFields[field] = true;
+      if (!this.validateField(field)) {
+        isValid = false;
+      }
+    }
+    return isValid;
   }
 
   openModal() {
     this.cleanPreviews();
+    this.clearErrors();
     this.isEditing = false;
     this.editingId = '';
     this.uploadError = '';
@@ -72,6 +307,7 @@ export class AdminProductsFeatureComponent implements OnInit {
 
   editProduct(p: Product) {
     this.cleanPreviews();
+    this.clearErrors();
     this.isEditing = true;
     this.editingId = p.id;
     this.uploadError = '';
@@ -99,6 +335,7 @@ export class AdminProductsFeatureComponent implements OnInit {
 
   closeModal() {
     this.cleanPreviews();
+    this.clearErrors();
     this.showModal = false;
     this.isSaving = false;
   }
@@ -187,8 +424,12 @@ export class AdminProductsFeatureComponent implements OnInit {
   }
 
   saveProduct() {
-    this.isSaving = true;
     this.uploadError = '';
+    if (!this.validateAll()) {
+      return;
+    }
+
+    this.isSaving = true;
 
     const payload = new FormData();
     payload.append('name', this.formData.name);

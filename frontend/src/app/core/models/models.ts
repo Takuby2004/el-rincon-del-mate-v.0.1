@@ -43,6 +43,8 @@ export interface Product {
   images?: string[];
   qrCodeUrl?: string;
   active: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface OrderItem {

@@ -51,6 +51,26 @@ export class ClientService {
   }
 
   public static async deleteClient(id: string) {
+    const client = await prisma.client.findUnique({
+      where: { id },
+      include: {
+        _count: {
+          select: { orders: true }
+        }
+      }
+    });
+
+    if (!client) {
+      throw new Error('El cliente no existe o ya fue eliminado.');
+    }
+
+    if (client._count.orders > 0) {
+      throw new Error(
+        `No es posible eliminar a "${client.name}" porque cuenta con ${client._count.orders} pedido(s) registrados en el historial de ventas. Para conservar la trazabilidad contable, el registro debe mantenerse.`
+      );
+    }
+
     return prisma.client.delete({ where: { id } });
   }
 }
+
