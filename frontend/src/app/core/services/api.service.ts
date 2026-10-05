@@ -101,6 +101,10 @@ export class ApiService {
     return this.http.patch<Order>(`${this.apiUrl}/orders/${orderId}/status`, { status });
   }
 
+  deleteOrder(orderId: string): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/orders/${orderId}`);
+  }
+
   approvePayment(paymentId: string, notifyEmail: boolean = true): Observable<any> {
     return this.http.patch(`${this.apiUrl}/admin/payments/${paymentId}/approve`, { notifyEmail });
   }

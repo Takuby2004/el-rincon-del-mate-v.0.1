@@ -230,10 +230,25 @@
 
               <!-- Actions -->
               <td class="p-4 text-right">
-                <button (click)="openOrderModal(order)"
-                  class="px-3 py-1.5 bg-mate-700 hover:bg-mate-800 text-white font-bold text-2xs rounded-lg shadow transition-all">
-                  Verificar / Detalle
-                </button>
+                <div class="flex items-center justify-end gap-1.5">
+                  <button (click)="openOrderModal(order)"
+                    class="px-3 py-1.5 bg-mate-700 hover:bg-mate-800 text-white font-bold text-2xs rounded-lg shadow transition-all">
+                    Verificar / Detalle
+                  </button>
+
+                  <button 
+                    (click)="deleteOrder(order)" 
+                    [disabled]="deletingId === order.id"
+                    title="Eliminar Pedido"
+                    class="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 transition-colors shadow-2xs disabled:opacity-50 active:scale-95"
+                  >
+                    @if (deletingId === order.id) {
+                      <i class="fa-solid fa-spinner fa-spin text-2xs"></i>
+                    } @else {
+                      <i class="fa-solid fa-trash-can text-2xs"></i>
+                    }
+                  </button>
+                </div>
               </td>
             </tr>
             }
@@ -483,11 +498,23 @@
       </div>
 
       <!-- Modal Footer -->
-      <div class="pt-2 border-t border-wood-100 flex justify-between items-center">
-        <button (click)="downloadPdf(selectedOrder.id)"
-          class="text-xs font-bold text-mate-700 hover:text-mate-900 flex items-center gap-1.5">
-          <i class="fa-solid fa-file-pdf text-red-600"></i> Descargar Pedido en PDF
-        </button>
+      <div class="pt-2 border-t border-wood-100 flex flex-wrap justify-between items-center gap-3">
+        <div class="flex items-center gap-3">
+          <button (click)="downloadPdf(selectedOrder.id)"
+            class="text-xs font-bold text-mate-700 hover:text-mate-900 flex items-center gap-1.5 transition-colors">
+            <i class="fa-solid fa-file-pdf text-red-600"></i> Descargar Pedido en PDF
+          </button>
+          <span class="text-wood-300">|</span>
+          <button (click)="deleteOrder(selectedOrder, true)" [disabled]="deletingId === selectedOrder.id"
+            class="text-xs font-bold text-red-600 hover:text-red-700 flex items-center gap-1.5 transition-colors disabled:opacity-50 active:scale-95">
+            @if (deletingId === selectedOrder.id) {
+              <i class="fa-solid fa-spinner fa-spin text-xs"></i>
+            } @else {
+              <i class="fa-solid fa-trash-can text-xs"></i>
+            }
+            <span>Eliminar Pedido</span>
+          </button>
+        </div>
         <button (click)="closeOrderModal()"
           class="px-4 py-2 bg-wood-200 hover:bg-wood-300 text-wood-800 text-xs font-bold rounded-xl transition-colors">
           Cerrar

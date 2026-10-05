@@ -55,4 +55,13 @@ export class OrderController {
       res.status(400).json({ error: err.message });
     }
   }
+
+  public static async delete(req: AuthRequest, res: Response) {
+    try {
+      const result = await OrderService.deleteOrder(req.params.id, req.user?.id);
+      res.json(result);
+    } catch (err: any) {
+      res.status(400).json({ error: err.message });
+    }
+  }
 }

@@ -324,4 +324,37 @@ export class AdminOrdersFeatureComponent implements OnInit {
       a.click();
     });
   }
+
+  deletingId: string | null = null;
+
+  async deleteOrder(order: Order, fromModal: boolean = false) {
+    const clientName = order.client?.name || 'Cliente';
+    const confirmed = await this.dialogService.confirm({
+      title: '¿Eliminar Pedido?',
+      message: `¿Estás seguro de que deseas eliminar permanentemente el pedido #${order.orderNumber} de ${clientName}?\nEsta acción restaurará el stock de los productos reservados y no se puede deshacer.`,
+      confirmText: 'Sí, eliminar pedido',
+      cancelText: 'Cancelar',
+      type: 'danger',
+      icon: 'fa-solid fa-trash-can'
+    });
+
+    if (!confirmed) return;
+
+    this.deletingId = order.id;
+
+    this.apiService.deleteOrder(order.id).subscribe({
+      next: (res) => {
+        this.deletingId = null;
+        if (fromModal) {
+          this.closeOrderModal();
+        }
+        this.showNotification(res?.message || `El pedido #${order.orderNumber} fue eliminado exitosamente.`, 'success');
+        this.orders = this.orders.filter((o) => o.id !== order.id);
+      },
+      error: (err) => {
+        this.deletingId = null;
+        this.showNotification(err.error?.error || 'No se pudo eliminar el pedido. Intenta nuevamente.', 'error');
+      }
+    });
+  }
 }

@@ -250,4 +250,54 @@ export class OrderService {
       data: { status: status as any }
     });
   }
+
+  public static async deleteOrder(orderId: string, userId?: string) {
+    const order = await prisma.order.findUnique({
+      where: { id: orderId },
+      include: {
+        items: true,
+        payment: {
+          include: { paymentProof: true }
+        }
+      }
+    });
+
+    if (!order) throw new Error('Pedido no encontrado');
+
+    const shouldRestoreStock = order.status !== 'PAYMENT_REJECTED' && order.status !== 'CANCELLED';
+
+    await prisma.$transaction(async (tx) => {
+      // 1. Restaurar stock de los productos si el pedido estaba activo
+      if (shouldRestoreStock) {
+        for (const item of order.items) {
+          await tx.product.update({
+            where: { id: item.productId },
+            data: { stock: { increment: item.quantity } }
+          });
+
+          await tx.inventoryMovement.create({
+            data: {
+              productId: item.productId,
+              userId: userId || null,
+              type: 'ORDER_CANCELLED',
+              quantity: item.quantity,
+              reason: `Restauración de stock por eliminación de pedido #${order.orderNumber}`
+            }
+          });
+        }
+      }
+
+      // 2. Eliminar el pedido de la base de datos (eliminación en cascada de ítems y pagos)
+      await tx.order.delete({
+        where: { id: orderId }
+      });
+    });
+
+    // 3. Eliminar archivo físico del comprobante si existe
+    if (order.payment?.paymentProof?.imageUrl) {
+      await FileStorageService.deleteFile(order.payment.paymentProof.imageUrl);
+    }
+
+    return { message: `Pedido #${order.orderNumber} eliminado exitosamente.` };
+  }
 }

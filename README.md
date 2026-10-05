@@ -55,6 +55,7 @@
 | **CU08** | Control de Stock | Reserva y decremento automático del inventario al momento de crear el pedido. |
 | **CU09** | Reversión de Stock | Reincorporación automática de stock si el pago es rechazado o el pedido se cancela. |
 | **CU10** | Verificación de Pagos & Pedidos | Panel administrativo con métricas rápidas (KPIs), barra de búsqueda reactiva por cliente/número/teléfono, filtros por estado de pago/pedido, botón de limpieza rápida, modal avanzado de inspección de comprobantes (zoom, rotación, descarga) y aprobación/rechazo. |
+| **CU10.1** | Eliminación de Pedidos | Eliminación permanente de pedidos desde la tabla o el modal de detalle con confirmación visual de seguridad, restauración automática e inteligente de stock reservado y eliminación física de comprobantes. |
 | **CU11** | Rechazo con Motivo | Rechazo de pagos no válidos con registro obligatorio de justificación. |
 | **CU12** | Gestión de QR Dueño | Interfaz administrativa para subir y activar una nueva imagen de QR bancario. |
 | **CU13** | CRUD de Catálogo | Gestión de productos (creación, edición y eliminación permanente con protección de integridad referencial de pedidos), búsqueda reactiva, filtros multidimensionales (categoría, estado, stock, precio y costo), KPIs y control de stock. |
@@ -159,6 +160,7 @@
 - `GET /api/orders`: Listado de pedidos con filtros por estado (requiere auth).
 - `GET /api/orders/:id`: Detalle completo de pedido (requiere auth).
 - `PATCH /api/orders/:id/status`: Actualización del estado de envío (requiere auth).
+- `DELETE /api/orders/:id`: Eliminación física de pedido con reposición automática de stock (requiere auth).
 - `GET /api/orders/:id/pdf`: Descarga del comprobante de pedido en formato PDF.
 - `PATCH /api/payments/:id/approve`: Aprobación de pago (requiere auth).
 - `PATCH /api/payments/:id/reject`: Rechazo de pago con motivo y restauración de inventario (requiere auth).

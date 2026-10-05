@@ -14,5 +14,6 @@ router.get('/:id', OrderController.getById);
 // Admin order management
 router.get('/', authenticateToken, requireAdmin, OrderController.getAll);
 router.patch('/:id/status', authenticateToken, requireAdmin, OrderController.updateStatus);
+router.delete('/:id', authenticateToken, requireAdmin, OrderController.delete);
 
 export default router;
