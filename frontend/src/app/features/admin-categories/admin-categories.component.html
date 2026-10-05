@@ -11,53 +11,97 @@
     </button>
   </div>
 
+  <!-- Barra de Búsqueda -->
+  <div class="bg-white p-4 rounded-3xl border border-wood-200 shadow-sm">
+    <div class="relative flex items-center">
+      <i class="fa-solid fa-magnifying-glass absolute left-3.5 text-wood-400 text-xs"></i>
+      <input 
+        type="text" 
+        [(ngModel)]="searchTerm" 
+        placeholder="Buscar categoría por nombre, slug o descripción..." 
+        class="w-full pl-9 pr-10 py-2.5 rounded-xl border border-wood-300 focus:outline-none focus:ring-2 focus:ring-mate-600 text-xs font-medium"
+      >
+      @if (searchTerm) {
+        <button 
+          (click)="clearSearch()" 
+          title="Limpiar búsqueda"
+          class="absolute right-2.5 p-1.5 rounded-lg text-wood-400 hover:text-wood-700 hover:bg-wood-100 text-xs transition-colors"
+        >
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      }
+    </div>
+  </div>
+
   <!-- Categories Table -->
   <div class="bg-white rounded-3xl border border-wood-200 shadow-sm overflow-hidden">
-    <table class="w-full text-left border-collapse">
-      <thead>
-        <tr class="bg-wood-100/70 border-b border-wood-200 text-2xs font-bold text-wood-700 uppercase tracking-wider">
-          <th class="p-4">Foto</th>
-          <th class="p-4">Categoría</th>
-          <th class="p-4">Slug</th>
-          <th class="p-4">Descripción</th>
-          <th class="p-4">Productos</th>
-          <th class="p-4 text-right">Acciones</th>
-        </tr>
-      </thead>
-      <tbody class="divide-y divide-wood-100 text-xs">
-        @for (cat of paginatedCategories; track cat.id) {
-        <tr class="hover:bg-wood-50/50 transition-colors">
-          <td class="p-4">
-            <div class="w-12 h-12 rounded-xl overflow-hidden border border-wood-200 bg-wood-100 shrink-0 shadow-2xs">
-              <img [src]="cat.imageUrl | assetUrl" [alt]="cat.name" appImgFallback class="w-full h-full object-cover">
-            </div>
-          </td>
-          <td class="p-4 font-bold text-mate-900">{{ cat.name }}</td>
-          <td class="p-4 font-mono text-wood-500 text-2xs">{{ cat.slug }}</td>
-          <td class="p-4 text-wood-600 max-w-xs truncate">{{ cat.description || 'Sin descripción' }}</td>
-          <td class="p-4 font-semibold text-mate-700">{{ cat._count?.products || 0 }} productos</td>
-          <td class="p-4 text-right space-x-2">
-            <button (click)="editCategory(cat)" class="p-2 text-mate-700 hover:bg-mate-50 rounded-lg transition-colors"
-              title="Editar Categoría">
-              <i class="fa-solid fa-pen"></i>
-            </button>
-            <button (click)="deleteCategory(cat.id)"
-              class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Eliminar Categoría">
-              <i class="fa-solid fa-trash-can"></i>
-            </button>
-          </td>
-        </tr>
-        }
-      </tbody>
-    </table>
+    @if (filteredCategories.length === 0) {
+      <!-- Empty State -->
+      <div class="p-12 text-center text-wood-500 space-y-4">
+        <div class="w-16 h-16 rounded-full bg-wood-100 text-wood-400 mx-auto flex items-center justify-center text-2xl">
+          <i class="fa-solid fa-folder-open"></i>
+        </div>
+        <div>
+          <h3 class="text-sm font-bold text-mate-900">No se encontraron categorías</h3>
+          <p class="text-xs text-wood-500 mt-0.5">Ninguna categoría coincide con el término de búsqueda ingresado.</p>
+        </div>
+        <button 
+          (click)="clearSearch()" 
+          class="text-xs font-extrabold text-mate-700 bg-wood-100 hover:bg-wood-200 px-4 py-2 rounded-xl transition-colors inline-flex items-center gap-1.5"
+        >
+          <i class="fa-solid fa-arrows-rotate"></i>
+          <span>Restablecer Búsqueda</span>
+        </button>
+      </div>
+    } @else {
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-wood-100/70 border-b border-wood-200 text-2xs font-bold text-wood-700 uppercase tracking-wider">
+              <th class="p-4">Foto</th>
+              <th class="p-4">Categoría</th>
+              <th class="p-4">Slug</th>
+              <th class="p-4">Descripción</th>
+              <th class="p-4">Productos</th>
+              <th class="p-4 text-right">Acciones</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-wood-100 text-xs">
+            @for (cat of paginatedCategories; track cat.id) {
+            <tr class="hover:bg-wood-50/50 transition-colors">
+              <td class="p-4">
+                <div class="w-12 h-12 rounded-xl overflow-hidden border border-wood-200 bg-wood-100 shrink-0 shadow-2xs">
+                  <img [src]="cat.imageUrl | assetUrl" [alt]="cat.name" appImgFallback class="w-full h-full object-cover">
+                </div>
+              </td>
+              <td class="p-4 font-bold text-mate-900">{{ cat.name }}</td>
+              <td class="p-4 font-mono text-wood-500 text-2xs">{{ cat.slug }}</td>
+              <td class="p-4 text-wood-600 max-w-xs truncate">{{ cat.description || 'Sin descripción' }}</td>
+              <td class="p-4 font-semibold text-mate-700">{{ cat._count?.products || 0 }} productos</td>
+              <td class="p-4 text-right space-x-2">
+                <button (click)="editCategory(cat)" class="p-2 text-mate-700 hover:bg-mate-50 rounded-lg transition-colors"
+                  title="Editar Categoría">
+                  <i class="fa-solid fa-pen"></i>
+                </button>
+                <button (click)="deleteCategory(cat.id)"
+                  class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Eliminar Categoría">
+                  <i class="fa-solid fa-trash-can"></i>
+                </button>
+              </td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
 
-    <!-- Paginador de Categorías (aparece cuando totalItems > 5) -->
-    <app-pagination 
-      [totalItems]="categories.length" 
-      [pageSize]="pageSize" 
-      [currentPage]="currentPage" 
-      (pageChange)="onPageChange($event)">
-    </app-pagination>
+      <!-- Paginador de Categorías (aparece cuando totalItems > 5) -->
+      <app-pagination 
+        [totalItems]="filteredCategories.length" 
+        [pageSize]="pageSize" 
+        [currentPage]="currentPage" 
+        (pageChange)="onPageChange($event)">
+      </app-pagination>
+    }
   </div>
 
   <!-- Modal -->

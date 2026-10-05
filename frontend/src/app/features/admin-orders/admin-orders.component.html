@@ -1,10 +1,18 @@
 <div class="space-y-6 animate-fade-in">
-  <div class="flex justify-between items-center">
+  <!-- Cabecera -->
+  <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
     <div>
-      <h1 class="text-2xl font-bold text-mate-900">Gestión de Pedidos y Verificación de Pagos</h1>
-      <p class="text-xs text-wood-600">Revisa comprobantes, datos del comprador, productos y notifica el estado por
-        correo electrónico</p>
+      <h1 class="text-2xl font-black text-mate-900">Gestión de Pedidos y Verificación de Pagos</h1>
+      <p class="text-xs text-wood-600">Revisa comprobantes, datos del comprador, productos y notifica el estado por correo electrónico</p>
     </div>
+
+    <button 
+      (click)="loadOrders()" 
+      class="text-xs font-bold text-wood-700 bg-white hover:bg-wood-50 px-3.5 py-2 rounded-xl border border-wood-200 shadow-xs flex items-center gap-2 transition-all active:scale-95"
+    >
+      <i class="fa-solid fa-rotate text-gold-600" [class.fa-spin]="loading"></i>
+      <span>Actualizar</span>
+    </button>
   </div>
 
   <!-- Feedback Toast / Alert -->
@@ -23,136 +31,224 @@
   </div>
   }
 
-  <!-- Filters Row -->
-  <div
-    class="bg-white p-4 rounded-2xl border border-wood-200 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
-    <div class="flex flex-wrap gap-4 w-full md:w-auto">
-      <!-- Filter Payment Status -->
-      <div>
-        <label class="block text-2xs font-bold text-wood-600 uppercase mb-1">Estado de Pago</label>
-        <select [(ngModel)]="filterPaymentStatus" (ngModelChange)="loadOrders()"
-          class="px-3 py-2 rounded-xl border border-wood-300 text-xs bg-white focus:ring-2 focus:ring-mate-700 outline-none">
-          <option value="">Todos los Pagos</option>
-          <option value="PENDING_VERIFICATION">Pendiente</option>
-          <option value="APPROVED">Aprobado</option>
-          <option value="REJECTED">Rechazado</option>
-        </select>
+  <!-- Tarjetas de Métricas Rápidas -->
+  <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+    <div class="bg-white p-4 rounded-2xl border border-wood-200 shadow-xs flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-gold-50 text-gold-600 flex items-center justify-center text-lg shrink-0">
+        <i class="fa-solid fa-receipt"></i>
       </div>
-
-      <!-- Filter Order Status -->
       <div>
-        <label class="block text-2xs font-bold text-wood-600 uppercase mb-1">Estado del Pedido</label>
-        <select [(ngModel)]="filterOrderStatus" (ngModelChange)="loadOrders()"
-          class="px-3 py-2 rounded-xl border border-wood-300 text-xs bg-white focus:ring-2 focus:ring-mate-700 outline-none">
-          <option value="">Todos los Estados</option>
-          <option value="PENDING_PAYMENT_VERIFICATION">Pendiente de verificación</option>
-          <option value="PAID">Pagado</option>
-          <option value="PACKING">Preparando</option>
-          <option value="SHIPPED">Enviado</option>
-          <option value="DELIVERED">Entregado</option>
-          <option value="PAYMENT_REJECTED">Pago rechazado</option>
-          <option value="CANCELLED">Cancelado</option>
-        </select>
+        <span class="text-2xs font-extrabold uppercase tracking-wider text-wood-500 block">Total Pedidos</span>
+        <span class="text-xl font-black text-mate-900">{{ orders.length }}</span>
       </div>
     </div>
 
-    <!-- Search Input -->
-    <div class="w-full md:w-64">
-      <label class="block text-2xs font-bold text-wood-600 uppercase mb-1">Buscar</label>
-      <input type="text" [(ngModel)]="searchQuery" (ngModelChange)="loadOrders()" placeholder="Número o cliente..."
-        class="w-full px-3 py-2 rounded-xl border border-wood-300 text-xs focus:ring-2 focus:ring-mate-700 outline-none">
+    <div class="bg-white p-4 rounded-2xl border border-wood-200 shadow-xs flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-lg shrink-0">
+        <i class="fa-solid fa-clock"></i>
+      </div>
+      <div>
+        <span class="text-2xs font-extrabold uppercase tracking-wider text-wood-500 block">Por Verificar</span>
+        <span class="text-xl font-black text-amber-800">{{ pendingVerificationCount }}</span>
+      </div>
+    </div>
+
+    <div class="bg-white p-4 rounded-2xl border border-wood-200 shadow-xs flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg shrink-0">
+        <i class="fa-solid fa-circle-check"></i>
+      </div>
+      <div>
+        <span class="text-2xs font-extrabold uppercase tracking-wider text-wood-500 block">Pagados / Listos</span>
+        <span class="text-xl font-black text-emerald-800">{{ paidOrdersCount }}</span>
+      </div>
+    </div>
+
+    <div class="bg-white p-4 rounded-2xl border border-wood-200 shadow-xs flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-lg shrink-0">
+        <i class="fa-solid fa-money-bill-trend-up"></i>
+      </div>
+      <div>
+        <span class="text-2xs font-extrabold uppercase tracking-wider text-wood-500 block">Ingresos Pagados</span>
+        <span class="text-xl font-black text-mate-900">Bs. {{ totalRevenue.toFixed(2) }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Barra de Búsqueda y Filtros Avanzados -->
+  <div class="bg-white p-5 rounded-3xl border border-wood-200 shadow-sm space-y-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-12 gap-3">
+      <!-- 1. Barra de Búsqueda Principal -->
+      <div class="sm:col-span-2 md:col-span-5 relative">
+        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-wood-400 text-xs"></i>
+        <input 
+          type="text" 
+          [(ngModel)]="searchQuery" 
+          (ngModelChange)="loadOrders()" 
+          placeholder="Buscar por número, cliente, email, teléfono..." 
+          class="w-full pl-9 pr-4 py-2.5 rounded-xl border border-wood-300 focus:outline-none focus:ring-2 focus:ring-mate-600 text-xs font-medium"
+        >
+      </div>
+
+      <!-- 2. Filtro por Estado de Pago -->
+      <div class="md:col-span-3">
+        <select 
+          [(ngModel)]="filterPaymentStatus" 
+          (ngModelChange)="loadOrders()" 
+          class="w-full px-3 py-2.5 rounded-xl border border-wood-300 focus:outline-none focus:ring-2 focus:ring-mate-600 text-xs bg-white font-medium cursor-pointer"
+        >
+          <option value="">💳 Todos los Pagos</option>
+          <option value="PENDING_VERIFICATION">⏳ Pago Pendiente</option>
+          <option value="APPROVED">✅ Pago Aprobado</option>
+          <option value="REJECTED">❌ Pago Rechazado</option>
+        </select>
+      </div>
+
+      <!-- 3. Filtro por Estado del Pedido -->
+      <div class="md:col-span-4 flex items-center gap-2">
+        <select 
+          [(ngModel)]="filterOrderStatus" 
+          (ngModelChange)="loadOrders()" 
+          class="w-full px-3 py-2.5 rounded-xl border border-wood-300 focus:outline-none focus:ring-2 focus:ring-mate-600 text-xs bg-white font-medium cursor-pointer"
+        >
+          <option value="">📦 Todos los Estados</option>
+          <option value="PENDING_PAYMENT_VERIFICATION">⏳ Pendiente verificación</option>
+          <option value="PAID">💵 Pagado</option>
+          <option value="PACKING">📦 Preparando pedido</option>
+          <option value="SHIPPED">🚚 Enviado</option>
+          <option value="DELIVERED">🏡 Entregado</option>
+          <option value="PAYMENT_REJECTED">🚫 Pago rechazado</option>
+          <option value="CANCELLED">✖️ Cancelado</option>
+        </select>
+
+        @if (searchQuery || filterPaymentStatus || filterOrderStatus) {
+          <button 
+            (click)="clearFilters()" 
+            title="Limpiar todos los filtros"
+            class="p-2.5 rounded-xl bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 text-xs transition-colors shrink-0"
+          >
+            <i class="fa-solid fa-filter-circle-xmark"></i>
+          </button>
+        }
+      </div>
     </div>
   </div>
 
   <!-- Orders Table -->
   <div class="bg-white rounded-3xl border border-wood-200 shadow-sm overflow-hidden">
-    <table class="w-full text-left border-collapse">
-      <thead>
-        <tr class="bg-wood-100/70 border-b border-wood-200 text-2xs font-bold text-wood-700 uppercase tracking-wider">
-          <th class="p-4">Número</th>
-          <th class="p-4">Cliente</th>
-          <th class="p-4">Fecha</th>
-          <th class="p-4">Total (Bs.)</th>
-          <th class="p-4">Estado Pago</th>
-          <th class="p-4">Estado Pedido</th>
-          <th class="p-4">Comprobante</th>
-          <th class="p-4 text-right">Acciones</th>
-        </tr>
-      </thead>
-      <tbody class="divide-y divide-wood-100 text-xs">
-        @for (order of paginatedOrders; track order.id) {
-        <tr class="hover:bg-wood-50/50 transition-colors">
-          <td class="p-4 font-bold text-mate-900 font-mono">{{ order.orderNumber }}</td>
-          <td class="p-4">
-            <div class="font-bold text-mate-900">{{ order.client?.name || 'Cliente' }}</div>
-            <div class="text-2xs text-wood-500">{{ order.client?.email }}</div>
-            <div class="text-2xs text-wood-400 font-mono">{{ order.phone }}</div>
-          </td>
-          <td class="p-4 text-wood-600">{{ order.createdAt | date: 'short' }}</td>
-          <td class="p-4 font-extrabold text-mate-900">Bs. {{ order.total.toFixed(2) }}</td>
+    @if (loading) {
+      <div class="p-12 text-center text-wood-500 space-y-3">
+        <i class="fa-solid fa-spinner fa-spin text-3xl text-gold-600"></i>
+        <p class="text-xs font-bold">Cargando directorio de pedidos...</p>
+      </div>
+    } @else if (orders.length === 0) {
+      <!-- Empty State -->
+      <div class="p-12 text-center text-wood-500 space-y-4">
+        <div class="w-16 h-16 rounded-full bg-wood-100 text-wood-400 mx-auto flex items-center justify-center text-2xl">
+          <i class="fa-solid fa-receipt"></i>
+        </div>
+        <div>
+          <h3 class="text-sm font-bold text-mate-900">No se encontraron pedidos</h3>
+          <p class="text-xs text-wood-500 mt-0.5">Ningún pedido coincide con los filtros o término de búsqueda ingresado.</p>
+        </div>
+        <button 
+          (click)="clearFilters()" 
+          class="text-xs font-extrabold text-mate-700 bg-wood-100 hover:bg-wood-200 px-4 py-2 rounded-xl transition-colors inline-flex items-center gap-1.5"
+        >
+          <i class="fa-solid fa-arrows-rotate"></i>
+          <span>Restablecer Filtros</span>
+        </button>
+      </div>
+    } @else {
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-wood-100/70 border-b border-wood-200 text-2xs font-bold text-wood-700 uppercase tracking-wider">
+              <th class="p-4">Número</th>
+              <th class="p-4">Cliente</th>
+              <th class="p-4">Fecha</th>
+              <th class="p-4">Total (Bs.)</th>
+              <th class="p-4">Estado Pago</th>
+              <th class="p-4">Estado Pedido</th>
+              <th class="p-4">Comprobante</th>
+              <th class="p-4 text-right">Acciones</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-wood-100 text-xs">
+            @for (order of paginatedOrders; track order.id) {
+            <tr class="hover:bg-wood-50/50 transition-colors">
+              <td class="p-4 font-bold text-mate-900 font-mono">{{ order.orderNumber }}</td>
+              <td class="p-4">
+                <div class="font-bold text-mate-900">{{ order.client?.name || 'Cliente' }}</div>
+                <div class="text-2xs text-wood-500">{{ order.client?.email }}</div>
+                <div class="text-2xs text-wood-400 font-mono">{{ order.phone }}</div>
+              </td>
+              <td class="p-4 text-wood-600">{{ order.createdAt | date: 'short' }}</td>
+              <td class="p-4 font-extrabold text-mate-900">Bs. {{ order.total.toFixed(2) }}</td>
 
-          <!-- Payment Status Badge -->
-          <td class="p-4">
-            <span class="px-2.5 py-1 rounded-full font-bold text-2xs" [ngClass]="{
-                  'bg-amber-100 text-amber-800': order.paymentStatus === 'PENDING_VERIFICATION',
-                  'bg-emerald-100 text-emerald-800': order.paymentStatus === 'APPROVED',
-                  'bg-red-100 text-red-800': order.paymentStatus === 'REJECTED'
-                }">
-              {{ order.paymentStatus === 'PENDING_VERIFICATION' ? 'Pendiente' : (order.paymentStatus === 'APPROVED' ?
-              'Aprobado' : 'Rechazado') }}
-            </span>
-          </td>
+              <!-- Payment Status Badge -->
+              <td class="p-4">
+                <span class="px-2.5 py-1 rounded-full font-bold text-2xs" [ngClass]="{
+                      'bg-amber-100 text-amber-800': order.paymentStatus === 'PENDING_VERIFICATION',
+                      'bg-emerald-100 text-emerald-800': order.paymentStatus === 'APPROVED',
+                      'bg-red-100 text-red-800': order.paymentStatus === 'REJECTED'
+                    }">
+                  {{ order.paymentStatus === 'PENDING_VERIFICATION' ? 'Pendiente' : (order.paymentStatus === 'APPROVED' ?
+                  'Aprobado' : 'Rechazado') }}
+                </span>
+              </td>
 
-          <!-- Order Status Badge -->
-          <td class="p-4">
-            <span class="px-2 py-0.5 rounded text-2xs font-semibold" [ngClass]="{
-                  'bg-amber-50 text-amber-900': order.status === 'PENDING_PAYMENT_VERIFICATION',
-                  'bg-emerald-50 text-emerald-900': order.status === 'PAID',
-                  'bg-blue-50 text-blue-900': order.status === 'PACKING',
-                  'bg-indigo-50 text-indigo-900': order.status === 'SHIPPED',
-                  'bg-green-50 text-green-900': order.status === 'DELIVERED',
-                  'bg-red-50 text-red-900': order.status === 'PAYMENT_REJECTED'
-                }">
-              {{ getOrderStatusLabel(order.status) }}
-            </span>
-          </td>
+              <!-- Order Status Badge -->
+              <td class="p-4">
+                <span class="px-2 py-0.5 rounded text-2xs font-semibold" [ngClass]="{
+                      'bg-amber-50 text-amber-900': order.status === 'PENDING_PAYMENT_VERIFICATION',
+                      'bg-emerald-50 text-emerald-900': order.status === 'PAID',
+                      'bg-blue-50 text-blue-900': order.status === 'PACKING',
+                      'bg-indigo-50 text-indigo-900': order.status === 'SHIPPED',
+                      'bg-green-50 text-green-900': order.status === 'DELIVERED',
+                      'bg-red-50 text-red-900': order.status === 'PAYMENT_REJECTED'
+                    }">
+                  {{ getOrderStatusLabel(order.status) }}
+                </span>
+              </td>
 
-          <!-- Proof Thumbnail -->
-          <td class="p-4">
-            @if (order.payment?.paymentProof?.imageUrl) {
-            <button (click)="openProofModal(order)" title="Inspeccionar Comprobante"
-              class="group relative block w-10 h-10 rounded-lg overflow-hidden border border-wood-300 hover:ring-2 hover:ring-mate-700 transition-all">
-              <img [src]="order.payment?.paymentProof?.imageUrl | assetUrl" alt="Comprobante" appImgFallback
-                class="w-full h-full object-cover">
-              <div
-                class="absolute inset-0 bg-mate-900/40 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-xs transition-opacity">
-                <i class="fa-solid fa-magnifying-glass-plus"></i>
-              </div>
-            </button>
-            } @else {
-            <span class="text-2xs text-wood-400">Sin archivo</span>
+              <!-- Proof Thumbnail -->
+              <td class="p-4">
+                @if (order.payment?.paymentProof?.imageUrl) {
+                <button (click)="openProofModal(order)" title="Inspeccionar Comprobante"
+                  class="group relative block w-10 h-10 rounded-lg overflow-hidden border border-wood-300 hover:ring-2 hover:ring-mate-700 transition-all">
+                  <img [src]="order.payment?.paymentProof?.imageUrl | assetUrl" alt="Comprobante" appImgFallback
+                    class="w-full h-full object-cover">
+                  <div
+                    class="absolute inset-0 bg-mate-900/40 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-xs transition-opacity">
+                    <i class="fa-solid fa-magnifying-glass-plus"></i>
+                  </div>
+                </button>
+                } @else {
+                <span class="text-2xs text-wood-400">Sin archivo</span>
+                }
+              </td>
+
+              <!-- Actions -->
+              <td class="p-4 text-right">
+                <button (click)="openOrderModal(order)"
+                  class="px-3 py-1.5 bg-mate-700 hover:bg-mate-800 text-white font-bold text-2xs rounded-lg shadow transition-all">
+                  Verificar / Detalle
+                </button>
+              </td>
+            </tr>
             }
-          </td>
+          </tbody>
+        </table>
+      </div>
 
-          <!-- Actions -->
-          <td class="p-4 text-right">
-            <button (click)="openOrderModal(order)"
-              class="px-3 py-1.5 bg-mate-700 hover:bg-mate-800 text-white font-bold text-2xs rounded-lg shadow transition-all">
-              Verificar / Detalle
-            </button>
-          </td>
-        </tr>
-        }
-      </tbody>
-    </table>
-
-    <!-- Paginador de Pedidos (aparece cuando totalItems > 5) -->
-    <app-pagination 
-      [totalItems]="orders.length" 
-      [pageSize]="pageSize" 
-      [currentPage]="currentPage" 
-      (pageChange)="onPageChange($event)">
-    </app-pagination>
+      <!-- Paginador de Pedidos (aparece cuando totalItems > 5) -->
+      <app-pagination 
+        [totalItems]="orders.length" 
+        [pageSize]="pageSize" 
+        [currentPage]="currentPage" 
+        (pageChange)="onPageChange($event)">
+      </app-pagination>
+    }
   </div>
 
   <!-- Order Detail & Buyer Information Modal -->

@@ -24,6 +24,7 @@ export class AdminOrdersFeatureComponent implements OnInit {
   filterPaymentStatus = '';
   filterOrderStatus = '';
   searchQuery = '';
+  loading = false;
   showRejectModal = false;
   showEmailModal = false;
   rejectionReason = 'El monto del comprobante no coincide con el total del pedido.';
@@ -50,15 +51,44 @@ export class AdminOrdersFeatureComponent implements OnInit {
   }
 
   loadOrders() {
+    this.loading = true;
     this.apiService
       .getOrders({
         paymentStatus: this.filterPaymentStatus,
         status: this.filterOrderStatus,
         search: this.searchQuery
       })
-      .subscribe((res) => {
-        this.orders = res;
+      .subscribe({
+        next: (res) => {
+          this.orders = res;
+          this.loading = false;
+        },
+        error: () => {
+          this.loading = false;
+        }
       });
+  }
+
+  clearFilters() {
+    this.searchQuery = '';
+    this.filterPaymentStatus = '';
+    this.filterOrderStatus = '';
+    this.currentPage = 1;
+    this.loadOrders();
+  }
+
+  get pendingVerificationCount(): number {
+    return this.orders.filter((o) => o.paymentStatus === 'PENDING_VERIFICATION' || o.payment?.status === 'PENDING_VERIFICATION').length;
+  }
+
+  get paidOrdersCount(): number {
+    return this.orders.filter((o) => o.paymentStatus === 'APPROVED' || o.status === 'PAID').length;
+  }
+
+  get totalRevenue(): number {
+    return this.orders
+      .filter((o) => o.paymentStatus === 'APPROVED' || o.status === 'PAID')
+      .reduce((acc, o) => acc + o.total, 0);
   }
 
   get paginatedOrders(): Order[] {

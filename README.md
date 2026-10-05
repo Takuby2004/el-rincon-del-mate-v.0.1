@@ -54,10 +54,11 @@
 | **CU07** | Checkout (Paso 2) | Visualización del QR oficial del dueño y subida obligatoria del comprobante de pago. |
 | **CU08** | Control de Stock | Reserva y decremento automático del inventario al momento de crear el pedido. |
 | **CU09** | Reversión de Stock | Reincorporación automática de stock si el pago es rechazado o el pedido se cancela. |
-| **CU10** | Verificación de Pagos | Panel administrativo con modal avanzado e interactivo para inspeccionar comprobantes (zoom, rotación, descarga, datos del comprador) y aprobar el pago. |
+| **CU10** | Verificación de Pagos & Pedidos | Panel administrativo con métricas rápidas (KPIs), barra de búsqueda reactiva por cliente/número/teléfono, filtros por estado de pago/pedido, botón de limpieza rápida, modal avanzado de inspección de comprobantes (zoom, rotación, descarga) y aprobación/rechazo. |
 | **CU11** | Rechazo con Motivo | Rechazo de pagos no válidos con registro obligatorio de justificación. |
 | **CU12** | Gestión de QR Dueño | Interfaz administrativa para subir y activar una nueva imagen de QR bancario. |
 | **CU13** | CRUD de Catálogo | Gestión de productos (creación, edición y eliminación permanente con protección de integridad referencial de pedidos), búsqueda reactiva, filtros multidimensionales (categoría, estado, stock, precio y costo), KPIs y control de stock. |
+| **CU13.1** | Gestión de Categorías | Directorio y administración de categorías con subida de imágenes, búsqueda reactiva por nombre/slug/descripción y paginación inteligente. |
 | **CU14** | Dashboard & Métricas | Estadísticas en tiempo real de ingresos totales, pedidos pagados y stock crítico. |
 | **CU15** | Reportes Financieros | Reportes de ventas e inventario con cálculo de margen de ganancia. |
 | **CU16** | Exportación PDF | Generación y descarga de la orden de pedido en formato PDF. |

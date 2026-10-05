@@ -19,6 +19,7 @@ export class AdminCategoriesFeatureComponent implements OnInit {
   private dialogService = inject(DialogService);
 
   categories: Category[] = [];
+  searchTerm = '';
   showModal = false;
   isEditing = false;
   editingId = '';
@@ -42,14 +43,31 @@ export class AdminCategoriesFeatureComponent implements OnInit {
     this.apiService.getCategories().subscribe((res) => (this.categories = res));
   }
 
+  get filteredCategories(): Category[] {
+    if (!this.searchTerm.trim()) {
+      return this.categories;
+    }
+    const term = this.searchTerm.toLowerCase().trim();
+    return this.categories.filter((cat) =>
+      (cat.name && cat.name.toLowerCase().includes(term)) ||
+      (cat.slug && cat.slug.toLowerCase().includes(term)) ||
+      (cat.description && cat.description.toLowerCase().includes(term))
+    );
+  }
+
   get paginatedCategories(): Category[] {
-    const list = this.categories;
+    const list = this.filteredCategories;
     const maxPage = Math.max(1, Math.ceil(list.length / this.pageSize));
     if (this.currentPage > maxPage) {
       this.currentPage = maxPage;
     }
     const startIndex = (this.currentPage - 1) * this.pageSize;
     return list.slice(startIndex, startIndex + this.pageSize);
+  }
+
+  clearSearch() {
+    this.searchTerm = '';
+    this.currentPage = 1;
   }
 
   onPageChange(page: number) {
