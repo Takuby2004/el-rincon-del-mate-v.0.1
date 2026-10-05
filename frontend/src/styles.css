@@ -39,6 +39,21 @@
   50% { transform: scale(1.35); }
 }
 
+@keyframes dashboardPop {
+  0% {
+    opacity: 0;
+    transform: translateY(28px) scale(0.92);
+  }
+  65% {
+    opacity: 1;
+    transform: translateY(-4px) scale(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 /* Custom Utilities */
 .animate-float {
   animation: float 4s ease-in-out infinite;
@@ -50,6 +65,10 @@
 
 .animate-fade-in {
   animation: fadeIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-dashboard-pop {
+  animation: dashboardPop 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .animate-badge-pop {

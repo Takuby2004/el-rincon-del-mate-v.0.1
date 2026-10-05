@@ -148,9 +148,17 @@ export class ProductService {
   }
 
   public static async delete(id: string) {
-    return prisma.product.update({
-      where: { id },
-      data: { active: false }
+    const product = await prisma.product.findUnique({ where: { id } });
+    if (!product) throw new Error('Producto no encontrado');
+
+    const orderItemsCount = await prisma.orderItem.count({ where: { productId: id } });
+    if (orderItemsCount > 0) {
+      throw new Error(`No se puede eliminar el producto porque está asociado a ${orderItemsCount} pedido(s) registrado(s). Para ocultarlo del catálogo, desactívalo desde la edición.`);
+    }
+
+    return prisma.$transaction(async (tx) => {
+      await tx.inventoryMovement.deleteMany({ where: { productId: id } });
+      return tx.product.delete({ where: { id } });
     });
   }
 }

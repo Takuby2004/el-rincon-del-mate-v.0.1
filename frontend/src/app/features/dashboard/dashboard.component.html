@@ -1,4 +1,4 @@
-<div class="space-y-8">
+<div class="space-y-8 animate-fade-in">
   <!-- Title -->
   <div>
     <h1 class="text-2xl font-bold text-mate-900">Dashboard Administrativo</h1>
@@ -11,52 +11,52 @@
       <p class="text-sm">Cargando métricas...</p>
     </div>
   } @else if (stats) {
-    <!-- Metric Cards Grid -->
+    <!-- Metric Cards Grid (Staggered Pop Animation) -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
       <!-- Pending Verification Card -->
-      <div class="bg-white p-6 rounded-2xl border border-amber-200 shadow-sm flex items-center justify-between">
+      <div class="bg-white p-6 rounded-2xl border border-amber-200 shadow-sm flex items-center justify-between hover-lift animate-dashboard-pop stagger-1 transition-all">
         <div class="space-y-1">
           <div class="text-2xs font-bold text-amber-700 uppercase tracking-wider">Pendientes de Verificar</div>
           <div class="text-3xl font-extrabold text-amber-900">{{ stats.metrics.pendingVerificationCount }}</div>
           <div class="text-2xs text-amber-600">Comprobantes por revisar</div>
         </div>
-        <div class="w-12 h-12 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center text-xl">
+        <div class="w-12 h-12 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center text-xl shadow-2xs">
           <i class="fa-solid fa-clock-rotate-left"></i>
         </div>
       </div>
 
       <!-- Approved Payments Card -->
-      <div class="bg-white p-6 rounded-2xl border border-emerald-200 shadow-sm flex items-center justify-between">
+      <div class="bg-white p-6 rounded-2xl border border-emerald-200 shadow-sm flex items-center justify-between hover-lift animate-dashboard-pop stagger-2 transition-all">
         <div class="space-y-1">
           <div class="text-2xs font-bold text-emerald-700 uppercase tracking-wider">Pagos Aprobados</div>
           <div class="text-3xl font-extrabold text-emerald-900">{{ stats.metrics.approvedCount }}</div>
           <div class="text-2xs text-emerald-600">Ventas confirmadas</div>
         </div>
-        <div class="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-xl">
+        <div class="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-xl shadow-2xs">
           <i class="fa-solid fa-circle-check"></i>
         </div>
       </div>
 
       <!-- Rejected Payments Card -->
-      <div class="bg-white p-6 rounded-2xl border border-red-200 shadow-sm flex items-center justify-between">
+      <div class="bg-white p-6 rounded-2xl border border-red-200 shadow-sm flex items-center justify-between hover-lift animate-dashboard-pop stagger-3 transition-all">
         <div class="space-y-1">
           <div class="text-2xs font-bold text-red-700 uppercase tracking-wider">Pagos Rechazados</div>
           <div class="text-3xl font-extrabold text-red-900">{{ stats.metrics.rejectedCount }}</div>
           <div class="text-2xs text-red-600">Stock restaurado</div>
         </div>
-        <div class="w-12 h-12 rounded-xl bg-red-100 text-red-700 flex items-center justify-center text-xl">
+        <div class="w-12 h-12 rounded-xl bg-red-100 text-red-700 flex items-center justify-center text-xl shadow-2xs">
           <i class="fa-solid fa-circle-xmark"></i>
         </div>
       </div>
 
       <!-- Net Income Card -->
-      <div class="bg-white p-6 rounded-2xl border border-mate-200 shadow-sm flex items-center justify-between">
+      <div class="bg-white p-6 rounded-2xl border border-mate-200 shadow-sm flex items-center justify-between hover-lift animate-dashboard-pop stagger-4 transition-all">
         <div class="space-y-1">
           <div class="text-2xs font-bold text-mate-700 uppercase tracking-wider">Ingresos Netos (Aprobados)</div>
           <div class="text-3xl font-extrabold text-mate-900">Bs. {{ stats.metrics.totalRevenue.toFixed(2) }}</div>
           <div class="text-2xs text-mate-600">Solo pagos verificados</div>
         </div>
-        <div class="w-12 h-12 rounded-xl bg-mate-100 text-mate-800 flex items-center justify-center text-xl">
+        <div class="w-12 h-12 rounded-xl bg-mate-100 text-mate-800 flex items-center justify-center text-xl shadow-2xs">
           <i class="fa-solid fa-sack-dollar"></i>
         </div>
       </div>
@@ -65,9 +65,9 @@
     <!-- Section: Top Products & Demand Projection -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
       <!-- Top Selling Products -->
-      <div class="bg-white p-6 rounded-3xl border border-wood-200 shadow-sm space-y-4">
+      <div class="bg-white p-6 rounded-3xl border border-wood-200 shadow-sm space-y-4 hover-lift animate-fade-in stagger-5">
         <h2 class="text-base font-bold text-mate-900 border-b border-wood-100 pb-3 flex items-center gap-2">
-          <i class="fa-solid fa-trophy text-wood-500"></i>
+          <i class="fa-solid fa-trophy text-gold-600"></i>
           <span>Productos Más Vendidos</span>
         </h2>
 
@@ -76,7 +76,7 @@
         } @else {
           <div class="space-y-3">
             @for (prod of stats.topSellingProducts; track prod.name) {
-              <div class="flex justify-between items-center p-3 rounded-xl bg-wood-50 border border-wood-200">
+              <div class="flex justify-between items-center p-3 rounded-xl bg-wood-50 border border-wood-200 hover:bg-wood-100/70 transition-colors">
                 <div>
                   <div class="font-bold text-xs text-mate-900">{{ prod.name }}</div>
                   <div class="text-2xs text-wood-500">Unidades vendidas: {{ prod.quantity }}</div>
@@ -89,7 +89,7 @@
       </div>
 
       <!-- Demand Forecast Card (CU08) -->
-      <div class="bg-white p-6 rounded-3xl border border-wood-200 shadow-sm space-y-4">
+      <div class="bg-white p-6 rounded-3xl border border-wood-200 shadow-sm space-y-4 hover-lift animate-fade-in stagger-6">
         <h2 class="text-base font-bold text-mate-900 border-b border-wood-100 pb-3 flex items-center gap-2">
           <i class="fa-solid fa-chart-line text-mate-600"></i>
           <span>Pronóstico Estadístico de Demanda</span>

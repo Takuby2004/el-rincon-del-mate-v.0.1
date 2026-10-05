@@ -1,19 +1,23 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
+import { DialogService } from '../../core/services/dialog.service';
 import { Order } from '../../core/models/models';
 import { AssetUrlPipe } from '../../shared/pipes/asset-url.pipe';
 import { ImgFallbackDirective } from '../../shared/directives/img-fallback.directive';
+import { PaginationComponent } from '../../shared/components/pagination/pagination.component';
+import { environment } from '../../../environments/environment';
 
 @Component({
     selector: 'app-admin-orders',
-    imports: [CommonModule, FormsModule, AssetUrlPipe, ImgFallbackDirective],
+    imports: [CommonModule, FormsModule, AssetUrlPipe, ImgFallbackDirective, PaginationComponent],
     templateUrl: './admin-orders.component.html',
     styleUrl: './admin-orders.component.css'
 })
 export class AdminOrdersFeatureComponent implements OnInit {
   private apiService = inject(ApiService);
+  private dialogService = inject(DialogService);
 
   orders: Order[] = [];
   selectedOrder: Order | null = null;
@@ -25,7 +29,14 @@ export class AdminOrdersFeatureComponent implements OnInit {
   rejectionReason = 'El monto del comprobante no coincide con el total del pedido.';
   customReason = '';
   zoomImageUrl: string | null = null;
+  proofModalOrder: Order | null = null;
+  zoomLevel = 1;
+  rotation = 0;
   notifyBuyerByEmail = true;
+
+  // Paginación
+  currentPage = 1;
+  pageSize = 5;
 
   emailNotifyStatus = 'APPROVED';
   emailNotifyMessage = '';
@@ -45,7 +56,23 @@ export class AdminOrdersFeatureComponent implements OnInit {
         status: this.filterOrderStatus,
         search: this.searchQuery
       })
-      .subscribe((res) => (this.orders = res));
+      .subscribe((res) => {
+        this.orders = res;
+      });
+  }
+
+  get paginatedOrders(): Order[] {
+    const list = this.orders;
+    const maxPage = Math.max(1, Math.ceil(list.length / this.pageSize));
+    if (this.currentPage > maxPage) {
+      this.currentPage = maxPage;
+    }
+    const startIndex = (this.currentPage - 1) * this.pageSize;
+    return list.slice(startIndex, startIndex + this.pageSize);
+  }
+
+  onPageChange(page: number) {
+    this.currentPage = page;
   }
 
   getOrderStatusLabel(status: string): string {
@@ -85,13 +112,89 @@ export class AdminOrdersFeatureComponent implements OnInit {
     this.selectedOrder = null;
   }
 
-  openProofZoom(url: string) {
-    this.zoomImageUrl = url;
+  @HostListener('document:keydown.escape', ['$event'])
+  onKeydownHandler(event: KeyboardEvent) {
+    if (this.proofModalOrder) {
+      this.closeProofModal();
+    }
   }
 
-  approvePayment() {
+  openProofModal(order: Order, url?: string) {
+    this.proofModalOrder = order;
+    this.zoomImageUrl = url || order.payment?.paymentProof?.imageUrl || null;
+    this.zoomLevel = 1;
+    this.rotation = 0;
+  }
+
+  closeProofModal() {
+    this.proofModalOrder = null;
+    this.zoomImageUrl = null;
+    this.zoomLevel = 1;
+    this.rotation = 0;
+  }
+
+  zoomIn() {
+    if (this.zoomLevel < 3.5) {
+      this.zoomLevel = +(this.zoomLevel + 0.25).toFixed(2);
+    }
+  }
+
+  zoomOut() {
+    if (this.zoomLevel > 0.5) {
+      this.zoomLevel = +(this.zoomLevel - 0.25).toFixed(2);
+    }
+  }
+
+  resetZoom() {
+    this.zoomLevel = 1;
+    this.rotation = 0;
+  }
+
+  rotateProof() {
+    this.rotation = (this.rotation + 90) % 360;
+  }
+
+  downloadProof(url?: string) {
+    const target = url || this.zoomImageUrl;
+    if (!target) return;
+
+    let fullUrl = target;
+    if (!target.startsWith('http://') && !target.startsWith('https://') && !target.startsWith('data:') && !target.startsWith('blob:')) {
+      const baseUrl = environment.apiUrl.replace(/\/api\/?$/, '');
+      fullUrl = `${baseUrl}${target.startsWith('/') ? '' : '/'}${target}`;
+    }
+
+    const a = document.createElement('a');
+    a.href = fullUrl;
+    a.download = `comprobante-${this.proofModalOrder?.orderNumber || 'pedido'}`;
+    a.target = '_blank';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
+
+  openProofZoom(url: string, order?: Order) {
+    if (order) {
+      this.openProofModal(order, url);
+    } else if (this.selectedOrder) {
+      this.openProofModal(this.selectedOrder, url);
+    } else {
+      this.zoomImageUrl = url;
+    }
+  }
+
+  async approvePayment() {
     if (this.selectedOrder?.payment) {
-      if (confirm('¿Desea aprobar este pago? El estado del pedido cambiará a PAGADO y se notificará al comprador.')) {
+      const confirmed = await this.dialogService.confirm({
+        title: '¿Aprobar Pago?',
+        message: '¿Deseas aprobar este pago? El estado del pedido cambiará a PAGADO y se notificará al comprador por correo.',
+        confirmText: 'Sí, aprobar pago',
+        cancelText: 'Cancelar',
+        type: 'success',
+        icon: 'fa-solid fa-circle-check'
+      });
+
+      if (confirmed) {
         this.apiService.approvePayment(this.selectedOrder.payment.id, this.notifyBuyerByEmail).subscribe({
           next: (res) => {
             const emailMsg = res.emailNotified
@@ -113,10 +216,14 @@ export class AdminOrdersFeatureComponent implements OnInit {
     this.showRejectModal = true;
   }
 
-  confirmRejectPayment() {
+  async confirmRejectPayment() {
     const finalReason = this.rejectionReason === 'custom' ? this.customReason : this.rejectionReason;
     if (!finalReason) {
-      alert('Debe especificar la razón de rechazo.');
+      await this.dialogService.alert({
+        title: 'Campo Requerido',
+        message: 'Debes especificar la razón o motivo de rechazo del comprobante.',
+        type: 'warning'
+      });
       return;
     }
 

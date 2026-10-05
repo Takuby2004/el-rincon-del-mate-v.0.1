@@ -2,24 +2,31 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
+import { DialogService } from '../../core/services/dialog.service';
 import { Category } from '../../core/models/models';
 import { AssetUrlPipe } from '../../shared/pipes/asset-url.pipe';
 import { ImgFallbackDirective } from '../../shared/directives/img-fallback.directive';
+import { PaginationComponent } from '../../shared/components/pagination/pagination.component';
 
 @Component({
     selector: 'app-admin-categories',
-    imports: [CommonModule, FormsModule, AssetUrlPipe, ImgFallbackDirective],
+    imports: [CommonModule, FormsModule, AssetUrlPipe, ImgFallbackDirective, PaginationComponent],
     templateUrl: './admin-categories.component.html',
     styleUrl: './admin-categories.component.css'
 })
 export class AdminCategoriesFeatureComponent implements OnInit {
   private apiService = inject(ApiService);
+  private dialogService = inject(DialogService);
 
   categories: Category[] = [];
   showModal = false;
   isEditing = false;
   editingId = '';
   isSaving = false;
+
+  // Paginación
+  currentPage = 1;
+  pageSize = 5;
 
   formData = { name: '', description: '', imageUrl: '' };
   selectedFile: File | null = null;
@@ -33,6 +40,20 @@ export class AdminCategoriesFeatureComponent implements OnInit {
 
   loadCategories() {
     this.apiService.getCategories().subscribe((res) => (this.categories = res));
+  }
+
+  get paginatedCategories(): Category[] {
+    const list = this.categories;
+    const maxPage = Math.max(1, Math.ceil(list.length / this.pageSize));
+    if (this.currentPage > maxPage) {
+      this.currentPage = maxPage;
+    }
+    const startIndex = (this.currentPage - 1) * this.pageSize;
+    return list.slice(startIndex, startIndex + this.pageSize);
+  }
+
+  onPageChange(page: number) {
+    this.currentPage = page;
   }
 
   openModal() {
@@ -144,16 +165,37 @@ export class AdminCategoriesFeatureComponent implements OnInit {
       },
       error: (err) => {
         this.isSaving = false;
-        alert(err.error?.error || 'Error al guardar la categoría.');
+        this.dialogService.alert({
+          title: 'Error al Guardar',
+          message: err.error?.error || 'No se pudo guardar la categoría. Por favor verifica los datos ingresados.',
+          type: 'danger'
+        });
       }
     });
   }
 
-  deleteCategory(id: string) {
-    if (confirm('¿Desea eliminar esta categoría?')) {
+  async deleteCategory(id: string) {
+    const category = this.categories.find((c) => c.id === id);
+    const categoryName = category ? `"${category.name}"` : 'esta categoría';
+
+    const confirmed = await this.dialogService.confirm({
+      title: '¿Eliminar Categoría?',
+      message: `¿Estás seguro de que deseas eliminar permanentemente ${categoryName}?\nEsta acción no se puede deshacer.`,
+      confirmText: 'Sí, eliminar',
+      cancelText: 'Cancelar',
+      type: 'danger',
+      icon: 'fa-solid fa-trash-can'
+    });
+
+    if (confirmed) {
       this.apiService.deleteCategory(id).subscribe({
         next: () => this.loadCategories(),
-        error: (err) => alert(err.error?.error || 'Error al eliminar')
+        error: (err) =>
+          this.dialogService.alert({
+            title: 'Error al Eliminar',
+            message: err.error?.error || 'No se pudo eliminar la categoría. Verifica que no contenga productos asociados.',
+            type: 'danger'
+          })
       });
     }
   }

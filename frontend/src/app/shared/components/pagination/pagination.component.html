@@ -1,0 +1,75 @@
+@if (totalItems > pageSize) {
+  <div class="px-6 py-4 border-t border-wood-100 flex flex-col sm:flex-row items-center justify-between gap-4 bg-wood-50/40 select-none animate-fade-in">
+    <!-- Items Range Info -->
+    <div class="text-xs text-wood-600 font-medium">
+      Mostrando <span class="font-bold text-mate-900">{{ startItemIndex }}</span> a <span class="font-bold text-mate-900">{{ endItemIndex }}</span> de <span class="font-bold text-mate-900">{{ totalItems }}</span> registros
+    </div>
+
+    <!-- Page Number Navigation Buttons -->
+    <div class="flex items-center gap-1.5">
+      <!-- Previous Button -->
+      <button 
+        type="button"
+        (click)="previous()" 
+        [disabled]="currentPage === 1"
+        title="Página anterior"
+        class="w-8 h-8 rounded-xl border border-wood-200 bg-white text-wood-700 hover:bg-wood-100 hover:text-mate-900 disabled:opacity-40 disabled:hover:bg-white disabled:cursor-not-allowed flex items-center justify-center text-xs font-bold transition-all shadow-2xs">
+        <i class="fa-solid fa-chevron-left text-3xs"></i>
+      </button>
+
+      <!-- First Page Shortcut if outside range -->
+      @if (pages[0] > 1) {
+        <button 
+          type="button"
+          (click)="changePage(1)"
+          class="w-8 h-8 rounded-xl border border-wood-200 bg-white text-wood-700 hover:bg-wood-100 font-bold text-xs flex items-center justify-center transition-all shadow-2xs">
+          1
+        </button>
+        @if (pages[0] > 2) {
+          <span class="text-wood-400 text-xs px-1">...</span>
+        }
+      }
+
+      <!-- Page Numbers -->
+      @for (page of pages; track page) {
+        <button 
+          type="button"
+          (click)="changePage(page)" 
+          [class.bg-mate-700]="page === currentPage"
+          [class.text-white]="page === currentPage"
+          [class.border-mate-700]="page === currentPage"
+          [class.shadow-xs]="page === currentPage"
+          [class.bg-white]="page !== currentPage"
+          [class.text-wood-700]="page !== currentPage"
+          [class.border-wood-200]="page !== currentPage"
+          [class.hover:bg-wood-100]="page !== currentPage"
+          class="w-8 h-8 rounded-xl border font-bold text-xs flex items-center justify-center transition-all shadow-2xs">
+          {{ page }}
+        </button>
+      }
+
+      <!-- Last Page Shortcut if outside range -->
+      @if (pages[pages.length - 1] < totalPages) {
+        @if (pages[pages.length - 1] < totalPages - 1) {
+          <span class="text-wood-400 text-xs px-1">...</span>
+        }
+        <button 
+          type="button"
+          (click)="changePage(totalPages)"
+          class="w-8 h-8 rounded-xl border border-wood-200 bg-white text-wood-700 hover:bg-wood-100 font-bold text-xs flex items-center justify-center transition-all shadow-2xs">
+          {{ totalPages }}
+        </button>
+      }
+
+      <!-- Next Button -->
+      <button 
+        type="button"
+        (click)="next()" 
+        [disabled]="currentPage === totalPages"
+        title="Página siguiente"
+        class="w-8 h-8 rounded-xl border border-wood-200 bg-white text-wood-700 hover:bg-wood-100 hover:text-mate-900 disabled:opacity-40 disabled:hover:bg-white disabled:cursor-not-allowed flex items-center justify-center text-xs font-bold transition-all shadow-2xs">
+        <i class="fa-solid fa-chevron-right text-3xs"></i>
+      </button>
+    </div>
+  </div>
+}

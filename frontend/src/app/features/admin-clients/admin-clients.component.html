@@ -1,4 +1,4 @@
-<div class="space-y-6">
+<div class="space-y-6 animate-fade-in">
   <!-- Cabecera -->
   <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
     <div>
@@ -177,7 +177,7 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-wood-100 text-xs">
-            @for (client of filteredClients; track client.id) {
+            @for (client of paginatedClients; track client.id) {
               <tr class="hover:bg-wood-50/60 transition-colors">
                 <!-- Nombre y Rol -->
                 <td class="p-4">
@@ -272,6 +272,14 @@
           </tbody>
         </table>
       </div>
+
+      <!-- Paginador de Clientes (aparece cuando totalItems > 5) -->
+      <app-pagination 
+        [totalItems]="filteredClients.length" 
+        [pageSize]="pageSize" 
+        [currentPage]="currentPage" 
+        (pageChange)="onPageChange($event)">
+      </app-pagination>
     }
   </div>
 </div>

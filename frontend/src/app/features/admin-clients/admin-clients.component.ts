@@ -2,18 +2,25 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
+import { DialogService } from '../../core/services/dialog.service';
 import { Client } from '../../core/models/models';
+import { PaginationComponent } from '../../shared/components/pagination/pagination.component';
 
 @Component({
     selector: 'app-admin-clients',
-    imports: [CommonModule, FormsModule],
+    imports: [CommonModule, FormsModule, PaginationComponent],
     templateUrl: './admin-clients.component.html',
     styleUrl: './admin-clients.component.css'
 })
 export class AdminClientsFeatureComponent implements OnInit {
   private apiService = inject(ApiService);
+  private dialogService = inject(DialogService);
   clients: Client[] = [];
   loading = true;
+
+  // Paginación
+  currentPage = 1;
+  pageSize = 5;
 
   // Filtros reactivos
   searchTerm = '';
@@ -102,6 +109,20 @@ export class AdminClientsFeatureComponent implements OnInit {
     return result;
   }
 
+  get paginatedClients(): Client[] {
+    const list = this.filteredClients;
+    const maxPage = Math.max(1, Math.ceil(list.length / this.pageSize));
+    if (this.currentPage > maxPage) {
+      this.currentPage = maxPage;
+    }
+    const startIndex = (this.currentPage - 1) * this.pageSize;
+    return list.slice(startIndex, startIndex + this.pageSize);
+  }
+
+  onPageChange(page: number) {
+    this.currentPage = page;
+  }
+
   get totalOrdersSum(): number {
     return this.clients.reduce((acc, c) => acc + (c._count?.orders || 0), 0);
   }
@@ -110,12 +131,17 @@ export class AdminClientsFeatureComponent implements OnInit {
   actionError: string | null = null;
   deletingId: string | null = null;
 
-  deleteClient(client: Client) {
-    const confirmation = confirm(
-      `¿Estás seguro de que deseas eliminar permanentemente los datos del cliente "${client.name}"?\n\nEsta acción no se puede deshacer.`
-    );
+  async deleteClient(client: Client) {
+    const confirmed = await this.dialogService.confirm({
+      title: '¿Eliminar Cliente?',
+      message: `¿Estás seguro de que deseas eliminar permanentemente los datos del cliente "${client.name}"?\nEsta acción no se puede deshacer.`,
+      confirmText: 'Sí, eliminar',
+      cancelText: 'Cancelar',
+      type: 'danger',
+      icon: 'fa-solid fa-user-xmark'
+    });
 
-    if (!confirmation) return;
+    if (!confirmed) return;
 
     this.deletingId = client.id;
     this.actionMessage = null;
@@ -141,6 +167,7 @@ export class AdminClientsFeatureComponent implements OnInit {
     this.selectedDepartment = 'Todos';
     this.cityFilter = '';
     this.sortBy = 'recent';
+    this.currentPage = 1;
   }
 }
 

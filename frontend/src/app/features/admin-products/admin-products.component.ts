@@ -2,9 +2,11 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
+import { DialogService } from '../../core/services/dialog.service';
 import { Product, Category } from '../../core/models/models';
 import { AssetUrlPipe } from '../../shared/pipes/asset-url.pipe';
 import { ImgFallbackDirective } from '../../shared/directives/img-fallback.directive';
+import { PaginationComponent } from '../../shared/components/pagination/pagination.component';
 
 interface LocalFilePreview {
   file: File;
@@ -13,12 +15,13 @@ interface LocalFilePreview {
 
 @Component({
     selector: 'app-admin-products',
-    imports: [CommonModule, FormsModule, AssetUrlPipe, ImgFallbackDirective],
+    imports: [CommonModule, FormsModule, AssetUrlPipe, ImgFallbackDirective, PaginationComponent],
     templateUrl: './admin-products.component.html',
     styleUrl: './admin-products.component.css'
 })
 export class AdminProductsFeatureComponent implements OnInit {
   private apiService = inject(ApiService);
+  private dialogService = inject(DialogService);
 
   products: Product[] = [];
   categories: Category[] = [];
@@ -29,6 +32,10 @@ export class AdminProductsFeatureComponent implements OnInit {
   isDragging = false;
   editingId = '';
   uploadError = '';
+
+  // Paginación
+  currentPage = 1;
+  pageSize = 5;
 
   // Filtros de búsqueda
   searchTerm = '';
@@ -170,6 +177,20 @@ export class AdminProductsFeatureComponent implements OnInit {
       });
   }
 
+  get paginatedProducts(): Product[] {
+    const list = this.filteredProducts;
+    const maxPage = Math.max(1, Math.ceil(list.length / this.pageSize));
+    if (this.currentPage > maxPage) {
+      this.currentPage = maxPage;
+    }
+    const startIndex = (this.currentPage - 1) * this.pageSize;
+    return list.slice(startIndex, startIndex + this.pageSize);
+  }
+
+  onPageChange(page: number) {
+    this.currentPage = page;
+  }
+
   get activeProductsCount(): number {
     return this.products.filter(p => p.active && p.stock > 0).length;
   }
@@ -186,6 +207,7 @@ export class AdminProductsFeatureComponent implements OnInit {
     this.selectedPriceRange = 'Todos';
     this.selectedCostRange = 'Todos';
     this.sortBy = 'recent';
+    this.currentPage = 1;
   }
 
   clearErrors() {
@@ -476,9 +498,29 @@ export class AdminProductsFeatureComponent implements OnInit {
     }
   }
 
-  deleteProduct(id: string) {
-    if (confirm('¿Desea desactivar este producto?')) {
-      this.apiService.deleteProduct(id).subscribe(() => this.loadProducts());
+  async deleteProduct(id: string) {
+    const product = this.products.find((p) => p.id === id);
+    const productName = product ? `"${product.name}"` : 'este producto';
+
+    const confirmed = await this.dialogService.confirm({
+      title: '¿Eliminar Producto?',
+      message: `¿Estás seguro de que deseas eliminar permanentemente ${productName}?\nEsta acción no se puede deshacer.`,
+      confirmText: 'Sí, eliminar',
+      cancelText: 'Cancelar',
+      type: 'danger',
+      icon: 'fa-solid fa-trash-can'
+    });
+
+    if (confirmed) {
+      this.apiService.deleteProduct(id).subscribe({
+        next: () => this.loadProducts(),
+        error: (err) =>
+          this.dialogService.alert({
+            title: 'Error al Eliminar',
+            message: err.error?.error || 'No se pudo eliminar el producto.',
+            type: 'danger'
+          })
+      });
     }
   }
 }

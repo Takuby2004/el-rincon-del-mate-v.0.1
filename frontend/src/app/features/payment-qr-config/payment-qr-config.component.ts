@@ -1,6 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ApiService } from '../../core/services/api.service';
+import { DialogService } from '../../core/services/dialog.service';
 import { PaymentQrConfig } from '../../core/models/models';
 import { AssetUrlPipe } from '../../shared/pipes/asset-url.pipe';
 import { ImgFallbackDirective } from '../../shared/directives/img-fallback.directive';
@@ -13,6 +14,7 @@ import { ImgFallbackDirective } from '../../shared/directives/img-fallback.direc
 })
 export class AdminPaymentQrConfigFeatureComponent implements OnInit {
   private apiService = inject(ApiService);
+  private dialogService = inject(DialogService);
 
   activeQr: PaymentQrConfig | null = null;
   selectedFile: File | null = null;
@@ -81,8 +83,17 @@ export class AdminPaymentQrConfigFeatureComponent implements OnInit {
     });
   }
 
-  deactivateQr(id: string) {
-    if (confirm('¿Desea desactivar este QR? Los clientes no verán un QR activo durante la compra.')) {
+  async deactivateQr(id: string) {
+    const confirmed = await this.dialogService.confirm({
+      title: '¿Desactivar Código QR?',
+      message: '¿Deseas desactivar este QR de pago?\nLos clientes no verán ningún QR activo durante la finalización de compra hasta que actives uno nuevo.',
+      confirmText: 'Sí, desactivar',
+      cancelText: 'Cancelar',
+      type: 'warning',
+      icon: 'fa-solid fa-qrcode'
+    });
+
+    if (confirmed) {
       this.apiService.deactivatePaymentQr(id).subscribe(() => {
         this.loadActiveQr();
       });

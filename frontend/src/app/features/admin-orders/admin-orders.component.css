@@ -1,1 +1,18 @@
 /* Estilos específicos de AdminOrdersFeatureComponent */
+
+.proof-canvas-bg {
+  background-color: #121517;
+  background-image: 
+    radial-gradient(circle at 50% 50%, rgba(42, 60, 48, 0.25) 0%, transparent 80%),
+    linear-gradient(45deg, rgba(255, 255, 255, 0.03) 25%, transparent 25%),
+    linear-gradient(-45deg, rgba(255, 255, 255, 0.03) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, rgba(255, 255, 255, 0.03) 75%),
+    linear-gradient(-45deg, transparent 75%, rgba(255, 255, 255, 0.03) 75%);
+  background-size: 100% 100%, 24px 24px, 24px 24px, 24px 24px, 24px 24px;
+  background-position: 0 0, 0 0, 0 12px, 12px -12px, -12px 0;
+}
+
+.proof-image-transform {
+  transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+  will-change: transform;
+}

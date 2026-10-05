@@ -124,7 +124,7 @@ export class ProductController {
   public static async delete(req: Request, res: Response) {
     try {
       await ProductService.delete(req.params.id);
-      res.json({ message: 'Producto desactivado correctamente.' });
+      res.json({ message: 'Producto eliminado permanentemente.' });
     } catch (err: any) {
       res.status(400).json({ error: err.message });
     }

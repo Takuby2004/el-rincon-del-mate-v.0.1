@@ -24,8 +24,10 @@
   - Directiva de resiliencia `[appImgFallback]` con arte vectorial SVG embebido sin dependencias externas.
   - **Skeleton Loaders** con efecto *Shimmer Wave* para evitar saltos de diseño (*Cumulative Layout Shift*).
   - Micro-animaciones escalonadas (*staggered*) y rebote interactivo en badge de carrito de compras.
-  - Curvas de aceleración Bézier físicas (`cubic-bezier(0.16, 1, 0.3, 1)`) en elevación de tarjetas.
   - **Sistema de Modales Aislados & Validación Reactiva (Admin)**: Capa de profundidad `z-[100]` con bloqueo de interacción exterior, marcos con gradiente rojo (`linear-gradient`) y mensajes emergentes (*Pop Messages*) interactivos por campo.
+  - **Sistema Global de Diálogos & Modales de Confirmación (`DialogService`)**: Sustitución completa de las alertas y confirmaciones nativas del navegador (`window.confirm`/`window.alert`) por modales elegantes con efecto *glassmorphism/backdrop-blur*, variantes temáticas (`danger`, `warning`, `info`, `success`), animación fluida de escala y accesibilidad total (tecla ESC y clics de desenfoque).
+  - **Paginación Reactiva Inteligente (`PaginationComponent`)**: Componente standalone reutilizable con límite de 5 elementos por página, navegación por botones y números, y renderizado condicional inteligente (solo se muestra cuando `totalItems > 5`) en Productos, Categorías, Pedidos y Clientes.
+  - **Transiciones y Animaciones del Panel Administrativo**: Animación de entrada suave (`animate-fade-in` con curva cúbica Bézier) en todas las vistas de administración (Productos, Categorías, Pedidos, Clientes, Reportes y Estadísticas), junto a un efecto de alto impacto dinámico y escalonado (`animate-dashboard-pop` con `stagger` y elevación `hover-lift`) exclusivo para las métricas del **Dashboard**.
 
 ### ⚙️ Backend
 - **Entorno de Ejecución**: Node.js con TypeScript.
@@ -52,10 +54,10 @@
 | **CU07** | Checkout (Paso 2) | Visualización del QR oficial del dueño y subida obligatoria del comprobante de pago. |
 | **CU08** | Control de Stock | Reserva y decremento automático del inventario al momento de crear el pedido. |
 | **CU09** | Reversión de Stock | Reincorporación automática de stock si el pago es rechazado o el pedido se cancela. |
-| **CU10** | Verificación de Pagos | Panel administrativo para inspeccionar el comprobante adjunto y aprobar el pago. |
+| **CU10** | Verificación de Pagos | Panel administrativo con modal avanzado e interactivo para inspeccionar comprobantes (zoom, rotación, descarga, datos del comprador) y aprobar el pago. |
 | **CU11** | Rechazo con Motivo | Rechazo de pagos no válidos con registro obligatorio de justificación. |
 | **CU12** | Gestión de QR Dueño | Interfaz administrativa para subir y activar una nueva imagen de QR bancario. |
-| **CU13** | CRUD de Catálogo | Gestión de productos, búsqueda reactiva, filtros multidimensionales (categoría, estado, stock, precio y costo), KPIs y control de stock. |
+| **CU13** | CRUD de Catálogo | Gestión de productos (creación, edición y eliminación permanente con protección de integridad referencial de pedidos), búsqueda reactiva, filtros multidimensionales (categoría, estado, stock, precio y costo), KPIs y control de stock. |
 | **CU14** | Dashboard & Métricas | Estadísticas en tiempo real de ingresos totales, pedidos pagados y stock crítico. |
 | **CU15** | Reportes Financieros | Reportes de ventas e inventario con cálculo de margen de ganancia. |
 | **CU16** | Exportación PDF | Generación y descarga de la orden de pedido en formato PDF. |
@@ -204,6 +206,17 @@ el-rincon-del-mate-v.0.1/
 │
 └── README.md                   # Documentación principal del sistema
 ```
+
+---
+
+## 🔮 Roadmap de Funcionalidades Futuras (BETA)
+
+- [ ] **Métricas Visuales Interactivas en Dashboard (`[BETA]`)**:
+  - Gráficos de torta / dona para la distribución porcentual de estados de pago (Aprobados, Pendientes, Rechazados).
+  - Gráficos de barras interactivos para el Top 5 de productos más vendidos e ingresos generados.
+  - Tablero comparativo de rentabilidad comercial (Ingresos vs Costos de Inventario vs Ganancia Neta).
+  - *Documento de planificación:* [`docs/PLAN_METRICAS_VISUALES_DASHBOARD_BETA.md`](docs/PLAN_METRICAS_VISUALES_DASHBOARD_BETA.md).
+- [ ] **Paginador en Historial QR (`payment-qr-config`)**: Pendiente para futura fase de refinamiento.
 
 ---
 
