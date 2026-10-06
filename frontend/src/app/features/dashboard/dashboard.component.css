@@ -1,1 +1,19 @@
-/* Estilos específicos de AdminDashboardFeatureComponent */
+/* Estilos específicos de Animaciones y Gráficos del Dashboard */
+
+.histogram-bar-grow {
+  transition: height 0.7s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease, transform 0.2s ease;
+  transform-origin: bottom;
+}
+
+.horizontal-bar-grow {
+  transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease;
+  transform-origin: left;
+}
+
+.chart-grid-line {
+  border-top: 1px dashed rgba(200, 185, 165, 0.35);
+}
+
+.tooltip-bubble {
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.15));
+}

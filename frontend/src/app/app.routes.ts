@@ -17,7 +17,6 @@ import { AdminProductsFeatureComponent } from './features/admin-products/admin-p
 import { AdminCategoriesFeatureComponent } from './features/admin-categories/admin-categories.component';
 import { AdminClientsFeatureComponent } from './features/admin-clients/admin-clients.component';
 import { AdminOrdersFeatureComponent } from './features/admin-orders/admin-orders.component';
-import { AdminStatisticsFeatureComponent } from './features/statistics/statistics.component';
 import { AdminReportsFeatureComponent } from './features/reports/reports.component';
 import { AdminPaymentQrConfigFeatureComponent } from './features/payment-qr-config/payment-qr-config.component';
 import { AdminProfileFeatureComponent } from './features/profile/profile.component';
@@ -58,7 +57,7 @@ export const routes: Routes = [
       { path: 'clientes', component: AdminClientsFeatureComponent },
       { path: 'pedidos', component: AdminOrdersFeatureComponent },
       { path: 'pedidos/:id', component: AdminOrdersFeatureComponent },
-      { path: 'estadisticas', component: AdminStatisticsFeatureComponent },
+      { path: 'estadisticas', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'reportes', component: AdminReportsFeatureComponent },
       { path: 'configuracion/pago-qr', component: AdminPaymentQrConfigFeatureComponent },
       { path: 'perfil', component: AdminProfileFeatureComponent }

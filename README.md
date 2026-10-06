@@ -27,7 +27,14 @@
   - **Sistema de Modales Aislados & Validación Reactiva (Admin)**: Capa de profundidad `z-[100]` con bloqueo de interacción exterior, marcos con gradiente rojo (`linear-gradient`) y mensajes emergentes (*Pop Messages*) interactivos por campo.
   - **Sistema Global de Diálogos & Modales de Confirmación (`DialogService`)**: Sustitución completa de las alertas y confirmaciones nativas del navegador (`window.confirm`/`window.alert`) por modales elegantes con efecto *glassmorphism/backdrop-blur*, variantes temáticas (`danger`, `warning`, `info`, `success`), animación fluida de escala y accesibilidad total (tecla ESC y clics de desenfoque).
   - **Paginación Reactiva Inteligente (`PaginationComponent`)**: Componente standalone reutilizable con límite de 5 elementos por página, navegación por botones y números, y renderizado condicional inteligente (solo se muestra cuando `totalItems > 5`) en Productos, Categorías, Pedidos y Clientes.
-  - **Transiciones y Animaciones del Panel Administrativo**: Animación de entrada suave (`animate-fade-in` con curva cúbica Bézier) en todas las vistas de administración (Productos, Categorías, Pedidos, Clientes, Reportes y Estadísticas), junto a un efecto de alto impacto dinámico y escalonado (`animate-dashboard-pop` con `stagger` y elevación `hover-lift`) exclusivo para las métricas del **Dashboard**.
+  - **Módulo Unificado de Dashboards Administrativos y Financieros**: Consolidación total de la analítica operativa, comercial y financiera en una sola sección unificada (**Dashboards**). Incorpora:
+    - **Gráficas de Barras Comparativas**: Visualización proporcional del desglose de capital (Ingresos Brutos vs Costo de Mercadería vs Ganancia Neta Líquida).
+    - **Histogramas de Frecuencia**:
+      - *Histograma Temporal*: Volumen y facturación diaria durante los últimos 7 días con tooltips interactivos.
+      - *Histograma de Ticket Promedio*: Agrupación de compradores por intervalos de monto de pedido (`0-150 Bs`, `151-300 Bs`, `301-600 Bs`, `600+ Bs`).
+    - **Ranking de Rendimiento**: Barras horizontales proporcionales del Top 5 productos más vendidos.
+    - **Algoritmo Predictivo de Demanda (CU08)**: Cálculo automático de rotación diaria y proyección mensual sugerida para compras a proveedores.
+  - **Transiciones y Animaciones del Panel**: Animación de entrada suave (`animate-fade-in`) y efectos de alto impacto escalonado (`animate-dashboard-pop` y `hover-lift`) con micro-transiciones fluidas en barras e histogramas.
 
 ### ⚙️ Backend
 - **Entorno de Ejecución**: Node.js con TypeScript.
@@ -60,7 +67,7 @@
 | **CU12** | Gestión de QR Dueño | Interfaz administrativa para subir y activar una nueva imagen de QR bancario. |
 | **CU13** | CRUD de Catálogo | Gestión de productos (creación, edición y eliminación permanente con protección de integridad referencial de pedidos), búsqueda reactiva, filtros multidimensionales (categoría, estado, stock, precio y costo), KPIs y control de stock. |
 | **CU13.1** | Gestión de Categorías | Directorio y administración de categorías con subida de imágenes, búsqueda reactiva por nombre/slug/descripción y paginación inteligente. |
-| **CU14** | Dashboard & Métricas | Estadísticas en tiempo real de ingresos totales, pedidos pagados y stock crítico. |
+| **CU14** | Dashboards & Analítica Visual | Tablero unificado con KPI de pedidos, salud financiera, gráficas de barras comparativas, histogramas de frecuencia y pronóstico predictivo de demanda. |
 | **CU15** | Reportes Financieros | Reportes de ventas e inventario con cálculo de margen de ganancia. |
 | **CU16** | Exportación PDF | Generación y descarga de la orden de pedido en formato PDF. |
 

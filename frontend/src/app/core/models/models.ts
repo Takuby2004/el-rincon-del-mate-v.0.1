@@ -112,10 +112,13 @@ export interface DashboardStats {
     totalRevenue: number;
     totalCost: number;
     netProfit: number;
+    profitMarginPercentage?: number;
   };
   topSellingProducts: { name: string; quantity: number; revenue: number }[];
   demandForecast: {
     averageDailyDemand: number;
     projectedDemandNextMonth: number;
   };
+  orderDistribution?: { range: string; count: number; percentage: number }[];
+  dailySalesHistory?: { date: string; label: string; count: number; total: number }[];
 }
