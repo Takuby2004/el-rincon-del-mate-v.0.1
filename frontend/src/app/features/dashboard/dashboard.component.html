@@ -8,20 +8,20 @@
         </div>
         <div>
           <h1 class="text-2xl font-black text-mate-950 tracking-tight">Dashboards Administrativos y Financieros</h1>
-          <p class="text-xs text-wood-600 mt-0.5">Control 360° de pedidos, salud financiera, histogramas de distribución y pronósticos de demanda</p>
+          <p class="text-xs text-wood-600 mt-0.5">Control 360° de pedidos, salud financiera, histogramas de distribución
+            y pronósticos de demanda</p>
         </div>
       </div>
     </div>
-    
+
     <div class="flex items-center gap-3">
-      <button 
-        (click)="loadStats()"
-        [disabled]="loading"
+      <button (click)="loadStats()" [disabled]="loading"
         class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-wood-200 text-xs font-bold text-mate-800 hover:bg-wood-50 hover:border-wood-300 shadow-2xs transition-all disabled:opacity-50">
         <i class="fa-solid fa-arrows-rotate text-gold-600" [class.fa-spin]="loading"></i>
         <span>{{ loading ? 'Actualizando...' : 'Actualizar Métricas' }}</span>
       </button>
-      <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-2xs font-extrabold uppercase tracking-wider">
+      <span
+        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-2xs font-extrabold uppercase tracking-wider">
         <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
         En Vivo
       </span>
@@ -29,535 +29,538 @@
   </div>
 
   @if (loading) {
-    <div class="py-24 text-center text-wood-500 space-y-3">
-      <div class="w-14 h-14 mx-auto rounded-2xl bg-mate-50 text-mate-700 flex items-center justify-center text-2xl shadow-inner">
-        <i class="fa-solid fa-spinner fa-spin"></i>
-      </div>
-      <p class="text-sm font-bold text-mate-900">Cargando tableros y cálculos estadísticos...</p>
-      <p class="text-xs text-wood-500">Procesando pedidos aprobados, movimientos y distribución temporal</p>
+  <div class="py-24 text-center text-wood-500 space-y-3">
+    <div
+      class="w-14 h-14 mx-auto rounded-2xl bg-mate-50 text-mate-700 flex items-center justify-center text-2xl shadow-inner">
+      <i class="fa-solid fa-spinner fa-spin"></i>
     </div>
+    <p class="text-sm font-bold text-mate-900">Cargando tableros y cálculos estadísticos...</p>
+    <p class="text-xs text-wood-500">Procesando pedidos aprobados, movimientos y distribución temporal</p>
+  </div>
   } @else if (stats) {
 
-    <!-- ========================================== -->
-    <!-- 1. KPI CARDS OPERATIVAS DE PEDIDOS Y PAGOS -->
-    <!-- ========================================== -->
-    <div>
-      <div class="flex items-center justify-between mb-3">
-        <h2 class="text-xs font-black uppercase tracking-wider text-wood-700 flex items-center gap-2">
-          <i class="fa-solid fa-bell-concierge text-gold-600"></i>
-          <span>Estado Operativo de Pedidos</span>
+  <!-- ========================================== -->
+  <!-- 1. KPI CARDS OPERATIVAS DE PEDIDOS Y PAGOS -->
+  <!-- ========================================== -->
+  <div>
+    <div class="flex items-center justify-between mb-3">
+      <h2 class="text-xs font-black uppercase tracking-wider text-wood-700 flex items-center gap-2">
+        <i class="fa-solid fa-bell-concierge text-gold-600"></i>
+        <span>Estado Operativo de Pedidos</span>
+      </h2>
+      <span class="text-2xs text-wood-500">Total acumulado: <strong>{{ getTotalOrders() }} pedidos</strong></span>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      <!-- Pendientes de Verificar -->
+      <div
+        class="bg-white p-5 rounded-2xl border border-amber-200 shadow-sm hover-lift animate-dashboard-pop stagger-1 transition-all">
+        <div class="flex items-center justify-between">
+          <div class="space-y-1">
+            <span class="text-2xs font-extrabold text-amber-700 uppercase tracking-wider">Pendientes de Revisión</span>
+            <div class="text-3xl font-black text-amber-950">{{ stats.metrics.pendingVerificationCount }}</div>
+            <p class="text-2xs text-amber-600">Comprobantes por validar</p>
+          </div>
+          <div
+            class="w-12 h-12 rounded-xl bg-amber-50 border border-amber-200 text-amber-700 flex items-center justify-center text-xl shadow-2xs">
+            <i class="fa-solid fa-clock-rotate-left"></i>
+          </div>
+        </div>
+        <div class="mt-4 pt-3 border-t border-amber-100 flex items-center justify-between text-2xs">
+          <span class="text-amber-800 font-semibold">Requiere acción</span>
+          <a routerLink="/admin/pedidos" class="text-amber-700 font-bold hover:underline flex items-center gap-1">
+            <span>Ir a revisar</span>
+            <i class="fa-solid fa-arrow-right text-3xs"></i>
+          </a>
+        </div>
+      </div>
+
+      <!-- Pagos Aprobados -->
+      <div
+        class="bg-white p-5 rounded-2xl border border-emerald-200 shadow-sm hover-lift animate-dashboard-pop stagger-2 transition-all">
+        <div class="flex items-center justify-between">
+          <div class="space-y-1">
+            <span class="text-2xs font-extrabold text-emerald-700 uppercase tracking-wider">Pagos Aprobados</span>
+            <div class="text-3xl font-black text-emerald-950">{{ stats.metrics.approvedCount }}</div>
+            <p class="text-2xs text-emerald-600">Ventas firmes confirmadas</p>
+          </div>
+          <div
+            class="w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 flex items-center justify-center text-xl shadow-2xs">
+            <i class="fa-solid fa-circle-check"></i>
+          </div>
+        </div>
+        <div class="mt-4 pt-3 border-t border-emerald-100 flex items-center justify-between text-2xs">
+          <span class="text-emerald-800 font-semibold">Efectividad</span>
+          <span class="font-extrabold text-emerald-700">{{ getApprovalRate() }}% del total</span>
+        </div>
+      </div>
+
+      <!-- Pagos Rechazados -->
+      <div
+        class="bg-white p-5 rounded-2xl border border-red-200 shadow-sm hover-lift animate-dashboard-pop stagger-3 transition-all">
+        <div class="flex items-center justify-between">
+          <div class="space-y-1">
+            <span class="text-2xs font-extrabold text-red-700 uppercase tracking-wider">Pagos Rechazados</span>
+            <div class="text-3xl font-black text-red-950">{{ stats.metrics.rejectedCount }}</div>
+            <p class="text-2xs text-red-600">Stock restaurado a tienda</p>
+          </div>
+          <div
+            class="w-12 h-12 rounded-xl bg-red-50 border border-red-200 text-red-700 flex items-center justify-center text-xl shadow-2xs">
+            <i class="fa-solid fa-circle-xmark"></i>
+          </div>
+        </div>
+        <div class="mt-4 pt-3 border-t border-red-100 flex items-center justify-between text-2xs">
+          <span class="text-red-800 font-semibold">Comprobantes inválidos</span>
+          <span class="text-red-700 font-bold">Kardex actualizado</span>
+        </div>
+      </div>
+
+      <!-- Resumen de Tasa Operativa -->
+      <div
+        class="bg-white p-5 rounded-2xl border border-mate-200 shadow-sm hover-lift animate-dashboard-pop stagger-4 transition-all">
+        <div class="flex items-center justify-between">
+          <div class="space-y-1">
+            <span class="text-2xs font-extrabold text-mate-700 uppercase tracking-wider">Tasa de Aprobación</span>
+            <div class="text-3xl font-black text-mate-950">{{ getApprovalRate() }}%</div>
+            <p class="text-2xs text-mate-600">Ratio de conversión de QR</p>
+          </div>
+          <div
+            class="w-12 h-12 rounded-xl bg-mate-50 border border-mate-200 text-mate-800 flex items-center justify-center text-xl shadow-2xs">
+            <i class="fa-solid fa-chart-column"></i>
+          </div>
+        </div>
+        <div class="mt-4 pt-3 border-t border-mate-100 space-y-1.5">
+          <!-- Barra de progreso segmentada -->
+          <div class="w-full h-2 rounded-full bg-wood-100 overflow-hidden flex">
+            <div class="bg-emerald-500 h-full transition-all duration-700" [style.width.%]="getApprovalRate()"></div>
+            <div class="bg-amber-400 h-full transition-all duration-700"
+              [style.width.%]="getTotalOrders() > 0 ? (stats.metrics.pendingVerificationCount / getTotalOrders()) * 100 : 0">
+            </div>
+            <div class="bg-red-500 h-full transition-all duration-700"
+              [style.width.%]="getTotalOrders() > 0 ? (stats.metrics.rejectedCount / getTotalOrders()) * 100 : 0"></div>
+          </div>
+          <div class="flex justify-between text-3xs text-wood-600 font-medium">
+            <span class="text-emerald-700">● Aprob</span>
+            <span class="text-amber-700">● Pend</span>
+            <span class="text-red-700">● Rech</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- 2. SECCIÓN DE FINANZAS Y GRÁFICA DE BARRAS COMPARATIVA -->
+  <!-- ============================================================== -->
+  <div class="bg-white p-6 sm:p-8 rounded-3xl border border-wood-200 shadow-sm space-y-6">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-wood-100 pb-4">
+      <div>
+        <h2 class="text-lg font-black text-mate-950 flex items-center gap-2">
+          <i class="fa-solid fa-scale-balanced text-gold-600"></i>
+          <span>Salud Financiera y Estructura de Ganancia Neta</span>
         </h2>
-        <span class="text-2xs text-wood-500">Total acumulado: <strong>{{ getTotalOrders() }} pedidos</strong></span>
+        <p class="text-xs text-wood-600 mt-0.5">Cálculo contable estricto aplicado exclusivamente a pedidos con pago
+          verificado</p>
       </div>
-
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        <!-- Pendientes de Verificar -->
-        <div class="bg-white p-5 rounded-2xl border border-amber-200 shadow-sm hover-lift animate-dashboard-pop stagger-1 transition-all">
-          <div class="flex items-center justify-between">
-            <div class="space-y-1">
-              <span class="text-2xs font-extrabold text-amber-700 uppercase tracking-wider">Pendientes de Revisión</span>
-              <div class="text-3xl font-black text-amber-950">{{ stats.metrics.pendingVerificationCount }}</div>
-              <p class="text-2xs text-amber-600">Comprobantes por validar</p>
-            </div>
-            <div class="w-12 h-12 rounded-xl bg-amber-50 border border-amber-200 text-amber-700 flex items-center justify-center text-xl shadow-2xs">
-              <i class="fa-solid fa-clock-rotate-left"></i>
-            </div>
-          </div>
-          <div class="mt-4 pt-3 border-t border-amber-100 flex items-center justify-between text-2xs">
-            <span class="text-amber-800 font-semibold">Requiere acción</span>
-            <a routerLink="/admin/pedidos" class="text-amber-700 font-bold hover:underline flex items-center gap-1">
-              <span>Ir a revisar</span>
-              <i class="fa-solid fa-arrow-right text-3xs"></i>
-            </a>
-          </div>
-        </div>
-
-        <!-- Pagos Aprobados -->
-        <div class="bg-white p-5 rounded-2xl border border-emerald-200 shadow-sm hover-lift animate-dashboard-pop stagger-2 transition-all">
-          <div class="flex items-center justify-between">
-            <div class="space-y-1">
-              <span class="text-2xs font-extrabold text-emerald-700 uppercase tracking-wider">Pagos Aprobados</span>
-              <div class="text-3xl font-black text-emerald-950">{{ stats.metrics.approvedCount }}</div>
-              <p class="text-2xs text-emerald-600">Ventas firmes confirmadas</p>
-            </div>
-            <div class="w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 flex items-center justify-center text-xl shadow-2xs">
-              <i class="fa-solid fa-circle-check"></i>
-            </div>
-          </div>
-          <div class="mt-4 pt-3 border-t border-emerald-100 flex items-center justify-between text-2xs">
-            <span class="text-emerald-800 font-semibold">Efectividad</span>
-            <span class="font-extrabold text-emerald-700">{{ getApprovalRate() }}% del total</span>
-          </div>
-        </div>
-
-        <!-- Pagos Rechazados -->
-        <div class="bg-white p-5 rounded-2xl border border-red-200 shadow-sm hover-lift animate-dashboard-pop stagger-3 transition-all">
-          <div class="flex items-center justify-between">
-            <div class="space-y-1">
-              <span class="text-2xs font-extrabold text-red-700 uppercase tracking-wider">Pagos Rechazados</span>
-              <div class="text-3xl font-black text-red-950">{{ stats.metrics.rejectedCount }}</div>
-              <p class="text-2xs text-red-600">Stock restaurado a tienda</p>
-            </div>
-            <div class="w-12 h-12 rounded-xl bg-red-50 border border-red-200 text-red-700 flex items-center justify-center text-xl shadow-2xs">
-              <i class="fa-solid fa-circle-xmark"></i>
-            </div>
-          </div>
-          <div class="mt-4 pt-3 border-t border-red-100 flex items-center justify-between text-2xs">
-            <span class="text-red-800 font-semibold">Comprobantes inválidos</span>
-            <span class="text-red-700 font-bold">Kardex actualizado</span>
-          </div>
-        </div>
-
-        <!-- Resumen de Tasa Operativa -->
-        <div class="bg-white p-5 rounded-2xl border border-mate-200 shadow-sm hover-lift animate-dashboard-pop stagger-4 transition-all">
-          <div class="flex items-center justify-between">
-            <div class="space-y-1">
-              <span class="text-2xs font-extrabold text-mate-700 uppercase tracking-wider">Tasa de Aprobación</span>
-              <div class="text-3xl font-black text-mate-950">{{ getApprovalRate() }}%</div>
-              <p class="text-2xs text-mate-600">Ratio de conversión de QR</p>
-            </div>
-            <div class="w-12 h-12 rounded-xl bg-mate-50 border border-mate-200 text-mate-800 flex items-center justify-center text-xl shadow-2xs">
-              <i class="fa-solid fa-chart-column"></i>
-            </div>
-          </div>
-          <div class="mt-4 pt-3 border-t border-mate-100 space-y-1.5">
-            <!-- Barra de progreso segmentada -->
-            <div class="w-full h-2 rounded-full bg-wood-100 overflow-hidden flex">
-              <div class="bg-emerald-500 h-full transition-all duration-700" [style.width.%]="getApprovalRate()"></div>
-              <div class="bg-amber-400 h-full transition-all duration-700" [style.width.%]="getTotalOrders() > 0 ? (stats.metrics.pendingVerificationCount / getTotalOrders()) * 100 : 0"></div>
-              <div class="bg-red-500 h-full transition-all duration-700" [style.width.%]="getTotalOrders() > 0 ? (stats.metrics.rejectedCount / getTotalOrders()) * 100 : 0"></div>
-            </div>
-            <div class="flex justify-between text-3xs text-wood-600 font-medium">
-              <span class="text-emerald-700">● Aprob</span>
-              <span class="text-amber-700">● Pend</span>
-              <span class="text-red-700">● Rech</span>
-            </div>
-          </div>
-        </div>
+      <div
+        class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gold-50 border border-gold-200 text-gold-900 text-xs font-bold">
+        <i class="fa-solid fa-coins text-gold-600"></i>
+        <span>Margen Neto: {{ stats.metrics.profitMarginPercentage || 0 }}%</span>
       </div>
     </div>
 
-    <!-- ============================================================== -->
-    <!-- 2. SECCIÓN DE FINANZAS Y GRÁFICA DE BARRAS COMPARATIVA -->
-    <!-- ============================================================== -->
-    <div class="bg-white p-6 sm:p-8 rounded-3xl border border-wood-200 shadow-sm space-y-6">
-      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-wood-100 pb-4">
+    <!-- 3 Tarjetas de Métricas Financieras -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+      <!-- Ingresos Totales -->
+      <div class="p-5 rounded-2xl bg-wood-50/70 border border-wood-200/90 space-y-2">
+        <div class="flex items-center justify-between">
+          <span class="text-2xs font-extrabold text-wood-700 uppercase tracking-wider">Ingresos Totales (Ventas)</span>
+          <span class="w-7 h-7 rounded-lg bg-mate-100 text-mate-800 flex items-center justify-center text-xs">
+            <i class="fa-solid fa-arrow-trend-up"></i>
+          </span>
+        </div>
+        <div class="text-2xl sm:text-3xl font-black text-mate-950">
+          Bs. {{ stats.metrics.totalRevenue.toFixed(2) }}
+        </div>
+        <p class="text-2xs text-wood-600">100% de la base facturada en pedidos aprobados</p>
+      </div>
+
+      <!-- Costo de Inventario -->
+      <div class="p-5 rounded-2xl bg-amber-50/50 border border-amber-200/80 space-y-2">
+        <div class="flex items-center justify-between">
+          <span class="text-2xs font-extrabold text-amber-800 uppercase tracking-wider">Costo de Mercadería</span>
+          <span class="w-7 h-7 rounded-lg bg-amber-100 text-amber-800 flex items-center justify-center text-xs">
+            <i class="fa-solid fa-boxes-packing"></i>
+          </span>
+        </div>
+        <div class="text-2xl sm:text-3xl font-black text-amber-950">
+          Bs. {{ stats.metrics.totalCost.toFixed(2) }}
+        </div>
+        <p class="text-2xs text-amber-700">Representa el <strong>{{ getCostPercentage() }}%</strong> del total de
+          ingresos</p>
+      </div>
+
+      <!-- Ganancia Neta -->
+      <div class="p-5 rounded-2xl bg-emerald-50/70 border border-emerald-200 space-y-2">
+        <div class="flex items-center justify-between">
+          <span class="text-2xs font-extrabold text-emerald-800 uppercase tracking-wider">Ganancia Neta (Margen)</span>
+          <span class="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center text-xs">
+            <i class="fa-solid fa-sack-dollar"></i>
+          </span>
+        </div>
+        <div class="text-2xl sm:text-3xl font-black text-emerald-950">
+          Bs. {{ stats.metrics.netProfit.toFixed(2) }}
+        </div>
+        <p class="text-2xs text-emerald-700 font-semibold">
+          Utilidad líquida tras descontar costos: <strong>{{ getProfitPercentage() }}%</strong>
+        </p>
+      </div>
+    </div>
+
+    <!-- GRÁFICA DE BARRAS COMPARATIVA FINANCIERA (Visual Bar Chart) -->
+    <div class="p-6 rounded-2xl bg-darkness-950 text-white space-y-5 shadow-lg border border-darkness-900">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
         <div>
-          <h2 class="text-lg font-black text-mate-950 flex items-center gap-2">
-            <i class="fa-solid fa-scale-balanced text-gold-600"></i>
-            <span>Salud Financiera y Estructura de Ganancia Neta</span>
-          </h2>
-          <p class="text-xs text-wood-600 mt-0.5">Cálculo contable estricto aplicado exclusivamente a pedidos con pago verificado</p>
+          <h3 class="text-sm font-extrabold text-white flex items-center gap-2">
+            <i class="fa-solid fa-chart-simple text-gold-400"></i>
+            <span>Gráfica de Barras Comparativa: Desglose de Capital</span>
+          </h3>
+          <p class="text-2xs text-cream-300">Visualización proporcional de ventas brutas versus costos de adquisición y
+            rendimiento neto</p>
         </div>
-        <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gold-50 border border-gold-200 text-gold-900 text-xs font-bold">
-          <i class="fa-solid fa-coins text-gold-600"></i>
-          <span>Margen Neto: {{ stats.metrics.profitMarginPercentage || 0 }}%</span>
-        </div>
+        <span class="text-2xs font-mono text-gold-400 bg-darkness-900 px-3 py-1 rounded-lg border border-gold-400/20">
+          Base: Bs. {{ stats.metrics.totalRevenue.toFixed(2) }}
+        </span>
       </div>
 
-      <!-- 3 Tarjetas de Métricas Financieras -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-        <!-- Ingresos Totales -->
-        <div class="p-5 rounded-2xl bg-wood-50/70 border border-wood-200/90 space-y-2">
-          <div class="flex items-center justify-between">
-            <span class="text-2xs font-extrabold text-wood-700 uppercase tracking-wider">Ingresos Totales (Ventas)</span>
-            <span class="w-7 h-7 rounded-lg bg-mate-100 text-mate-800 flex items-center justify-center text-xs">
-              <i class="fa-solid fa-arrow-trend-up"></i>
+      <div class="space-y-4 pt-2">
+        <!-- Barra 1: Ingresos Totales (100%) -->
+        <div class="space-y-1.5">
+          <div class="flex justify-between text-xs font-semibold">
+            <span class="text-cream-200 flex items-center gap-2">
+              <span class="w-3 h-3 rounded-full bg-gold-400 inline-block shadow"></span>
+              <span>Ingresos Brutos por Ventas</span>
             </span>
+            <span class="font-mono text-gold-300">Bs. {{ stats.metrics.totalRevenue.toFixed(2) }} (100%)</span>
           </div>
-          <div class="text-2xl sm:text-3xl font-black text-mate-950">
-            Bs. {{ stats.metrics.totalRevenue.toFixed(2) }}
+          <div class="w-full h-5 rounded-xl bg-darkness-900 overflow-hidden p-0.5 border border-darkness-800">
+            <div class="horizontal-bar-grow h-full rounded-lg bg-gradient-to-r from-gold-500 to-gold-400 shadow-sm"
+              [style.width.%]="stats.metrics.totalRevenue > 0 ? 100 : 0">
+            </div>
           </div>
-          <p class="text-2xs text-wood-600">100% de la base facturada en pedidos aprobados</p>
         </div>
 
-        <!-- Costo de Inventario -->
-        <div class="p-5 rounded-2xl bg-amber-50/50 border border-amber-200/80 space-y-2">
-          <div class="flex items-center justify-between">
-            <span class="text-2xs font-extrabold text-amber-800 uppercase tracking-wider">Costo de Mercadería</span>
-            <span class="w-7 h-7 rounded-lg bg-amber-100 text-amber-800 flex items-center justify-center text-xs">
-              <i class="fa-solid fa-boxes-packing"></i>
+        <!-- Barra 2: Costo de Mercadería -->
+        <div class="space-y-1.5">
+          <div class="flex justify-between text-xs font-semibold">
+            <span class="text-cream-200 flex items-center gap-2">
+              <span class="w-3 h-3 rounded-full bg-amber-500 inline-block shadow"></span>
+              <span>Costo de Inventario Vendido</span>
             </span>
+            <span class="font-mono text-amber-300">Bs. {{ stats.metrics.totalCost.toFixed(2) }} ({{ getCostPercentage()
+              }}%)</span>
           </div>
-          <div class="text-2xl sm:text-3xl font-black text-amber-950">
-            Bs. {{ stats.metrics.totalCost.toFixed(2) }}
+          <div class="w-full h-5 rounded-xl bg-darkness-900 overflow-hidden p-0.5 border border-darkness-800">
+            <div class="horizontal-bar-grow h-full rounded-lg bg-gradient-to-r from-amber-600 to-amber-500 shadow-sm"
+              [style.width.%]="getCostPercentage()">
+            </div>
           </div>
-          <p class="text-2xs text-amber-700">Representa el <strong>{{ getCostPercentage() }}%</strong> del total de ingresos</p>
         </div>
 
-        <!-- Ganancia Neta -->
-        <div class="p-5 rounded-2xl bg-emerald-50/70 border border-emerald-200 space-y-2">
-          <div class="flex items-center justify-between">
-            <span class="text-2xs font-extrabold text-emerald-800 uppercase tracking-wider">Ganancia Neta (Margen)</span>
-            <span class="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center text-xs">
-              <i class="fa-solid fa-sack-dollar"></i>
+        <!-- Barra 3: Ganancia Neta -->
+        <div class="space-y-1.5">
+          <div class="flex justify-between text-xs font-semibold">
+            <span class="text-cream-200 flex items-center gap-2">
+              <span class="w-3 h-3 rounded-full bg-emerald-400 inline-block shadow"></span>
+              <span>Ganancia Neta Real</span>
             </span>
+            <span class="font-mono text-emerald-300 font-bold">Bs. {{ stats.metrics.netProfit.toFixed(2) }} ({{
+              getProfitPercentage() }}%)</span>
           </div>
-          <div class="text-2xl sm:text-3xl font-black text-emerald-950">
-            Bs. {{ stats.metrics.netProfit.toFixed(2) }}
-          </div>
-          <p class="text-2xs text-emerald-700 font-semibold">
-            Utilidad líquida tras descontar costos: <strong>{{ getProfitPercentage() }}%</strong>
-          </p>
-        </div>
-      </div>
-
-      <!-- GRÁFICA DE BARRAS COMPARATIVA FINANCIERA (Visual Bar Chart) -->
-      <div class="p-6 rounded-2xl bg-darkness-950 text-white space-y-5 shadow-lg border border-darkness-900">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
-          <div>
-            <h3 class="text-sm font-extrabold text-white flex items-center gap-2">
-              <i class="fa-solid fa-chart-simple text-gold-400"></i>
-              <span>Gráfica de Barras Comparativa: Desglose de Capital</span>
-            </h3>
-            <p class="text-2xs text-cream-300">Visualización proporcional de ventas brutas versus costos de adquisición y rendimiento neto</p>
-          </div>
-          <span class="text-2xs font-mono text-gold-400 bg-darkness-900 px-3 py-1 rounded-lg border border-gold-400/20">
-            Base: Bs. {{ stats.metrics.totalRevenue.toFixed(2) }}
-          </span>
-        </div>
-
-        <div class="space-y-4 pt-2">
-          <!-- Barra 1: Ingresos Totales (100%) -->
-          <div class="space-y-1.5">
-            <div class="flex justify-between text-xs font-semibold">
-              <span class="text-cream-200 flex items-center gap-2">
-                <span class="w-3 h-3 rounded-full bg-gold-400 inline-block shadow"></span>
-                <span>Ingresos Brutos por Ventas</span>
-              </span>
-              <span class="font-mono text-gold-300">Bs. {{ stats.metrics.totalRevenue.toFixed(2) }} (100%)</span>
-            </div>
-            <div class="w-full h-5 rounded-xl bg-darkness-900 overflow-hidden p-0.5 border border-darkness-800">
-              <div 
-                class="horizontal-bar-grow h-full rounded-lg bg-gradient-to-r from-gold-500 to-gold-400 shadow-sm"
-                [style.width.%]="stats.metrics.totalRevenue > 0 ? 100 : 0">
-              </div>
-            </div>
-          </div>
-
-          <!-- Barra 2: Costo de Mercadería -->
-          <div class="space-y-1.5">
-            <div class="flex justify-between text-xs font-semibold">
-              <span class="text-cream-200 flex items-center gap-2">
-                <span class="w-3 h-3 rounded-full bg-amber-500 inline-block shadow"></span>
-                <span>Costo de Inventario Vendido</span>
-              </span>
-              <span class="font-mono text-amber-300">Bs. {{ stats.metrics.totalCost.toFixed(2) }} ({{ getCostPercentage() }}%)</span>
-            </div>
-            <div class="w-full h-5 rounded-xl bg-darkness-900 overflow-hidden p-0.5 border border-darkness-800">
-              <div 
-                class="horizontal-bar-grow h-full rounded-lg bg-gradient-to-r from-amber-600 to-amber-500 shadow-sm"
-                [style.width.%]="getCostPercentage()">
-              </div>
-            </div>
-          </div>
-
-          <!-- Barra 3: Ganancia Neta -->
-          <div class="space-y-1.5">
-            <div class="flex justify-between text-xs font-semibold">
-              <span class="text-cream-200 flex items-center gap-2">
-                <span class="w-3 h-3 rounded-full bg-emerald-400 inline-block shadow"></span>
-                <span>Ganancia Neta Real</span>
-              </span>
-              <span class="font-mono text-emerald-300 font-bold">Bs. {{ stats.metrics.netProfit.toFixed(2) }} ({{ getProfitPercentage() }}%)</span>
-            </div>
-            <div class="w-full h-5 rounded-xl bg-darkness-900 overflow-hidden p-0.5 border border-darkness-800">
-              <div 
-                class="horizontal-bar-grow h-full rounded-lg bg-gradient-to-r from-emerald-500 to-emerald-400 shadow-sm"
-                [style.width.%]="getProfitPercentage()">
-              </div>
+          <div class="w-full h-5 rounded-xl bg-darkness-900 overflow-hidden p-0.5 border border-darkness-800">
+            <div
+              class="horizontal-bar-grow h-full rounded-lg bg-gradient-to-r from-emerald-500 to-emerald-400 shadow-sm"
+              [style.width.%]="getProfitPercentage()">
             </div>
           </div>
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- ============================================================== -->
-    <!-- 3. SECCIÓN DE HISTOGRAMAS DE DISTRIBUCIÓN (HISTOGRAM CHARTS) -->
-    <!-- ============================================================== -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-      
-      <!-- HISTOGRAMA 1: DISTRIBUCIÓN TEMPORAL DE VENTAS -->
-      <div class="bg-white p-6 sm:p-7 rounded-3xl border border-wood-200 shadow-sm space-y-5 hover-lift transition-all">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-wood-100 pb-3">
-          <div class="space-y-0.5">
-            <h3 class="text-sm font-extrabold text-mate-950 flex items-center gap-2">
-              <i class="fa-solid fa-chart-column text-gold-600"></i>
-              <span>Histograma de Ventas (Últimos {{ selectedPeriod }} Días)</span>
-            </h3>
-            <p class="text-2xs text-wood-500">Distribución de volumen diario de facturación confirmada</p>
-          </div>
-          <!-- Selector de período dinámico tipo pills -->
-          <div class="flex items-center bg-wood-100 p-1 rounded-xl border border-wood-200 self-start sm:self-auto">
-            @for (opt of periodOptions; track opt.value) {
-              <button
-                type="button"
-                (click)="setPeriod(opt.value)"
-                [disabled]="loading"
-                class="px-2.5 py-1 text-3xs font-black rounded-lg transition-all"
-                [class.bg-white]="selectedPeriod === opt.value"
-                [class.text-mate-950]="selectedPeriod === opt.value"
-                [class.shadow-2xs]="selectedPeriod === opt.value"
-                [class.text-wood-600]="selectedPeriod !== opt.value"
-                [class.hover:text-mate-950]="selectedPeriod !== opt.value">
-                {{ opt.label }}
-              </button>
-            }
-          </div>
+  <!-- ============================================================== -->
+  <!-- 3. SECCIÓN DE HISTOGRAMAS DE DISTRIBUCIÓN (HISTOGRAM CHARTS) -->
+  <!-- ============================================================== -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+    <!-- HISTOGRAMA 1: DISTRIBUCIÓN TEMPORAL DE VENTAS -->
+    <div class="bg-white p-6 sm:p-7 rounded-3xl border border-wood-200 shadow-sm space-y-5 hover-lift transition-all">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-wood-100 pb-3">
+        <div class="space-y-0.5">
+          <h3 class="text-sm font-extrabold text-mate-950 flex items-center gap-2">
+            <i class="fa-solid fa-chart-column text-gold-600"></i>
+            <span>Histograma de Ventas (Últimos {{ selectedPeriod }} Días)</span>
+          </h3>
+          <p class="text-2xs text-wood-500">Distribución de volumen diario de facturación confirmada</p>
         </div>
-
-        <!-- Gráfico del Histograma Vertical -->
-        <div class="h-56 pt-6 pb-2 px-2 flex flex-col justify-end relative bg-wood-50/50 rounded-2xl border border-wood-200/60 overflow-x-auto">
-          <!-- Líneas de referencia dashed horizontales -->
-          <div class="absolute inset-x-4 top-6 chart-grid-line pointer-events-none"></div>
-          <div class="absolute inset-x-4 top-1/2 chart-grid-line pointer-events-none"></div>
-
-          <!-- Barras del Histograma -->
-          <div class="flex items-end justify-between gap-1 sm:gap-2 h-full z-10 px-1 sm:px-2 min-w-full">
-            @for (day of stats.dailySalesHistory; track day.date; let idx = $index) {
-              <div 
-                class="flex-1 flex flex-col items-center h-full justify-end group relative cursor-pointer min-w-[20px]"
-                (mouseenter)="hoveredDailyIndex = idx"
-                (mouseleave)="hoveredDailyIndex = null">
-                
-                <!-- Tooltip Dinámico Flotante -->
-                @if (hoveredDailyIndex === idx) {
-                  <div class="absolute -top-14 z-30 bg-darkness-950 text-white text-2xs rounded-xl py-1.5 px-3 whitespace-nowrap tooltip-bubble pointer-events-none animate-fade-in border border-darkness-800">
-                    <div class="font-bold text-gold-300">{{ day.label }}</div>
-                    <div class="text-cream-100 font-mono">Bs. {{ day.total.toFixed(2) }} • {{ day.count }} pedidos</div>
-                  </div>
-                }
-
-                <!-- Monto mini en cabecera de barra -->
-                <span class="text-3xs font-mono text-wood-600 mb-1 opacity-70 group-hover:opacity-100 group-hover:font-bold transition-opacity hidden sm:inline">
-                  {{ day.total > 0 ? (day.total | number:'1.0-0') : '0' }}
-                </span>
-
-                <!-- Barra Vertical con gradiente -->
-                <div class="w-full max-w-[36px] bg-wood-200 rounded-t-xl overflow-hidden flex items-end h-full">
-                  <div 
-                    class="histogram-bar-grow w-full rounded-t-xl transition-all"
-                    [class.bg-gradient-to-t]="true"
-                    [class.from-mate-800]="day.total > 0"
-                    [class.to-gold-500]="day.total > 0"
-                    [class.bg-wood-300]="day.total === 0"
-                    [class.group-hover:to-gold-400]="true"
-                    [style.height.%]="getDailyBarHeight(day.total)">
-                  </div>
-                </div>
-
-                <!-- Etiqueta de Día (Eje X) -->
-                <span class="text-3xs font-bold text-wood-700 mt-2 whitespace-nowrap">
-                  {{ day.label.includes(' ') ? day.label.split(' ')[0] : day.label }}
-                </span>
-                @if (day.label.includes(' ')) {
-                  <span class="text-4xs text-wood-500 font-mono">
-                    {{ day.label.split(' ')[1] }}
-                  </span>
-                }
-              </div>
-            }
-          </div>
-        </div>
-
-        <div class="flex items-center justify-between text-2xs text-wood-600 px-1 pt-1">
-          <span class="flex items-center gap-1.5">
-            <span class="w-2.5 h-2.5 rounded bg-gold-500 inline-block"></span>
-            <span>Ventas registradas</span>
-          </span>
-          <span class="italic">Pasa el cursor sobre cada columna para ver el detalle</span>
+        <!-- Selector de período dinámico tipo pills -->
+        <div class="flex items-center bg-wood-100 p-1 rounded-xl border border-wood-200 self-start sm:self-auto">
+          @for (opt of periodOptions; track opt.value) {
+          <button type="button" (click)="setPeriod(opt.value)" [disabled]="loading"
+            class="px-2.5 py-1 text-3xs font-black rounded-lg transition-all"
+            [class.bg-white]="selectedPeriod === opt.value" [class.text-mate-950]="selectedPeriod === opt.value"
+            [class.shadow-2xs]="selectedPeriod === opt.value" [class.text-wood-600]="selectedPeriod !== opt.value"
+            [class.hover:text-mate-950]="selectedPeriod !== opt.value">
+            {{ opt.label }}
+          </button>
+          }
         </div>
       </div>
 
-      <!-- HISTOGRAMA 2: DISTRIBUCIÓN DE MONTOS POR PEDIDO (TICKET BINS) -->
-      <div class="bg-white p-6 sm:p-7 rounded-3xl border border-wood-200 shadow-sm space-y-5 hover-lift transition-all">
-        <div class="flex items-center justify-between border-b border-wood-100 pb-3">
-          <div class="space-y-0.5">
-            <h3 class="text-sm font-extrabold text-mate-950 flex items-center gap-2">
-              <i class="fa-solid fa-layer-group text-gold-600"></i>
-              <span>Histograma de Ticket Promedio</span>
-            </h3>
-            <p class="text-2xs text-wood-500">Distribución de clientes agrupados por rangos de monto de compra</p>
-          </div>
-          <span class="text-3xs font-extrabold uppercase bg-emerald-50 text-emerald-800 px-2.5 py-1 rounded-md">
-            Rangos de Compra
-          </span>
-        </div>
+      <!-- Gráfico del Histograma Vertical -->
+      <div
+        class="h-56 pt-6 pb-2 px-2 flex flex-col justify-end relative bg-wood-50/50 rounded-2xl border border-wood-200/60 overflow-x-auto">
+        <!-- Líneas de referencia dashed horizontales -->
+        <div class="absolute inset-x-4 top-6 chart-grid-line pointer-events-none"></div>
+        <div class="absolute inset-x-4 top-1/2 chart-grid-line pointer-events-none"></div>
 
-        <!-- Gráfico del Histograma de Rangos -->
-        <div class="h-56 pt-6 pb-2 px-2 flex flex-col justify-end relative bg-wood-50/50 rounded-2xl border border-wood-200/60">
-          <div class="absolute inset-x-4 top-6 chart-grid-line pointer-events-none"></div>
-          <div class="absolute inset-x-4 top-1/2 chart-grid-line pointer-events-none"></div>
+        <!-- Barras del Histograma -->
+        <div class="flex items-end justify-between gap-1 sm:gap-2 h-full z-10 px-1 sm:px-2 min-w-full">
+          @for (day of stats.dailySalesHistory; track day.date; let idx = $index) {
+          <div class="flex-1 flex flex-col items-center h-full justify-end group relative cursor-pointer min-w-[20px]"
+            (mouseenter)="hoveredDailyIndex = idx" (mouseleave)="hoveredDailyIndex = null">
 
-          <div class="flex items-end justify-around gap-3 h-full z-10 px-2">
-            @for (bin of stats.orderDistribution; track bin.range; let idx = $index) {
-              <div 
-                class="flex-1 flex flex-col items-center h-full justify-end group relative cursor-pointer"
-                (mouseenter)="hoveredBinIndex = idx"
-                (mouseleave)="hoveredBinIndex = null">
+            <!-- Tooltip Dinámico Flotante -->
+            @if (hoveredDailyIndex === idx) {
+            <div
+              class="absolute -top-14 z-30 bg-darkness-950 text-white text-2xs rounded-xl py-1.5 px-3 whitespace-nowrap tooltip-bubble pointer-events-none animate-fade-in border border-darkness-800">
+              <div class="font-bold text-gold-300">{{ day.label }}</div>
+              <div class="text-cream-100 font-mono">Bs. {{ day.total.toFixed(2) }} • {{ day.count }} pedidos</div>
+            </div>
+            }
 
-                <!-- Tooltip Dinámico -->
-                @if (hoveredBinIndex === idx) {
-                  <div class="absolute -top-14 z-30 bg-darkness-950 text-white text-2xs rounded-xl py-1.5 px-3 whitespace-nowrap tooltip-bubble pointer-events-none animate-fade-in border border-darkness-800">
-                    <div class="font-bold text-gold-300">Rango {{ bin.range }}</div>
-                    <div class="text-cream-100 font-mono">{{ bin.count }} compras ({{ bin.percentage }}% del total)</div>
-                  </div>
-                }
+            <!-- Monto mini en cabecera de barra -->
+            <span
+              class="text-3xs font-mono text-wood-600 mb-1 opacity-70 group-hover:opacity-100 group-hover:font-bold transition-opacity hidden sm:inline">
+              {{ day.total > 0 ? (day.total | number:'1.0-0') : '0' }}
+            </span>
 
-                <!-- Badge superior con porcentaje -->
-                <span class="text-3xs font-black text-mate-800 mb-1 opacity-80 group-hover:opacity-100 transition-opacity">
-                  {{ bin.percentage }}%
-                </span>
-
-                <!-- Barra Vertical -->
-                <div class="w-full max-w-[48px] bg-wood-200 rounded-t-xl overflow-hidden flex items-end h-full">
-                  <div 
-                    class="histogram-bar-grow w-full rounded-t-xl transition-all"
-                    [class.bg-gradient-to-t]="true"
-                    [class.from-emerald-800]="bin.count > 0"
-                    [class.to-emerald-400]="bin.count > 0"
-                    [class.bg-wood-300]="bin.count === 0"
-                    [class.group-hover:to-emerald-300]="true"
-                    [style.height.%]="getTicketBarHeight(bin.count)">
-                  </div>
-                </div>
-
-                <!-- Etiqueta del Intervalo / Rango (Eje X) -->
-                <span class="text-3xs font-bold text-wood-800 mt-2 text-center leading-tight">
-                  {{ bin.range }}
-                </span>
-                <span class="text-4xs text-wood-500 font-mono">
-                  {{ bin.count }} pedidos
-                </span>
+            <!-- Barra Vertical con gradiente -->
+            <div class="w-full max-w-[36px] bg-wood-200 rounded-t-xl overflow-hidden flex items-end h-full">
+              <div class="histogram-bar-grow w-full rounded-t-xl transition-all" [class.bg-gradient-to-t]="true"
+                [class.from-mate-800]="day.total > 0" [class.to-gold-500]="day.total > 0"
+                [class.bg-wood-300]="day.total === 0" [class.group-hover:to-gold-400]="true"
+                [style.height.%]="getDailyBarHeight(day.total)">
               </div>
+            </div>
+
+            <!-- Etiqueta de Día (Eje X) -->
+            <span class="text-3xs font-bold text-wood-700 mt-2 whitespace-nowrap">
+              {{ day.label.includes(' ') ? day.label.split(' ')[0] : day.label }}
+            </span>
+            @if (day.label.includes(' ')) {
+            <span class="text-4xs text-wood-500 font-mono">
+              {{ day.label.split(' ')[1] }}
+            </span>
             }
           </div>
+          }
         </div>
+      </div>
 
-        <div class="flex items-center justify-between text-2xs text-wood-600 px-1 pt-1">
-          <span class="flex items-center gap-1.5">
-            <span class="w-2.5 h-2.5 rounded bg-emerald-500 inline-block"></span>
-            <span>Concentración de compras</span>
-          </span>
-          <span class="italic">Identifica el ticket de compra preferido por los compradores</span>
-        </div>
+      <div class="flex items-center justify-between text-2xs text-wood-600 px-1 pt-1">
+        <span class="flex items-center gap-1.5">
+          <span class="w-2.5 h-2.5 rounded bg-gold-500 inline-block"></span>
+          <span>Ventas registradas</span>
+        </span>
+        <span class="italic">Pasa el cursor sobre cada columna para ver el detalle</span>
       </div>
     </div>
 
-    <!-- ============================================================== -->
-    <!-- 4. RANKING DE PRODUCTOS Y PRONÓSTICO PREDICTIVO DE DEMANDA -->
-    <!-- ============================================================== -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-      
-      <!-- TOP PRODUCTOS MÁS VENDIDOS (GRÁFICA DE BARRAS HORIZONTALES) -->
-      <div class="bg-white p-6 sm:p-7 rounded-3xl border border-wood-200 shadow-sm space-y-4 hover-lift transition-all">
-        <div class="flex items-center justify-between border-b border-wood-100 pb-3">
-          <h2 class="text-sm font-extrabold text-mate-950 flex items-center gap-2">
-            <i class="fa-solid fa-trophy text-gold-600"></i>
-            <span>Top 5 Productos Más Vendidos</span>
-          </h2>
-          <span class="text-3xs font-bold text-wood-500 uppercase">Por Unidades</span>
+    <!-- HISTOGRAMA 2: DISTRIBUCIÓN DE MONTOS POR PEDIDO (TICKET BINS) -->
+    <div class="bg-white p-6 sm:p-7 rounded-3xl border border-wood-200 shadow-sm space-y-5 hover-lift transition-all">
+      <div class="flex items-center justify-between border-b border-wood-100 pb-3">
+        <div class="space-y-0.5">
+          <h3 class="text-sm font-extrabold text-mate-950 flex items-center gap-2">
+            <i class="fa-solid fa-layer-group text-gold-600"></i>
+            <span>Histograma de Ticket Promedio</span>
+          </h3>
+          <p class="text-2xs text-wood-500">Distribución de clientes agrupados por rangos de monto de compra</p>
         </div>
+        <span class="text-3xs font-extrabold uppercase bg-emerald-50 text-emerald-800 px-2.5 py-1 rounded-md">
+          Rangos de Compra
+        </span>
+      </div>
 
-        @if (stats.topSellingProducts.length === 0) {
-          <div class="py-12 text-center text-xs text-wood-500 space-y-2">
-            <i class="fa-solid fa-box-open text-2xl text-wood-300"></i>
-            <p>Aún no se han registrado ventas aprobadas suficientes para generar el ranking.</p>
-          </div>
-        } @else {
-          <div class="space-y-4 pt-1">
-            @for (prod of stats.topSellingProducts; track prod.name; let rank = $index) {
-              <div class="p-3.5 rounded-2xl bg-wood-50/70 border border-wood-200/80 hover:bg-wood-100/60 transition-all space-y-2">
-                <div class="flex items-center justify-between gap-3">
-                  <div class="flex items-center gap-2.5 min-w-0">
-                    <span 
-                      class="w-6 h-6 rounded-full flex items-center justify-center font-black text-2xs shrink-0 shadow-2xs"
-                      [class.bg-gold-400]="rank === 0"
-                      [class.text-darkness-950]="rank === 0"
-                      [class.bg-slate-300]="rank === 1"
-                      [class.text-darkness-950]="rank === 1"
-                      [class.bg-amber-600]="rank === 2"
-                      [class.text-white]="rank === 2"
-                      [class.bg-wood-200]="rank > 2"
-                      [class.text-wood-700]="rank > 2">
-                      #{{ rank + 1 }}
-                    </span>
-                    <span class="font-bold text-xs text-mate-950 truncate">{{ prod.name }}</span>
-                  </div>
-                  <div class="text-right shrink-0">
-                    <span class="font-black text-xs text-mate-900 font-mono">Bs. {{ prod.revenue.toFixed(2) }}</span>
-                    <span class="text-3xs text-wood-500 block">{{ prod.quantity }} un. vendidas</span>
-                  </div>
-                </div>
+      <!-- Gráfico del Histograma de Rangos -->
+      <div
+        class="h-56 pt-6 pb-2 px-2 flex flex-col justify-end relative bg-wood-50/50 rounded-2xl border border-wood-200/60">
+        <div class="absolute inset-x-4 top-6 chart-grid-line pointer-events-none"></div>
+        <div class="absolute inset-x-4 top-1/2 chart-grid-line pointer-events-none"></div>
 
-                <!-- Barra de Progreso Proporcional -->
-                <div class="w-full h-2 rounded-full bg-wood-200/80 overflow-hidden">
-                  <div 
-                    class="horizontal-bar-grow h-full rounded-full"
-                    [class.bg-gold-500]="rank === 0"
-                    [class.bg-mate-700]="rank > 0"
-                    [style.width.%]="getProductBarWidth(prod.quantity)">
-                  </div>
-                </div>
-              </div>
+        <div class="flex items-end justify-around gap-3 h-full z-10 px-2">
+          @for (bin of stats.orderDistribution; track bin.range; let idx = $index) {
+          <div class="flex-1 flex flex-col items-center h-full justify-end group relative cursor-pointer"
+            (mouseenter)="hoveredBinIndex = idx" (mouseleave)="hoveredBinIndex = null">
+
+            <!-- Tooltip Dinámico -->
+            @if (hoveredBinIndex === idx) {
+            <div
+              class="absolute -top-14 z-30 bg-darkness-950 text-white text-2xs rounded-xl py-1.5 px-3 whitespace-nowrap tooltip-bubble pointer-events-none animate-fade-in border border-darkness-800">
+              <div class="font-bold text-gold-300">Rango {{ bin.range }}</div>
+              <div class="text-cream-100 font-mono">{{ bin.count }} compras ({{ bin.percentage }}% del total)</div>
+            </div>
             }
+
+            <!-- Badge superior con porcentaje -->
+            <span class="text-3xs font-black text-mate-800 mb-1 opacity-80 group-hover:opacity-100 transition-opacity">
+              {{ bin.percentage }}%
+            </span>
+
+            <!-- Barra Vertical -->
+            <div class="w-full max-w-[48px] bg-wood-200 rounded-t-xl overflow-hidden flex items-end h-full">
+              <div class="histogram-bar-grow w-full rounded-t-xl transition-all" [class.bg-gradient-to-t]="true"
+                [class.from-emerald-800]="bin.count > 0" [class.to-emerald-400]="bin.count > 0"
+                [class.bg-wood-300]="bin.count === 0" [class.group-hover:to-emerald-300]="true"
+                [style.height.%]="getTicketBarHeight(bin.count)">
+              </div>
+            </div>
+
+            <!-- Etiqueta del Intervalo / Rango (Eje X) -->
+            <span class="text-3xs font-bold text-wood-800 mt-2 text-center leading-tight">
+              {{ bin.range }}
+            </span>
+            <span class="text-4xs text-wood-500 font-mono">
+              {{ bin.count }} pedidos
+            </span>
           </div>
+          }
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between text-2xs text-wood-600 px-1 pt-1">
+        <span class="flex items-center gap-1.5">
+          <span class="w-2.5 h-2.5 rounded bg-emerald-500 inline-block"></span>
+          <span>Concentración de compras</span>
+        </span>
+        <span class="italic">Identifica el ticket de compra preferido por los compradores</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- 4. RANKING DE PRODUCTOS Y PRONÓSTICO PREDICTIVO DE DEMANDA -->
+  <!-- ============================================================== -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+    <!-- TOP PRODUCTOS MÁS VENDIDOS (GRÁFICA DE BARRAS HORIZONTALES) -->
+    <div class="bg-white p-6 sm:p-7 rounded-3xl border border-wood-200 shadow-sm space-y-4 hover-lift transition-all">
+      <div class="flex items-center justify-between border-b border-wood-100 pb-3">
+        <h2 class="text-sm font-extrabold text-mate-950 flex items-center gap-2">
+          <i class="fa-solid fa-trophy text-gold-600"></i>
+          <span>Top 5 Productos Más Vendidos</span>
+        </h2>
+        <span class="text-3xs font-bold text-wood-500 uppercase">Por Unidades</span>
+      </div>
+
+      @if (stats.topSellingProducts.length === 0) {
+      <div class="py-12 text-center text-xs text-wood-500 space-y-2">
+        <i class="fa-solid fa-box-open text-2xl text-wood-300"></i>
+        <p>Aún no se han registrado ventas aprobadas suficientes para generar el ranking.</p>
+      </div>
+      } @else {
+      <div class="space-y-4 pt-1">
+        @for (prod of stats.topSellingProducts; track prod.name; let rank = $index) {
+        <div
+          class="p-3.5 rounded-2xl bg-wood-50/70 border border-wood-200/80 hover:bg-wood-100/60 transition-all space-y-2">
+          <div class="flex items-center justify-between gap-3">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <span
+                class="w-6 h-6 rounded-full flex items-center justify-center font-black text-2xs shrink-0 shadow-2xs"
+                [class.bg-gold-400]="rank === 0" [class.text-darkness-950]="rank === 0"
+                [class.bg-slate-300]="rank === 1" [class.text-darkness-950]="rank === 1"
+                [class.bg-amber-600]="rank === 2" [class.text-white]="rank === 2" [class.bg-wood-200]="rank > 2"
+                [class.text-wood-700]="rank > 2">
+                #{{ rank + 1 }}
+              </span>
+              <span class="font-bold text-xs text-mate-950 truncate">{{ prod.name }}</span>
+            </div>
+            <div class="text-right shrink-0">
+              <span class="font-black text-xs text-mate-900 font-mono">Bs. {{ prod.revenue.toFixed(2) }}</span>
+              <span class="text-3xs text-wood-500 block">{{ prod.quantity }} un. vendidas</span>
+            </div>
+          </div>
+
+          <!-- Barra de Progreso Proporcional -->
+          <div class="w-full h-2 rounded-full bg-wood-200/80 overflow-hidden">
+            <div class="horizontal-bar-grow h-full rounded-full" [class.bg-gold-500]="rank === 0"
+              [class.bg-mate-700]="rank > 0" [style.width.%]="getProductBarWidth(prod.quantity)">
+            </div>
+          </div>
+        </div>
         }
       </div>
+      }
+    </div>
 
-      <!-- PRONÓSTICO ESTADÍSTICO DE DEMANDA (CU08) -->
-      <div class="bg-white p-6 sm:p-7 rounded-3xl border border-wood-200 shadow-sm space-y-5 hover-lift transition-all">
-        <div class="flex items-center justify-between border-b border-wood-100 pb-3">
-          <h2 class="text-sm font-extrabold text-mate-950 flex items-center gap-2">
-            <i class="fa-solid fa-wand-magic-sparkles text-gold-600"></i>
-            <span>Pronóstico Estadístico de Demanda (CU08)</span>
-          </h2>
-          <span class="text-3xs font-extrabold uppercase bg-mate-100 text-mate-800 px-2.5 py-1 rounded-md">
-            Modelo Predictivo
-          </span>
-        </div>
+    <!-- PRONÓSTICO ESTADÍSTICO DE DEMANDA (CU08) -->
+    <div class="bg-white p-6 sm:p-7 rounded-3xl border border-wood-200 shadow-sm space-y-5 hover-lift transition-all">
+      <div class="flex items-center justify-between border-b border-wood-100 pb-3">
+        <h2 class="text-sm font-extrabold text-mate-950 flex items-center gap-2">
+          <i class="fa-solid fa-wand-magic-sparkles text-gold-600"></i>
+          <span>Pronóstico Estadístico de Demanda</span>
+        </h2>
+        <span class="text-3xs font-extrabold uppercase bg-mate-100 text-mate-800 px-2.5 py-1 rounded-md">
+          Modelo Predictivo
+        </span>
+      </div>
 
-        <p class="text-xs text-wood-600">
-          Algoritmo predictivo basado en la media móvil de ventas aprobadas durante el último ciclo mensual de 30 días.
-        </p>
+      <p class="text-xs text-wood-600">
+        Algoritmo predictivo basado en la media móvil de ventas aprobadas durante el último ciclo mensual de 30 días.
+      </p>
 
-        <div class="space-y-4">
-          <!-- Promedio Diario -->
-          <div class="p-4 rounded-2xl bg-mate-50 border border-mate-200 flex items-center justify-between gap-4">
-            <div class="space-y-0.5">
-              <span class="text-2xs font-bold text-mate-800 uppercase tracking-wider">Demanda Promedio Diaria</span>
-              <div class="text-2xl font-black text-mate-950">
-                {{ stats.demandForecast.averageDailyDemand }} <span class="text-sm font-semibold text-mate-700">unidades / día</span>
-              </div>
-              <p class="text-3xs text-mate-600">Ritmo de rotación promedio de productos en almacén</p>
+      <div class="space-y-4">
+        <!-- Promedio Diario -->
+        <div class="p-4 rounded-2xl bg-mate-50 border border-mate-200 flex items-center justify-between gap-4">
+          <div class="space-y-0.5">
+            <span class="text-2xs font-bold text-mate-800 uppercase tracking-wider">Demanda Promedio Diaria</span>
+            <div class="text-2xl font-black text-mate-950">
+              {{ stats.demandForecast.averageDailyDemand }} <span class="text-sm font-semibold text-mate-700">unidades /
+                día</span>
             </div>
-            <div class="w-12 h-12 rounded-xl bg-mate-100 text-mate-800 flex items-center justify-center text-xl shrink-0">
-              <i class="fa-solid fa-calculator"></i>
-            </div>
+            <p class="text-3xs text-mate-600">Ritmo de rotación promedio de productos en almacén</p>
           </div>
-
-          <!-- Proyección 30 días -->
-          <div class="p-4 rounded-2xl bg-gold-50 border border-gold-200 flex items-center justify-between gap-4">
-            <div class="space-y-0.5">
-              <span class="text-2xs font-bold text-gold-900 uppercase tracking-wider">Proyección Recomendada a 30 Días</span>
-              <div class="text-2xl font-black text-gold-950">
-                ~ {{ stats.demandForecast.projectedDemandNextMonth }} <span class="text-sm font-semibold text-gold-800">unidades requeridas</span>
-              </div>
-              <p class="text-3xs text-gold-700">Umbral sugerido de compras a proveedores para evitar desabastecimiento</p>
-            </div>
-            <div class="w-12 h-12 rounded-xl bg-gold-100 text-gold-900 flex items-center justify-center text-xl shrink-0">
-              <i class="fa-solid fa-truck-ramp-box"></i>
-            </div>
+          <div class="w-12 h-12 rounded-xl bg-mate-100 text-mate-800 flex items-center justify-center text-xl shrink-0">
+            <i class="fa-solid fa-calculator"></i>
           </div>
         </div>
 
-        <div class="p-3.5 rounded-xl bg-wood-100/60 border border-wood-200 flex items-center gap-2.5 text-2xs text-wood-700">
-          <i class="fa-solid fa-circle-info text-gold-600 text-xs shrink-0"></i>
-          <span>Utiliza estas proyecciones para negociar pedidos por volumen con tus artesanos proveedores en época de alta demanda.</span>
+        <!-- Proyección 30 días -->
+        <div class="p-4 rounded-2xl bg-gold-50 border border-gold-200 flex items-center justify-between gap-4">
+          <div class="space-y-0.5">
+            <span class="text-2xs font-bold text-gold-900 uppercase tracking-wider">Proyección Recomendada a 30
+              Días</span>
+            <div class="text-2xl font-black text-gold-950">
+              ~ {{ stats.demandForecast.projectedDemandNextMonth }} <span
+                class="text-sm font-semibold text-gold-800">unidades requeridas</span>
+            </div>
+            <p class="text-3xs text-gold-700">Umbral sugerido de compras a proveedores para evitar desabastecimiento</p>
+          </div>
+          <div class="w-12 h-12 rounded-xl bg-gold-100 text-gold-900 flex items-center justify-center text-xl shrink-0">
+            <i class="fa-solid fa-truck-ramp-box"></i>
+          </div>
         </div>
       </div>
 
+      <div
+        class="p-3.5 rounded-xl bg-wood-100/60 border border-wood-200 flex items-center gap-2.5 text-2xs text-wood-700">
+        <i class="fa-solid fa-circle-info text-gold-600 text-xs shrink-0"></i>
+        <span>Utiliza estas proyecciones para negociar pedidos por volumen con tus artesanos proveedores en época de
+          alta demanda.</span>
+      </div>
     </div>
+
+  </div>
 
   }
 </div>
