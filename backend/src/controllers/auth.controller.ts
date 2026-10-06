@@ -1,22 +1,22 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { AuthService } from '../services/auth.service';
 
 export class AuthController {
-  public static async register(req: Request, res: Response) {
+  public static async register(req: Request, res: Response, next: NextFunction) {
     try {
       const result = await AuthService.register(req.body);
       res.status(201).json(result);
-    } catch (err: any) {
-      res.status(400).json({ error: err.message });
+    } catch (err) {
+      next(err);
     }
   }
 
-  public static async login(req: Request, res: Response) {
+  public static async login(req: Request, res: Response, next: NextFunction) {
     try {
       const result = await AuthService.login(req.body);
       res.json(result);
-    } catch (err: any) {
-      res.status(401).json({ error: err.message });
+    } catch (err) {
+      next(err);
     }
   }
 }

@@ -7,13 +7,15 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('Seeding database...');
 
-  // Create Admin User
-  const adminPassword = await bcrypt.hash('admin123', 10);
+  // Create Admin User seguro desde variables de entorno
+  const adminEmail = process.env.ADMIN_EMAIL || 'admin@elrincondelmate.com';
+  const adminRawPassword = process.env.ADMIN_PASSWORD || 'ChangeMeInProduction_2026!';
+  const adminPassword = await bcrypt.hash(adminRawPassword, 10);
   const admin = await prisma.user.upsert({
-    where: { email: 'admin@elrincondelmate.com' },
+    where: { email: adminEmail },
     update: {},
     create: {
-      email: 'admin@elrincondelmate.com',
+      email: adminEmail,
       password: adminPassword,
       name: 'Dueño El Rincón del Mate (Tarija & La Paz)',
       role: 'ADMIN',

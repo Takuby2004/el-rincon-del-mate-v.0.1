@@ -13,12 +13,14 @@ export class ApiService {
   constructor(private http: HttpClient) {}
 
   // Products
-  getProducts(filters?: { categoryId?: string; search?: string; activeOnly?: boolean }): Observable<Product[]> {
+  getProducts(filters?: { categoryId?: string; search?: string; activeOnly?: boolean; page?: number; limit?: number }): Observable<any> {
     let params = new HttpParams();
     if (filters?.categoryId) params = params.set('categoryId', filters.categoryId);
     if (filters?.search) params = params.set('search', filters.search);
     if (filters?.activeOnly) params = params.set('activeOnly', 'true');
-    return this.http.get<Product[]>(`${this.apiUrl}/products`, { params });
+    if (filters?.page) params = params.set('page', filters.page.toString());
+    if (filters?.limit) params = params.set('limit', filters.limit.toString());
+    return this.http.get<any>(`${this.apiUrl}/products`, { params });
   }
 
   getProductBySlug(slug: string): Observable<Product> {
@@ -85,12 +87,14 @@ export class ApiService {
     return this.http.post<Order>(`${this.apiUrl}/orders`, formData);
   }
 
-  getOrders(filters?: { status?: string; paymentStatus?: string; search?: string }): Observable<Order[]> {
+  getOrders(filters?: { status?: string; paymentStatus?: string; search?: string; page?: number; limit?: number }): Observable<any> {
     let params = new HttpParams();
     if (filters?.status) params = params.set('status', filters.status);
     if (filters?.paymentStatus) params = params.set('paymentStatus', filters.paymentStatus);
     if (filters?.search) params = params.set('search', filters.search);
-    return this.http.get<Order[]>(`${this.apiUrl}/orders`, { params });
+    if (filters?.page) params = params.set('page', filters.page.toString());
+    if (filters?.limit) params = params.set('limit', filters.limit.toString());
+    return this.http.get<any>(`${this.apiUrl}/orders`, { params });
   }
 
   getOrderById(id: string): Observable<Order> {
@@ -118,8 +122,12 @@ export class ApiService {
   }
 
   // Clients
-  getClients(): Observable<Client[]> {
-    return this.http.get<Client[]>(`${this.apiUrl}/clients`);
+  getClients(filters?: { search?: string; page?: number; limit?: number }): Observable<any> {
+    let params = new HttpParams();
+    if (filters?.search) params = params.set('search', filters.search);
+    if (filters?.page) params = params.set('page', filters.page.toString());
+    if (filters?.limit) params = params.set('limit', filters.limit.toString());
+    return this.http.get<any>(`${this.apiUrl}/clients`, { params });
   }
 
   getClientById(id: string): Observable<Client> {
@@ -139,8 +147,10 @@ export class ApiService {
   }
 
   // Stats & Reports
-  getDashboardStats(): Observable<DashboardStats> {
-    return this.http.get<DashboardStats>(`${this.apiUrl}/admin/statistics`);
+  getDashboardStats(days?: number): Observable<DashboardStats> {
+    let params = new HttpParams();
+    if (days) params = params.set('days', days.toString());
+    return this.http.get<DashboardStats>(`${this.apiUrl}/admin/statistics`, { params });
   }
 
   downloadOrderPdf(orderId: string): Observable<Blob> {

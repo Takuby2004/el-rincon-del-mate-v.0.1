@@ -54,9 +54,9 @@
             <div class="p-4 flex justify-between items-center bg-white">
               <div>
                 <h4 class="font-bold text-xs text-mate-900">{{ item.product?.name }}</h4>
-                <p class="text-2xs text-wood-500">Cantidad: {{ item.quantity }} × Bs. {{ item.unitPrice.toFixed(2) }}</p>
+                <p class="text-2xs text-wood-500">Cantidad: {{ item.quantity }} × Bs. {{ item.unitPrice | number:'1.2-2' }}</p>
               </div>
-              <span class="font-bold text-xs text-mate-800">Bs. {{ item.subtotal.toFixed(2) }}</span>
+              <span class="font-bold text-xs text-mate-800">Bs. {{ item.subtotal | number:'1.2-2' }}</span>
             </div>
           }
         </div>
@@ -66,11 +66,11 @@
       <div class="bg-wood-100/70 p-4 rounded-2xl space-y-2 text-xs">
         <div class="flex justify-between text-wood-700">
           <span>Subtotal:</span>
-          <span class="font-bold text-mate-900">Bs. {{ order.subtotal.toFixed(2) }}</span>
+          <span class="font-bold text-mate-900">Bs. {{ order.subtotal | number:'1.2-2' }}</span>
         </div>
         <div class="flex justify-between text-wood-700 border-t border-wood-200 pt-2 text-sm">
           <span class="font-extrabold text-mate-900">Total:</span>
-          <span class="font-extrabold text-mate-700">Bs. {{ order.total.toFixed(2) }}</span>
+          <span class="font-extrabold text-mate-700">Bs. {{ order.total | number:'1.2-2' }}</span>
         </div>
       </div>
 

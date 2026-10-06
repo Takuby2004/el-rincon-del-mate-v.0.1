@@ -1,5 +1,6 @@
 import { prisma } from '../config/prisma';
 import { FileStorageService } from '../utils/fileStorageService';
+import { AppError } from '../errors/AppError';
 
 export class PaymentQrService {
   public static async getActiveQr() {
@@ -22,7 +23,7 @@ export class PaymentQrService {
 
   public static async uploadQr(file: Express.Multer.File, uploadedByUserId: string) {
     if (!file) {
-      throw new Error('Debe adjuntar una imagen válida del código QR bancario.');
+      throw AppError.badRequest('Debe adjuntar una imagen válida del código QR bancario.');
     }
 
     const { url, fileName, mimeType } = await FileStorageService.saveFile(file, 'payment-qr');

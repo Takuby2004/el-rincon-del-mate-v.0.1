@@ -24,7 +24,7 @@ export class ReportService {
       orderBy: { createdAt: 'desc' }
     });
 
-    const totalSales = approvedOrders.reduce((sum, o) => sum + o.total, 0);
+    const totalSales = approvedOrders.reduce((sum, o) => sum + Number(o.total), 0);
 
     return PdfGenerator.generateSalesReportPdf(approvedOrders, totalSales, approvedOrders.length);
   }

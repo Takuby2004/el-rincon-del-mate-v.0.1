@@ -236,8 +236,8 @@
                 </div>
               </td>
               <td class="p-4 font-semibold text-wood-700">{{ product.category?.name }}</td>
-              <td class="p-4 font-extrabold text-mate-900">Bs. {{ product.price.toFixed(2) }}</td>
-              <td class="p-4 font-medium text-wood-600">Bs. {{ product.cost.toFixed(2) }}</td>
+              <td class="p-4 font-extrabold text-mate-900">Bs. {{ (product.price || 0) | number:'1.2-2' }}</td>
+              <td class="p-4 font-medium text-wood-600">Bs. {{ (product.cost || 0) | number:'1.2-2' }}</td>
               <td class="p-4">
                 <span class="px-2.5 py-1 rounded-full font-bold text-2xs" [ngClass]="product.stock > 5 ? 'bg-emerald-100 text-emerald-800' : (product.stock > 0 ? 'bg-amber-100 text-amber-800' : 'bg-red-100 text-red-800')">
                   {{ product.stock }} un.

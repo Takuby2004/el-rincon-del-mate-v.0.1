@@ -1,4 +1,5 @@
 import { prisma } from '../config/prisma';
+import { AppError } from '../errors/AppError';
 
 export class CategoryService {
   public static async getAll() {
@@ -20,14 +21,14 @@ export class CategoryService {
         }
       }
     });
-    if (!category) throw new Error('Categoría no encontrada');
+    if (!category) throw AppError.notFound('Categoría no encontrada');
     return category;
   }
 
   public static async create(data: { name: string; description?: string; imageUrl?: string }) {
     const slug = data.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
     const existing = await prisma.category.findUnique({ where: { slug } });
-    if (existing) throw new Error('Ya existe una categoría con este nombre.');
+    if (existing) throw AppError.conflict('Ya existe una categoría con este nombre.');
 
     return prisma.category.create({
       data: {
@@ -40,6 +41,9 @@ export class CategoryService {
   }
 
   public static async update(id: string, data: { name?: string; description?: string; imageUrl?: string }) {
+    const existing = await prisma.category.findUnique({ where: { id } });
+    if (!existing) throw AppError.notFound('Categoría no encontrada');
+
     const updateData: any = {};
     if (data.name) {
       updateData.name = data.name;
@@ -55,9 +59,12 @@ export class CategoryService {
   }
 
   public static async delete(id: string) {
+    const category = await prisma.category.findUnique({ where: { id } });
+    if (!category) throw AppError.notFound('Categoría no encontrada');
+
     const productsCount = await prisma.product.count({ where: { categoryId: id } });
     if (productsCount > 0) {
-      throw new Error(`No se puede eliminar la categoría porque contiene ${productsCount} productos asociados.`);
+      throw AppError.conflict(`No se puede eliminar la categoría porque contiene ${productsCount} productos asociados.`);
     }
     return prisma.category.delete({ where: { id } });
   }

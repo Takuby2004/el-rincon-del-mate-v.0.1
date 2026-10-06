@@ -7,9 +7,12 @@ import apiRouter from './routes';
 import { errorHandler } from './middlewares/error.middleware';
 import { generalApiLimiter } from './middlewares/security.middleware';
 
-dotenv.config();
+import { env } from './config/env';
 
 const app = express();
+
+// 0. Confianza en proxies inversos (Render, Vercel, Nginx) para rate limiting por IP real del cliente
+app.set('trust proxy', 1);
 
 // 1. Cabeceras de seguridad HTTP con Helmet (permitiendo carga de recursos estáticos cruzados)
 app.use(
@@ -19,9 +22,7 @@ app.use(
 );
 
 // 2. Configuración Segura de CORS
-const allowedOrigins = process.env.ALLOWED_ORIGINS
-  ? process.env.ALLOWED_ORIGINS.split(',').map((origin) => origin.trim())
-  : ['http://localhost:4200', 'http://localhost:3000', 'http://127.0.0.1:4200'];
+const allowedOrigins = env.ALLOWED_ORIGINS;
 
 app.use(
   cors({

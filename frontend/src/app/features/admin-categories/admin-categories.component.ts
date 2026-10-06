@@ -8,6 +8,8 @@ import { AssetUrlPipe } from '../../shared/pipes/asset-url.pipe';
 import { ImgFallbackDirective } from '../../shared/directives/img-fallback.directive';
 import { PaginationComponent } from '../../shared/components/pagination/pagination.component';
 
+import { ToastService } from '../../core/services/toast.service';
+
 @Component({
     selector: 'app-admin-categories',
     imports: [CommonModule, FormsModule, AssetUrlPipe, ImgFallbackDirective, PaginationComponent],
@@ -17,6 +19,7 @@ import { PaginationComponent } from '../../shared/components/pagination/paginati
 export class AdminCategoriesFeatureComponent implements OnInit {
   private apiService = inject(ApiService);
   private dialogService = inject(DialogService);
+  private toastService = inject(ToastService);
 
   categories: Category[] = [];
   searchTerm = '';
@@ -178,6 +181,7 @@ export class AdminCategoriesFeatureComponent implements OnInit {
     request$.subscribe({
       next: () => {
         this.isSaving = false;
+        this.toastService.success(this.isEditing ? 'Categoría actualizada exitosamente.' : 'Categoría creada exitosamente.');
         this.closeModal();
         this.loadCategories();
       },
@@ -207,7 +211,10 @@ export class AdminCategoriesFeatureComponent implements OnInit {
 
     if (confirmed) {
       this.apiService.deleteCategory(id).subscribe({
-        next: () => this.loadCategories(),
+        next: () => {
+          this.toastService.success('Categoría eliminada.');
+          this.loadCategories();
+        },
         error: (err) =>
           this.dialogService.alert({
             title: 'Error al Eliminar',

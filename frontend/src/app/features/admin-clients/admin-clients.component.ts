@@ -6,6 +6,8 @@ import { DialogService } from '../../core/services/dialog.service';
 import { Client } from '../../core/models/models';
 import { PaginationComponent } from '../../shared/components/pagination/pagination.component';
 
+import { ToastService } from '../../core/services/toast.service';
+
 @Component({
     selector: 'app-admin-clients',
     imports: [CommonModule, FormsModule, PaginationComponent],
@@ -15,6 +17,7 @@ import { PaginationComponent } from '../../shared/components/pagination/paginati
 export class AdminClientsFeatureComponent implements OnInit {
   private apiService = inject(ApiService);
   private dialogService = inject(DialogService);
+  private toastService = inject(ToastService);
   clients: Client[] = [];
   loading = true;
 
@@ -49,8 +52,8 @@ export class AdminClientsFeatureComponent implements OnInit {
   loadClients() {
     this.loading = true;
     this.apiService.getClients().subscribe({
-      next: (res) => {
-        this.clients = res;
+      next: (res: any) => {
+        this.clients = Array.isArray(res) ? res : (res?.data || []);
         this.loading = false;
       },
       error: () => {
@@ -151,12 +154,14 @@ export class AdminClientsFeatureComponent implements OnInit {
       next: () => {
         this.deletingId = null;
         this.actionMessage = `Los datos de "${client.name}" fueron eliminados exitosamente.`;
+        this.toastService.success(this.actionMessage);
         this.clients = this.clients.filter((c) => c.id !== client.id);
         setTimeout(() => (this.actionMessage = null), 5000);
       },
       error: (err) => {
         this.deletingId = null;
         this.actionError = err.error?.error || 'No se pudo eliminar el cliente. Intenta nuevamente.';
+        this.toastService.error(this.actionError || 'No se pudo eliminar el cliente.');
         setTimeout(() => (this.actionError = null), 7000);
       }
     });

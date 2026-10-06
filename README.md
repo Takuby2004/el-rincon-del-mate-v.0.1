@@ -26,11 +26,13 @@
   - Micro-animaciones escalonadas (*staggered*) y rebote interactivo en badge de carrito de compras.
   - **Sistema de Modales Aislados & Validación Reactiva (Admin)**: Capa de profundidad `z-[100]` con bloqueo de interacción exterior, marcos con gradiente rojo (`linear-gradient`) y mensajes emergentes (*Pop Messages*) interactivos por campo.
   - **Sistema Global de Diálogos & Modales de Confirmación (`DialogService`)**: Sustitución completa de las alertas y confirmaciones nativas del navegador (`window.confirm`/`window.alert`) por modales elegantes con efecto *glassmorphism/backdrop-blur*, variantes temáticas (`danger`, `warning`, `info`, `success`), animación fluida de escala y accesibilidad total (tecla ESC y clics de desenfoque).
+  - **Sistema Reactivo de Notificaciones Flotantes (`ToastService` & `ToastContainerComponent`)**: Notificaciones efímeras no bloqueantes basadas en Angular Signals, con cuatro variantes semánticas (`success`, `error`, `warning`, `info`), barra de tiempo decreciente (*progress bar* animada), pausa al pasar el cursor (*hover pause*), accesibilidad ARIA (`role="status"`, `aria-live="polite"`) y autocierre automático.
   - **Paginación Reactiva Inteligente (`PaginationComponent`)**: Componente standalone reutilizable con límite de 5 elementos por página, navegación por botones y números, y renderizado condicional inteligente (solo se muestra cuando `totalItems > 5`) en Productos, Categorías, Pedidos y Clientes.
   - **Módulo Unificado de Dashboards Administrativos y Financieros**: Consolidación total de la analítica operativa, comercial y financiera en una sola sección unificada (**Dashboards**). Incorpora:
     - **Gráficas de Barras Comparativas**: Visualización proporcional del desglose de capital (Ingresos Brutos vs Costo de Mercadería vs Ganancia Neta Líquida).
+    - **Selector de Períodos de Tiempo Dinámico**: Botones interactivos tipo "pill" en la cabecera del histograma que permiten al administrador alternar entre **7 Días**, **14 Días** y **30 Días** de análisis, recalculando en tiempo real la facturación y la frecuencia de ventas.
     - **Histogramas de Frecuencia**:
-      - *Histograma Temporal*: Volumen y facturación diaria durante los últimos 7 días con tooltips interactivos.
+      - *Histograma Temporal*: Volumen y facturación diaria con tooltips interactivos y etiquetas de días adaptativas.
       - *Histograma de Ticket Promedio*: Agrupación de compradores por intervalos de monto de pedido (`0-150 Bs`, `151-300 Bs`, `301-600 Bs`, `600+ Bs`).
     - **Ranking de Rendimiento**: Barras horizontales proporcionales del Top 5 productos más vendidos.
     - **Algoritmo Predictivo de Demanda (CU08)**: Cálculo automático de rotación diaria y proyección mensual sugerida para compras a proveedores.
@@ -61,7 +63,7 @@
 | **CU07** | Checkout (Paso 2) | Visualización del QR oficial del dueño y subida obligatoria del comprobante de pago. |
 | **CU08** | Control de Stock | Reserva y decremento automático del inventario al momento de crear el pedido. |
 | **CU09** | Reversión de Stock | Reincorporación automática de stock si el pago es rechazado o el pedido se cancela. |
-| **CU10** | Verificación de Pagos & Pedidos | Panel administrativo con 3 estados simplificados (**Pendiente de verificación**, **Aprobado**, **Rechazado**), métricas rápidas (KPIs), barra de búsqueda reactiva por cliente/número/teléfono, filtros por estado, botón de limpieza rápida, modal avanzado de inspección de comprobantes (zoom, rotación, descarga) y sincronización automática de stock. |
+| **CU10** | Verificación de Pagos & Pedidos | Panel administrativo con 3 estados simplificados (**Pendiente de verificación**, **Aprobado**, **Rechazado**), métricas rápidas (KPIs), normalización numérica integral de decimales (`Decimal` a `Number`) en backend y frontend, formateo seguro tolerante a fallos mediante el pipe `| number:'1.2-2'`, barra de búsqueda reactiva por cliente/número/teléfono, filtros por estado, botón de limpieza rápida, modal avanzado de inspección de comprobantes (zoom, rotación, descarga) y sincronización automática de stock. |
 | **CU10.1** | Eliminación de Pedidos | Eliminación permanente de pedidos desde la tabla o el modal de detalle con confirmación visual de seguridad, restauración automática e inteligente de stock reservado y eliminación física de comprobantes. |
 | **CU11** | Rechazo con Motivo | Rechazo de pagos no válidos con registro obligatorio de justificación. |
 | **CU12** | Gestión de QR Dueño | Interfaz administrativa para subir y activar una nueva imagen de QR bancario. |
@@ -94,11 +96,13 @@
    npm install
    ```
 
-3. Crea el archivo `.env` en la raíz de `backend/` con las siguientes variables:
-   ```env
-   PORT=3000
-   DATABASE_URL="postgresql://postgres:postgres@localhost:5432/el_rincon_del_mate?schema=public"
-   JWT_SECRET="el_rincon_del_mate_jwt_secret_2026_super_seguro"
+3. Copia el archivo `.env.example` a `.env` en la raíz de `backend/` y configura tus variables:
+   ```bash
+   cp .env.example .env
+   ```
+   *Genera un `JWT_SECRET` seguro de al menos 32 caracteres con:*
+   ```bash
+   node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
    ```
 
 4. Genera el cliente de Prisma y ejecuta las migraciones:
@@ -188,11 +192,16 @@
 ```text
 el-rincon-del-mate-v.0.1/
 ├── backend/                    # Servidor Node.js + Express + Prisma
-│   ├── prisma/                 # Esquema de base de datos y scripts de seed
+│   ├── prisma/                 # Esquema de base de datos (con Decimal 12,2) y seeders
 │   ├── src/
-│   │   ├── controllers/        # Controladores de la API REST
-│   │   ├── middlewares/        # Middlewares (JWT Auth, Multer upload)
-│   │   ├── routes/             # Definición de rutas Express
+│   │   ├── config/             # Configuración de entorno (env.ts), Multer y Prisma
+│   │   ├── controllers/        # Controladores con delegación de errores next(err)
+│   │   ├── errors/             # Clase AppError y manejo operacional de excepciones
+│   │   ├── middlewares/        # Middlewares (JWT, Zod validate, Centralized errorHandler)
+│   │   ├── routes/             # Rutas Express tipadas
+│   │   ├── services/           # Lógica contable con Decimales, máquinas de estado y emails
+│   │   ├── utils/              # Paginación estandarizada, validación Magic Bytes, QR y PDF
+│   │   ├── validators/         # Esquemas Zod para todas las peticiones
 │   │   └── server.ts           # Punto de entrada del backend
 │   └── uploads/                # Directorio de imágenes y comprobantes
 │
@@ -200,18 +209,20 @@ el-rincon-del-mate-v.0.1/
 │   ├── src/
 │   │   ├── app/
 │   │   │   ├── core/           # Servicios (API, Carrito, Auth) y Guards
-│   │   │   ├── features/       # Vistas (Home, Catálogo, Checkout, Admin)
-│   │   │   ├── layouts/        # Layout público y Layout del panel admin
+│   │   │   ├── features/       # Vistas (Home, Catálogo, Checkout, Admin Dashboards)
+│   │   │   ├── layouts/        # Layout público y Layout del panel admin (Dashboards unificado)
 │   │   │   └── shared/         # Directivas (ImgFallback) y Pipes (AssetUrl)
 │   │   ├── assets/             # Logos y emblemas oficiales SVG
 │   │   └── styles.css          # Animaciones clave, Shimmer y diseño global
 │   └── tailwind.config.js      # Paleta artesanal y tokens de animación
 │
-├── docs/                       # Documentación técnica y planes de auditoría
-│   ├── AUDIT_INVESTIGATION.md
-│   ├── IMAGE_LOADING_AUDIT_PLAN.md
-│   ├── SYSTEM_README_DOCUMENTATION_PLAN.md
-│   ├── UI_ANIMATIONS_AND_IMAGE_FIX_PLAN.md
+├── docs/                       # Documentación técnica, planes y auditorías
+│   ├── AUDITORIA_INTEGRAL_SISTEMA_V0.1.md
+│   ├── PLAN_UNIFICACION_DASHBOARD_Y_ESTADISTICAS.md
+│   ├── PLAN_DIAGNOSTICO_Y_EVALUACION_V0.2.md
+│   ├── PLAN_FASE_2_VALIDACION_ZOD_Y_ESTADOS.md
+│   ├── PLAN_FASE_3_FINANZAS_MAGIC_BYTES_Y_PAGINACION.md
+│   ├── PLAN_FASE_4_FRONTEND_PAGINACION_Y_TOASTS.md
 │   └── USE_CASE_TRACEABILITY.md
 │
 └── README.md                   # Documentación principal del sistema
@@ -219,14 +230,19 @@ el-rincon-del-mate-v.0.1/
 
 ---
 
-## 🔮 Roadmap de Funcionalidades Futuras (BETA)
+## 🚦 Máquina de Estados y Transición de Pedidos
 
-- [ ] **Métricas Visuales Interactivas en Dashboard (`[BETA]`)**:
-  - Gráficos de torta / dona para la distribución porcentual de estados de pago (Aprobados, Pendientes, Rechazados).
-  - Gráficos de barras interactivos para el Top 5 de productos más vendidos e ingresos generados.
-  - Tablero comparativo de rentabilidad comercial (Ingresos vs Costos de Inventario vs Ganancia Neta).
-  - *Documento de planificación:* [`docs/PLAN_METRICAS_VISUALES_DASHBOARD_BETA.md`](docs/PLAN_METRICAS_VISUALES_DASHBOARD_BETA.md).
-- [ ] **Paginador en Historial QR (`payment-qr-config`)**: Pendiente para futura fase de refinamiento.
+El ciclo de vida de los pedidos implementa validación estricta de transiciones permitidas y control de stock bidireccional y atómico:
+
+| Estado Actual | Transiciones Permitidas | Impacto en Inventario |
+| :--- | :--- | :--- |
+| `PENDING_PAYMENT_VERIFICATION` | `PAID`, `PAYMENT_REJECTED`, `CANCELLED` | Reserva stock al crearse |
+| `PAID` | `PACKING`, `CANCELLED` | Mantiene stock reservado |
+| `PACKING` | `SHIPPED`, `CANCELLED` | Mantiene stock reservado |
+| `SHIPPED` | `DELIVERED`, `CANCELLED` | Mantiene stock reservado |
+| `DELIVERED` | *(Estado final exitoso)* | Descuento definitivo |
+| `PAYMENT_REJECTED` | `PAID`, `CANCELLED` | Restaura stock automáticamente; si se reactiva a `PAID`, re-reserva atómicamente |
+| `CANCELLED` | *(Estado final terminal)* | Restaura stock si venía de un estado con stock activo |
 
 ---
 

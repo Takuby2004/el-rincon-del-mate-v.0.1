@@ -1,6 +1,28 @@
+import crypto from 'crypto';
+import { OrderStatus } from '@prisma/client';
 import { prisma } from '../config/prisma';
 import { FileStorageService } from '../utils/fileStorageService';
 import { PaymentQrService } from './paymentQr.service';
+import { AppError } from '../errors/AppError';
+import { parsePaginationParams, buildPaginatedResponse } from '../utils/pagination';
+
+const ALLOWED_STATUS_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
+  PENDING_PAYMENT_VERIFICATION: ['PAID', 'PAYMENT_REJECTED', 'CANCELLED'],
+  PAID: ['PACKING', 'CANCELLED'],
+  PACKING: ['SHIPPED', 'CANCELLED'],
+  SHIPPED: ['DELIVERED', 'CANCELLED'],
+  DELIVERED: [],
+  PAYMENT_REJECTED: ['PENDING_PAYMENT_VERIFICATION', 'PAID'],
+  CANCELLED: []
+};
+
+const ACTIVE_STOCK_STATUSES: OrderStatus[] = [
+  'PENDING_PAYMENT_VERIFICATION',
+  'PAID',
+  'PACKING',
+  'SHIPPED',
+  'DELIVERED'
+];
 
 export interface CreateOrderItemInput {
   productId: string;
@@ -19,6 +41,34 @@ export interface CreateOrderInput {
 }
 
 export class OrderService {
+  public static formatOrder(order: any) {
+    if (!order) return order;
+    return {
+      ...order,
+      subtotal: Number(order.subtotal) || 0,
+      total: Number(order.total) || 0,
+      payment: order.payment
+        ? {
+            ...order.payment,
+            amount: Number(order.payment.amount) || 0
+          }
+        : order.payment,
+      items: order.items?.map((i: any) => ({
+        ...i,
+        unitPrice: Number(i.unitPrice) || 0,
+        unitCost: Number(i.unitCost) || 0,
+        subtotal: Number(i.subtotal) || 0,
+        product: i.product
+          ? {
+              ...i.product,
+              price: Number(i.product.price) || 0,
+              ...(i.product.cost !== undefined && i.product.cost !== null ? { cost: Number(i.product.cost) || 0 } : {})
+            }
+          : i.product
+      }))
+    };
+  }
+
   public static async createOrder(orderData: CreateOrderInput, fileProof?: Express.Multer.File, userId?: string) {
     // 1. Mandatory check: Payment proof file must exist
     if (!fileProof) {
@@ -31,12 +81,48 @@ export class OrderService {
       throw new Error('En este momento no hay un código QR bancario activo configurado para recibir pagos.');
     }
 
-    if (!orderData.items || orderData.items.length === 0) {
+    // 3. Validar datos requeridos del cliente
+    if (!orderData.clientName?.trim()) throw new Error('El nombre del cliente es obligatorio.');
+    if (!orderData.clientEmail?.trim()) throw new Error('El correo electrónico es obligatorio.');
+    if (!orderData.clientPhone?.trim()) throw new Error('El teléfono de contacto es obligatorio.');
+    if (!orderData.clientAddress?.trim()) throw new Error('La dirección de entrega es obligatoria.');
+
+    if (!Array.isArray(orderData.items) || orderData.items.length === 0) {
       throw new Error('El carrito no contiene productos.');
     }
 
-    // 3. Fetch products and recalculate prices/stock in backend
-    const productIds = orderData.items.map((i) => i.productId);
+    if (orderData.items.length > 50) {
+      throw new Error('El pedido excede el límite máximo de 50 ítems por orden.');
+    }
+
+    // 4. Validar y fusionar productos e items (P0-1: control de cantidades positivas enteras)
+    const mergedMap = new Map<string, number>();
+    for (const it of orderData.items) {
+      if (!it.productId || typeof it.productId !== 'string' || !it.productId.trim()) {
+        throw new Error('Cada producto del pedido debe contar con un identificador válido.');
+      }
+      const pId = it.productId.trim();
+      const qty = Number(it.quantity);
+
+      if (!Number.isInteger(qty) || qty < 1 || qty > 99) {
+        throw new Error('La cantidad de cada producto debe ser un número entero entre 1 y 99.');
+      }
+
+      const existingQty = mergedMap.get(pId) || 0;
+      const totalQty = existingQty + qty;
+      if (totalQty > 99) {
+        throw new Error('La cantidad máxima permitida por producto es de 99 unidades.');
+      }
+      mergedMap.set(pId, totalQty);
+    }
+
+    const normalizedItems = Array.from(mergedMap.entries()).map(([productId, quantity]) => ({
+      productId,
+      quantity
+    }));
+
+    // 5. Fetch products and recalculate prices/stock in backend
+    const productIds = normalizedItems.map((i) => i.productId);
     const dbProducts = await prisma.product.findMany({
       where: { id: { in: productIds }, active: true }
     });
@@ -48,7 +134,7 @@ export class OrderService {
     let calculatedSubtotal = 0;
     const validatedItems: { product: any; quantity: number; unitPrice: number; unitCost: number; itemSubtotal: number }[] = [];
 
-    for (const itemInput of orderData.items) {
+    for (const itemInput of normalizedItems) {
       const product = dbProducts.find((p) => p.id === itemInput.productId);
       if (!product) throw new Error(`Producto ${itemInput.productId} no encontrado`);
 
@@ -56,58 +142,64 @@ export class OrderService {
         throw new Error(`Stock insuficiente para el producto "${product.name}". Stock disponible: ${product.stock}, Solicitado: ${itemInput.quantity}`);
       }
 
-      const itemSubtotal = product.price * itemInput.quantity;
+      const itemSubtotal = Number(product.price) * itemInput.quantity;
       calculatedSubtotal += itemSubtotal;
 
       validatedItems.push({
         product,
         quantity: itemInput.quantity,
-        unitPrice: product.price,
-        unitCost: product.cost,
+        unitPrice: Number(product.price),
+        unitCost: Number(product.cost),
         itemSubtotal
       });
     }
 
-    const calculatedTotal = calculatedSubtotal; // Extendable for shipping/tax if needed
+    const calculatedTotal = calculatedSubtotal;
 
     // Save proof image file via FileStorageService
     const { url: proofUrl, fileName: proofFileName, mimeType: proofMimeType } = await FileStorageService.saveFile(fileProof, 'payment-proofs');
 
-    // Generate unique order number (e.g. ORD-20260907-XXXX)
-    const randomSuffix = Math.floor(1000 + Math.random() * 9000);
-    const orderNumber = `ORD-${Date.now().toString().substring(4)}-${randomSuffix}`;
+    // P0-3: Generar número de pedido único con entropía criptográfica (no predecible)
+    const randomHex = crypto.randomBytes(4).toString('hex').toUpperCase();
+    const datePrefix = new Date().toISOString().slice(2, 10).replace(/-/g, '');
+    const orderNumber = `ORD-${datePrefix}-${randomHex}`;
 
     // Execute atomic transaction
     return prisma.$transaction(async (tx) => {
-      // Find or create client
+      // P0-6: Normalizar email y buscar cliente
+      const normalizedEmail = orderData.clientEmail.trim().toLowerCase();
       let client = await tx.client.findFirst({
-        where: { email: orderData.clientEmail }
+        where: { email: normalizedEmail }
       });
 
       if (!client) {
         client = await tx.client.create({
           data: {
             userId: userId || null,
-            name: orderData.clientName,
-            email: orderData.clientEmail,
-            phone: orderData.clientPhone,
-            address: orderData.clientAddress,
-            city: orderData.clientCity || 'Santa Cruz',
-            ciNit: orderData.clientCiNit || ''
+            name: orderData.clientName.trim(),
+            email: normalizedEmail,
+            phone: orderData.clientPhone.trim(),
+            address: orderData.clientAddress.trim(),
+            city: (orderData.clientCity || 'Santa Cruz').trim(),
+            ciNit: (orderData.clientCiNit || '').trim()
           }
         });
-      } else {
-        // Update client address/phone if changed
+      } else if (userId && client.userId === userId) {
+        // Solo si el usuario que realiza la compra está autenticado como dueño de la cuenta
         client = await tx.client.update({
           where: { id: client.id },
           data: {
-            name: orderData.clientName,
-            phone: orderData.clientPhone,
-            address: orderData.clientAddress,
-            city: orderData.clientCity || client.city,
-            ciNit: orderData.clientCiNit || client.ciNit
+            name: orderData.clientName.trim() || client.name,
+            phone: orderData.clientPhone.trim() || client.phone,
+            address: orderData.clientAddress.trim() || client.address,
+            city: (orderData.clientCity || client.city).trim(),
+            ciNit: (orderData.clientCiNit || client.ciNit || '').trim()
           }
         });
+      }
+
+      if (!client) {
+        throw new Error('Error al procesar la información del cliente.');
       }
 
       // Create Order
@@ -180,16 +272,22 @@ export class OrderService {
         include: { paymentProof: true }
       });
 
-      return {
+      return OrderService.formatOrder({
         ...order,
         payment
-      };
+      });
     });
   }
 
-  public static async getAllOrders(filters?: { status?: string; paymentStatus?: string; search?: string }) {
+  public static async getAllOrders(filters?: {
+    status?: string;
+    paymentStatus?: string;
+    search?: string;
+    page?: string | number;
+    pageSize?: string | number;
+  }) {
     const where: any = {};
-    if (filters?.status) where.status = filters.status;
+    if (filters?.status) where.status = filters.status as any;
     if (filters?.paymentStatus) where.paymentStatus = filters.paymentStatus;
     if (filters?.search) {
       where.OR = [
@@ -198,18 +296,30 @@ export class OrderService {
       ];
     }
 
-    return prisma.order.findMany({
+    const { page, pageSize, skip, take, isPaginated } = parsePaginationParams(filters || {});
+    const total = await prisma.order.count({ where });
+
+    const orders = await prisma.order.findMany({
       where,
       include: {
         client: true,
         payment: { include: { paymentProof: true } },
         items: { include: { product: true } }
       },
-      orderBy: { createdAt: 'desc' }
+      orderBy: { createdAt: 'desc' },
+      skip: isPaginated ? skip : undefined,
+      take: isPaginated ? take : undefined
     });
+
+    const formattedOrders = orders.map(OrderService.formatOrder);
+
+    if (isPaginated) {
+      return buildPaginatedResponse(formattedOrders, total, page, pageSize);
+    }
+    return formattedOrders;
   }
 
-  public static async getOrderById(id: string) {
+  public static async getOrderById(id: string, isAdmin: boolean = false) {
     const order = await prisma.order.findFirst({
       where: {
         OR: [{ id }, { orderNumber: id }]
@@ -227,73 +337,180 @@ export class OrderService {
     });
 
     if (!order) throw new Error('Pedido no encontrado');
-    return order;
+
+    // P0-3: Si la consulta no es de un administrador, devolver únicamente DTO público sanitizado
+    if (!isAdmin) {
+      return {
+        id: order.id,
+        orderNumber: order.orderNumber,
+        createdAt: order.createdAt,
+        status: order.status,
+        paymentStatus: order.paymentStatus,
+        subtotal: Number(order.subtotal) || 0,
+        total: Number(order.total) || 0,
+        items: order.items.map((i) => ({
+          id: i.id,
+          quantity: i.quantity,
+          unitPrice: Number(i.unitPrice) || 0,
+          subtotal: Number(i.subtotal) || 0,
+          product: {
+            name: i.product?.name,
+            imageUrl: i.product?.imageUrl
+          }
+        })),
+        payment: {
+          status: order.payment?.status,
+          rejectionReason: order.payment?.rejectionReason
+        }
+      };
+    }
+
+    return OrderService.formatOrder(order);
   }
 
-  public static async updateOrderStatus(orderId: string, status: string, userId?: string) {
+  public static async updateOrderStatus(
+    orderId: string,
+    newStatus: OrderStatus,
+    userId?: string,
+    rejectionReason?: string
+  ) {
     const order = await prisma.order.findUnique({
       where: { id: orderId },
-      include: { payment: true, items: true }
+      include: {
+        payment: { include: { paymentProof: true } },
+        items: { include: { product: true } },
+        client: true
+      }
     });
 
     if (!order) throw new Error('Pedido no encontrado');
 
-    if (status === 'PAID') {
-      if (order.payment && order.payment.status !== 'APPROVED') {
-        await prisma.payment.update({
-          where: { id: order.payment.id },
-          data: { status: 'APPROVED', reviewedAt: new Date(), reviewedBy: userId || null }
-        });
-      }
-      return prisma.order.update({
-        where: { id: orderId },
-        data: { status: 'PAID', paymentStatus: 'APPROVED' }
-      });
-    } else if (status === 'PAYMENT_REJECTED') {
-      if (order.status !== 'PAYMENT_REJECTED' && order.status !== 'CANCELLED') {
+    const currentStatus = order.status as OrderStatus;
+    if (currentStatus === newStatus) {
+      return order;
+    }
+
+    const allowedNext = ALLOWED_STATUS_TRANSITIONS[currentStatus] || [];
+    if (!allowedNext.includes(newStatus)) {
+      throw new Error(
+        `Transición no permitida: no se puede cambiar el estado de "${currentStatus}" a "${newStatus}".`
+      );
+    }
+
+    const wasActive = ACTIVE_STOCK_STATUSES.includes(currentStatus);
+    const willBeActive = ACTIVE_STOCK_STATUSES.includes(newStatus);
+
+    return prisma.$transaction(async (tx) => {
+      // 1. Manejo atómico de Stock según la transición de estados
+      if (wasActive && !willBeActive) {
+        // Transición de activo a inactivo (PAYMENT_REJECTED o CANCELLED): Restaurar stock
+        const movementType = newStatus === 'PAYMENT_REJECTED' ? 'PAYMENT_REJECTED' : 'ORDER_CANCELLED';
+        const reasonText =
+          newStatus === 'PAYMENT_REJECTED'
+            ? `Restauración de stock por pago rechazado en pedido #${order.orderNumber}`
+            : `Restauración de stock por anulación de pedido #${order.orderNumber}`;
+
         for (const item of order.items) {
-          await prisma.product.update({
+          await tx.product.update({
             where: { id: item.productId },
             data: { stock: { increment: item.quantity } }
           });
 
-          await prisma.inventoryMovement.create({
+          await tx.inventoryMovement.create({
             data: {
               productId: item.productId,
               userId: userId || null,
-              type: 'PAYMENT_REJECTED',
+              type: movementType,
               quantity: item.quantity,
-              reason: `Restauración de stock por cambio de estado a Rechazado en pedido #${order.orderNumber}`
+              reason: reasonText
+            }
+          });
+        }
+      } else if (!wasActive && willBeActive) {
+        // Transición de inactivo a activo (ej. reactivación o pago posterior): Re-reservar stock
+        for (const item of order.items) {
+          const freshProduct = await tx.product.findUnique({ where: { id: item.productId } });
+          if (!freshProduct || freshProduct.stock < item.quantity) {
+            throw new Error(
+              `Stock insuficiente para reactivar el producto "${freshProduct?.name || item.productId}". Disponible: ${freshProduct?.stock || 0}, Solicitado: ${item.quantity}.`
+            );
+          }
+
+          const updated = await tx.product.update({
+            where: { id: item.productId },
+            data: { stock: { decrement: item.quantity } }
+          });
+
+          if (updated.stock < 0) {
+            throw new Error(`Stock insuficiente para el producto "${freshProduct.name}".`);
+          }
+
+          await tx.inventoryMovement.create({
+            data: {
+              productId: item.productId,
+              userId: userId || null,
+              type: 'RESTOCK',
+              quantity: -item.quantity,
+              reason: `Re-reserva de inventario por cambio de estado a ${newStatus} en pedido #${order.orderNumber}`
             }
           });
         }
       }
-      if (order.payment && order.payment.status !== 'REJECTED') {
-        await prisma.payment.update({
-          where: { id: order.payment.id },
-          data: { status: 'REJECTED', reviewedAt: new Date(), reviewedBy: userId || null }
-        });
-      }
-      return prisma.order.update({
-        where: { id: orderId },
-        data: { status: 'PAYMENT_REJECTED', paymentStatus: 'REJECTED' }
-      });
-    } else if (status === 'PENDING_PAYMENT_VERIFICATION') {
-      if (order.payment && order.payment.status !== 'PENDING_VERIFICATION') {
-        await prisma.payment.update({
-          where: { id: order.payment.id },
-          data: { status: 'PENDING_VERIFICATION' }
-        });
-      }
-      return prisma.order.update({
-        where: { id: orderId },
-        data: { status: 'PENDING_PAYMENT_VERIFICATION', paymentStatus: 'PENDING_VERIFICATION' }
-      });
-    }
 
-    return prisma.order.update({
-      where: { id: orderId },
-      data: { status: status as any }
+      // 2. Sincronizar estado del Pago asociado
+      let paymentStatus = order.paymentStatus;
+      if (newStatus === 'PAID') {
+        paymentStatus = 'APPROVED';
+        if (order.payment) {
+          await tx.payment.update({
+            where: { id: order.payment.id },
+            data: {
+              status: 'APPROVED',
+              reviewedAt: new Date(),
+              reviewedBy: userId || null
+            }
+          });
+        }
+      } else if (newStatus === 'PAYMENT_REJECTED') {
+        paymentStatus = 'REJECTED';
+        if (order.payment) {
+          await tx.payment.update({
+            where: { id: order.payment.id },
+            data: {
+              status: 'REJECTED',
+              reviewedAt: new Date(),
+              reviewedBy: userId || null,
+              rejectionReason: rejectionReason || order.payment.rejectionReason || 'Comprobante no verificado'
+            }
+          });
+        }
+      } else if (newStatus === 'PENDING_PAYMENT_VERIFICATION') {
+        paymentStatus = 'PENDING_VERIFICATION';
+        if (order.payment) {
+          await tx.payment.update({
+            where: { id: order.payment.id },
+            data: {
+              status: 'PENDING_VERIFICATION'
+            }
+          });
+        }
+      }
+
+      // 3. Actualizar registro principal de la orden
+      const updatedOrder = await tx.order.update({
+        where: { id: orderId },
+        data: {
+          status: newStatus,
+          paymentStatus
+        },
+        include: {
+          client: true,
+          payment: { include: { paymentProof: true } },
+          items: { include: { product: true } }
+        }
+      });
+
+      return OrderService.formatOrder(updatedOrder);
     });
   }
 

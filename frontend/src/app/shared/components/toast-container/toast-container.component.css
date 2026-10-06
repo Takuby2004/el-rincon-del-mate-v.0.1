@@ -1,0 +1,34 @@
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(100%) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes shrinkProgress {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0%;
+  }
+}
+
+.animate-slide-in {
+  animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.toast-progress {
+  animation-name: shrinkProgress;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+
+/* Pausar progreso al pasar el cursor encima para mejorar la lectura del usuario */
+.group:hover .toast-progress {
+  animation-play-state: paused;
+}

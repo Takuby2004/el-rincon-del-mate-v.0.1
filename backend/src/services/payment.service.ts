@@ -1,5 +1,7 @@
 import { prisma } from '../config/prisma';
 import { EmailService } from './email.service';
+import { OrderService } from './order.service';
+import { AppError } from '../errors/AppError';
 
 export class PaymentService {
   public static async approvePayment(paymentId: string, reviewerUserId: string, notifyEmail: boolean = true) {
@@ -15,36 +17,18 @@ export class PaymentService {
       }
     });
 
-    if (!payment) throw new Error('Pago no encontrado');
-    if (payment.status === 'APPROVED') throw new Error('Este pago ya fue verificado y APROBADO anteriormente.');
+    if (!payment) throw AppError.notFound('Pago no encontrado');
+    if (payment.status === 'APPROVED') throw AppError.badRequest('Este pago ya fue verificado y APROBADO anteriormente.');
 
-    const updatedPayment = await prisma.$transaction(async (tx) => {
-      const updated = await tx.payment.update({
-        where: { id: paymentId },
-        data: {
-          status: 'APPROVED',
-          reviewedBy: reviewerUserId,
-          reviewedAt: new Date()
-        },
-        include: { paymentProof: true }
-      });
+    // Delegar en OrderService.updateOrderStatus para máquina de estados, transaccionalidad y consistencia
+    const updatedOrder = await OrderService.updateOrderStatus(payment.orderId, 'PAID', reviewerUserId);
+    const updatedPayment = updatedOrder.payment;
 
-      await tx.order.update({
-        where: { id: payment.orderId },
-        data: {
-          status: 'PAID',
-          paymentStatus: 'APPROVED'
-        }
-      });
-
-      return updated;
-    });
-
-    // Notify buyer via email if requested
+    // Notificar al cliente por correo si se solicita
     let emailResult = null;
-    if (notifyEmail && payment.order?.client?.email) {
+    if (notifyEmail && updatedOrder.client?.email) {
       try {
-        emailResult = await EmailService.sendPaymentStatusNotification(payment.order, updatedPayment, 'APPROVED');
+        emailResult = await EmailService.sendPaymentStatusNotification(updatedOrder, updatedPayment, 'APPROVED');
       } catch (emailErr) {
         console.error('Error al enviar correo de pago aprobado:', emailErr);
       }
@@ -57,9 +41,14 @@ export class PaymentService {
     };
   }
 
-  public static async rejectPayment(paymentId: string, rejectionReason: string, reviewerUserId: string, notifyEmail: boolean = true) {
+  public static async rejectPayment(
+    paymentId: string,
+    rejectionReason: string,
+    reviewerUserId: string,
+    notifyEmail: boolean = true
+  ) {
     if (!rejectionReason || rejectionReason.trim().length === 0) {
-      throw new Error('Debe proporcionar una razón o motivo justificado para rechazar el pago.');
+      throw AppError.badRequest('Debe proporcionar una razón o motivo justificado para rechazar el pago.');
     }
 
     const payment = await prisma.payment.findUnique({
@@ -74,59 +63,27 @@ export class PaymentService {
       }
     });
 
-    if (!payment) throw new Error('Pago no encontrado');
-    if (payment.status === 'REJECTED') throw new Error('Este pago ya fue RECHAZADO anteriormente.');
+    if (!payment) throw AppError.notFound('Pago no encontrado');
+    if (payment.status === 'REJECTED') throw AppError.badRequest('Este pago ya fue RECHAZADO anteriormente.');
 
-    const updatedPayment = await prisma.$transaction(async (tx) => {
-      const updated = await tx.payment.update({
-        where: { id: paymentId },
-        data: {
-          status: 'REJECTED',
-          rejectionReason,
-          reviewedBy: reviewerUserId,
-          reviewedAt: new Date()
-        },
-        include: { paymentProof: true }
-      });
+    // Delegar en OrderService.updateOrderStatus para máquina de estados, restauración de stock y transacción atómica
+    const updatedOrder = await OrderService.updateOrderStatus(
+      payment.orderId,
+      'PAYMENT_REJECTED',
+      reviewerUserId,
+      rejectionReason.trim()
+    );
+    const updatedPayment = updatedOrder.payment;
 
-      await tx.order.update({
-        where: { id: payment.orderId },
-        data: {
-          status: 'PAYMENT_REJECTED',
-          paymentStatus: 'REJECTED'
-        }
-      });
-
-      // Restore stock for all items in the rejected order
-      for (const item of payment.order.items) {
-        await tx.product.update({
-          where: { id: item.productId },
-          data: { stock: { increment: item.quantity } }
-        });
-
-        await tx.inventoryMovement.create({
-          data: {
-            productId: item.productId,
-            userId: reviewerUserId,
-            type: 'PAYMENT_REJECTED',
-            quantity: item.quantity,
-            reason: `Restauración de stock por pago rechazado en pedido #${payment.order.orderNumber}. Motivo: ${rejectionReason}`
-          }
-        });
-      }
-
-      return updated;
-    });
-
-    // Notify buyer via email if requested
+    // Notificar al cliente por correo con el motivo de rechazo
     let emailResult = null;
-    if (notifyEmail && payment.order?.client?.email) {
+    if (notifyEmail && updatedOrder.client?.email) {
       try {
         emailResult = await EmailService.sendPaymentStatusNotification(
-          payment.order,
+          updatedOrder,
           updatedPayment,
           'REJECTED',
-          rejectionReason
+          rejectionReason.trim()
         );
       } catch (emailErr) {
         console.error('Error al enviar correo de pago rechazado:', emailErr);
@@ -153,9 +110,9 @@ export class PaymentService {
       }
     });
 
-    if (!payment) throw new Error('Pago no encontrado');
+    if (!payment) throw AppError.notFound('Pago no encontrado');
     if (!payment.order?.client?.email) {
-      throw new Error('El pedido no tiene un correo electrónico de comprador asociado.');
+      throw AppError.badRequest('El pedido no tiene un correo electrónico de comprador asociado.');
     }
 
     const emailResult = await EmailService.sendPaymentStatusNotification(

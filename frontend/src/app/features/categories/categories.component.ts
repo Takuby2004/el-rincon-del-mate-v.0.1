@@ -33,7 +33,10 @@ export class CategoriesFeatureComponent implements OnInit {
         this.apiService.getCategoryBySlug(this.selectedCategorySlug).subscribe({
           next: (res: any) => {
             this.categoryDetail = res;
-            this.categoryProducts = res.products || [];
+            this.categoryProducts = (res.products || []).map((p: any) => ({
+              ...p,
+              price: Number(p.price) || 0
+            }));
             this.loading = false;
           },
           error: () => (this.loading = false)

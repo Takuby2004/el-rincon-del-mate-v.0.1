@@ -39,8 +39,12 @@ export class ProductsFeatureComponent implements OnInit {
         activeOnly: true
       })
       .subscribe({
-        next: (res) => {
-          this.products = res;
+        next: (res: any) => {
+          const list = Array.isArray(res) ? res : (res?.data || []);
+          this.products = list.map((p: any) => ({
+            ...p,
+            price: Number(p.price) || 0
+          }));
           this.loading = false;
         },
         error: () => (this.loading = false)

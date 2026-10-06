@@ -1,8 +1,13 @@
 import { prisma } from '../config/prisma';
+import { AppError } from '../errors/AppError';
+import { parsePaginationParams, buildPaginatedResponse, PaginationQuery } from '../utils/pagination';
 
 export class ClientService {
-  public static async getAllClients() {
-    return prisma.client.findMany({
+  public static async getAllClients(query?: PaginationQuery) {
+    const { page, pageSize, skip, take, isPaginated } = parsePaginationParams(query || {});
+    const total = await prisma.client.count();
+
+    const clients = await prisma.client.findMany({
       include: {
         user: {
           select: { id: true, email: true, role: true }
@@ -11,8 +16,15 @@ export class ClientService {
           select: { orders: true }
         }
       },
-      orderBy: { createdAt: 'desc' }
+      orderBy: { createdAt: 'desc' },
+      skip: isPaginated ? skip : undefined,
+      take: isPaginated ? take : undefined
     });
+
+    if (isPaginated) {
+      return buildPaginatedResponse(clients, total, page, pageSize);
+    }
+    return clients;
   }
 
   public static async getClientById(id: string) {
@@ -26,7 +38,7 @@ export class ClientService {
         }
       }
     });
-    if (!client) throw new Error('Cliente no encontrado');
+    if (!client) throw AppError.notFound('Cliente no encontrado');
     return client;
   }
 
@@ -44,6 +56,9 @@ export class ClientService {
   }
 
   public static async updateClient(id: string, data: { name?: string; email?: string; phone?: string; address?: string; city?: string; ciNit?: string }) {
+    const existing = await prisma.client.findUnique({ where: { id } });
+    if (!existing) throw AppError.notFound('Cliente no encontrado');
+
     return prisma.client.update({
       where: { id },
       data
@@ -61,11 +76,11 @@ export class ClientService {
     });
 
     if (!client) {
-      throw new Error('El cliente no existe o ya fue eliminado.');
+      throw AppError.notFound('El cliente no existe o ya fue eliminado.');
     }
 
     if (client._count.orders > 0) {
-      throw new Error(
+      throw AppError.conflict(
         `No es posible eliminar a "${client.name}" porque cuenta con ${client._count.orders} pedido(s) registrados en el historial de ventas. Para conservar la trazabilidad contable, el registro debe mantenerse.`
       );
     }
@@ -73,4 +88,3 @@ export class ClientService {
     return prisma.client.delete({ where: { id } });
   }
 }
-

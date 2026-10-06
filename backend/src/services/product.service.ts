@@ -1,8 +1,19 @@
 import { prisma } from '../config/prisma';
 import { QrGenerator } from '../utils/qrGenerator';
+import { AppError } from '../errors/AppError';
+import { parsePaginationParams, buildPaginatedResponse } from '../utils/pagination';
 
 export class ProductService {
-  public static async getAll(filters?: { categoryId?: string; search?: string; activeOnly?: boolean }) {
+  public static async getAll(
+    filters?: {
+      categoryId?: string;
+      search?: string;
+      activeOnly?: boolean;
+      page?: string | number;
+      pageSize?: string | number;
+    },
+    isAdmin: boolean = false
+  ) {
     const where: any = {};
     if (filters?.activeOnly) {
       where.active = true;
@@ -17,20 +28,95 @@ export class ProductService {
       ];
     }
 
-    return prisma.product.findMany({
-      where,
-      include: { category: true },
-      orderBy: { createdAt: 'desc' }
+    const { page, pageSize, skip, take, isPaginated } = parsePaginationParams(filters || {});
+    const total = await prisma.product.count({ where });
+
+    let products;
+    if (isAdmin) {
+      products = await prisma.product.findMany({
+        where,
+        include: { category: true },
+        orderBy: { createdAt: 'desc' },
+        skip: isPaginated ? skip : undefined,
+        take: isPaginated ? take : undefined
+      });
+    } else {
+      products = await prisma.product.findMany({
+        where,
+        select: {
+          id: true,
+          categoryId: true,
+          name: true,
+          slug: true,
+          description: true,
+          price: true,
+          stock: true,
+          imageUrl: true,
+          images: true,
+          qrCodeUrl: true,
+          active: true,
+          createdAt: true,
+          updatedAt: true,
+          category: true
+        },
+        orderBy: { createdAt: 'desc' },
+        skip: isPaginated ? skip : undefined,
+        take: isPaginated ? take : undefined
+      });
+    }
+
+    const formatProduct = (p: any) => ({
+      ...p,
+      price: Number(p.price),
+      ...(p.cost !== undefined && p.cost !== null ? { cost: Number(p.cost) } : {})
     });
+
+    const formatted = products.map(formatProduct);
+
+    if (isPaginated) {
+      return buildPaginatedResponse(formatted, total, page, pageSize);
+    }
+    return formatted;
   }
 
-  public static async getBySlug(slug: string) {
-    const product = await prisma.product.findUnique({
-      where: { slug },
-      include: { category: true }
-    });
-    if (!product) throw new Error('Producto no encontrado');
-    return product;
+  public static async getBySlug(slug: string, isAdmin: boolean = false) {
+    let product;
+    if (isAdmin) {
+      product = await prisma.product.findUnique({
+        where: { slug },
+        include: { category: true }
+      });
+      if (!product) throw AppError.notFound('Producto no encontrado');
+    } else {
+      // P0-2: Excluir cost en consulta pública
+      product = await prisma.product.findUnique({
+        where: { slug },
+        select: {
+          id: true,
+          categoryId: true,
+          name: true,
+          slug: true,
+          description: true,
+          price: true,
+          stock: true,
+          imageUrl: true,
+          images: true,
+          qrCodeUrl: true,
+          active: true,
+          createdAt: true,
+          updatedAt: true,
+          category: true
+        }
+      });
+      if (!product) throw AppError.notFound('Producto no encontrado');
+    }
+
+    const rawCost = (product as any).cost;
+    return {
+      ...product,
+      price: Number(product.price),
+      ...(rawCost !== undefined && rawCost !== null ? { cost: Number(rawCost) } : {})
+    };
   }
 
   public static async create(data: {
@@ -46,7 +132,7 @@ export class ProductService {
   }) {
     const slug = data.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
     const existing = await prisma.product.findUnique({ where: { slug } });
-    if (existing) throw new Error('Ya existe un producto con un nombre similar.');
+    if (existing) throw AppError.conflict('Ya existe un producto con un nombre similar.');
 
     const qrText = `${process.env.FRONTEND_URL || 'http://localhost:4200'}/productos/${slug}`;
     const qrCodeUrl = await QrGenerator.generateDataUrl(qrText);
@@ -103,7 +189,7 @@ export class ProductService {
     }
   ) {
     const currentProduct = await prisma.product.findUnique({ where: { id } });
-    if (!currentProduct) throw new Error('Producto no encontrado');
+    if (!currentProduct) throw AppError.notFound('Producto no encontrado');
 
     const updateData: any = {};
     if (data.categoryId) updateData.categoryId = data.categoryId;
@@ -124,7 +210,7 @@ export class ProductService {
     return prisma.$transaction(async (tx) => {
       if (data.stockAdjustment && data.stockAdjustment !== 0) {
         const newStock = currentProduct.stock + data.stockAdjustment;
-        if (newStock < 0) throw new Error('El ajuste de stock no puede dejar el stock total en negativo.');
+        if (newStock < 0) throw AppError.badRequest('El ajuste de stock no puede dejar el stock total en negativo.');
 
         updateData.stock = newStock;
 
@@ -149,11 +235,13 @@ export class ProductService {
 
   public static async delete(id: string) {
     const product = await prisma.product.findUnique({ where: { id } });
-    if (!product) throw new Error('Producto no encontrado');
+    if (!product) throw AppError.notFound('Producto no encontrado');
 
     const orderItemsCount = await prisma.orderItem.count({ where: { productId: id } });
     if (orderItemsCount > 0) {
-      throw new Error(`No se puede eliminar el producto porque está asociado a ${orderItemsCount} pedido(s) registrado(s). Para ocultarlo del catálogo, desactívalo desde la edición.`);
+      throw AppError.conflict(
+        `No se puede eliminar el producto porque está asociado a ${orderItemsCount} pedido(s) registrado(s). Para ocultarlo del catálogo, desactívalo desde la edición.`
+      );
     }
 
     return prisma.$transaction(async (tx) => {

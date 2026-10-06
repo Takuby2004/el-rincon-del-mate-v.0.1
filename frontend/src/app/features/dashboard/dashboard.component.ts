@@ -18,13 +18,26 @@ export class AdminDashboardFeatureComponent implements OnInit {
   hoveredDailyIndex: number | null = null;
   hoveredBinIndex: number | null = null;
 
+  selectedPeriod = 7;
+  readonly periodOptions = [
+    { label: '7 Días', value: 7 },
+    { label: '14 Días', value: 14 },
+    { label: '30 Días', value: 30 }
+  ];
+
   ngOnInit() {
+    this.loadStats();
+  }
+
+  setPeriod(days: number) {
+    if (this.selectedPeriod === days) return;
+    this.selectedPeriod = days;
     this.loadStats();
   }
 
   loadStats() {
     this.loading = true;
-    this.apiService.getDashboardStats().subscribe({
+    this.apiService.getDashboardStats(this.selectedPeriod).subscribe({
       next: (res) => {
         this.stats = res;
         this.loading = false;

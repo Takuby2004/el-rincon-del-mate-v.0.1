@@ -8,6 +8,8 @@ import { AssetUrlPipe } from '../../shared/pipes/asset-url.pipe';
 import { ImgFallbackDirective } from '../../shared/directives/img-fallback.directive';
 import { PaginationComponent } from '../../shared/components/pagination/pagination.component';
 
+import { ToastService } from '../../core/services/toast.service';
+
 interface LocalFilePreview {
   file: File;
   previewUrl: string;
@@ -22,6 +24,7 @@ interface LocalFilePreview {
 export class AdminProductsFeatureComponent implements OnInit {
   private apiService = inject(ApiService);
   private dialogService = inject(DialogService);
+  private toastService = inject(ToastService);
 
   products: Product[] = [];
   categories: Category[] = [];
@@ -69,8 +72,14 @@ export class AdminProductsFeatureComponent implements OnInit {
   loadProducts() {
     this.loading = true;
     this.apiService.getProducts().subscribe({
-      next: (res) => {
-        this.products = res;
+      next: (res: any) => {
+        const rawList = Array.isArray(res) ? res : (res?.data || []);
+        this.products = rawList.map((p: any) => ({
+          ...p,
+          price: Number(p.price) || 0,
+          cost: Number(p.cost) || 0,
+          stock: Number(p.stock) || 0
+        }));
         this.loading = false;
       },
       error: () => {
@@ -347,8 +356,8 @@ export class AdminProductsFeatureComponent implements OnInit {
       name: p.name,
       categoryId: p.categoryId,
       description: p.description,
-      price: p.price,
-      cost: p.cost,
+      price: Number(p.price) || 0,
+      cost: Number(p.cost) || 0,
       stockInput: 0,
       active: p.active
     };
@@ -476,23 +485,27 @@ export class AdminProductsFeatureComponent implements OnInit {
     if (this.isEditing) {
       this.apiService.updateProduct(this.editingId, payload).subscribe({
         next: () => {
+          this.toastService.success('Producto actualizado exitosamente.');
           this.closeModal();
           this.loadProducts();
         },
         error: (err) => {
           this.isSaving = false;
           this.uploadError = err.error?.error || 'Error al actualizar el producto.';
+          this.toastService.error(this.uploadError);
         }
       });
     } else {
       this.apiService.createProduct(payload).subscribe({
         next: () => {
+          this.toastService.success('Producto creado exitosamente.');
           this.closeModal();
           this.loadProducts();
         },
         error: (err) => {
           this.isSaving = false;
           this.uploadError = err.error?.error || 'Error al crear el producto.';
+          this.toastService.error(this.uploadError);
         }
       });
     }
@@ -513,7 +526,10 @@ export class AdminProductsFeatureComponent implements OnInit {
 
     if (confirmed) {
       this.apiService.deleteProduct(id).subscribe({
-        next: () => this.loadProducts(),
+        next: () => {
+          this.toastService.success('Producto eliminado del catálogo.');
+          this.loadProducts();
+        },
         error: (err) =>
           this.dialogService.alert({
             title: 'Error al Eliminar',

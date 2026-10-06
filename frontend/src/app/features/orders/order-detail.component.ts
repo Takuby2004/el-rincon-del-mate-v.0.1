@@ -21,8 +21,17 @@ export class OrderDetailFeatureComponent implements OnInit {
     const orderNumber = this.route.snapshot.paramMap.get('orderNumber');
     if (orderNumber) {
       this.apiService.getOrderById(orderNumber).subscribe({
-        next: (res) => {
-          this.order = res;
+        next: (res: any) => {
+          this.order = res ? {
+            ...res,
+            total: Number(res.total) || 0,
+            subtotal: Number(res.subtotal) || 0,
+            items: (res.items || []).map((it: any) => ({
+              ...it,
+              unitPrice: Number(it.unitPrice) || 0,
+              subtotal: Number(it.subtotal) || 0
+            }))
+          } : null;
           this.loading = false;
         },
         error: () => (this.loading = false)

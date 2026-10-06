@@ -6,6 +6,8 @@ import { PaymentQrConfig } from '../../core/models/models';
 import { AssetUrlPipe } from '../../shared/pipes/asset-url.pipe';
 import { ImgFallbackDirective } from '../../shared/directives/img-fallback.directive';
 
+import { ToastService } from '../../core/services/toast.service';
+
 @Component({
     selector: 'app-payment-qr-config',
     imports: [CommonModule, AssetUrlPipe, ImgFallbackDirective],
@@ -15,6 +17,7 @@ import { ImgFallbackDirective } from '../../shared/directives/img-fallback.direc
 export class AdminPaymentQrConfigFeatureComponent implements OnInit {
   private apiService = inject(ApiService);
   private dialogService = inject(DialogService);
+  private toastService = inject(ToastService);
 
   activeQr: PaymentQrConfig | null = null;
   selectedFile: File | null = null;
@@ -73,12 +76,14 @@ export class AdminPaymentQrConfigFeatureComponent implements OnInit {
       next: (res) => {
         this.uploading = false;
         this.successMessage = 'Código QR de pago actualizado y activado correctamente.';
+        this.toastService.success(this.successMessage);
         this.removeSelectedFile();
         this.loadActiveQr();
       },
       error: (err) => {
         this.uploading = false;
         this.errorMessage = err.error?.error || 'Error al subir la imagen del QR.';
+        this.toastService.error(this.errorMessage);
       }
     });
   }
@@ -95,6 +100,7 @@ export class AdminPaymentQrConfigFeatureComponent implements OnInit {
 
     if (confirmed) {
       this.apiService.deactivatePaymentQr(id).subscribe(() => {
+        this.toastService.info('Código QR desactivado.');
         this.loadActiveQr();
       });
     }

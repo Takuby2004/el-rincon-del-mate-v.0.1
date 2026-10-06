@@ -1,33 +1,40 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { ProductService } from '../services/product.service';
 import { FileStorageService } from '../utils/fileStorageService';
 import { AuthRequest } from '../middlewares/auth.middleware';
 
 export class ProductController {
-  public static async getAll(req: Request, res: Response) {
+  public static async getAll(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const { categoryId, search, activeOnly } = req.query;
-      const products = await ProductService.getAll({
-        categoryId: categoryId as string,
-        search: search as string,
-        activeOnly: activeOnly === 'true'
-      });
+      const { categoryId, search, activeOnly, page, pageSize } = req.query;
+      const isAdmin = req.user?.role === 'ADMIN';
+      const products = await ProductService.getAll(
+        {
+          categoryId: categoryId as string,
+          search: search as string,
+          activeOnly: activeOnly === 'true',
+          page: page as string,
+          pageSize: pageSize as string
+        },
+        isAdmin
+      );
       res.json(products);
-    } catch (err: any) {
-      res.status(500).json({ error: err.message });
+    } catch (err) {
+      next(err);
     }
   }
 
-  public static async getBySlug(req: Request, res: Response) {
+  public static async getBySlug(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const product = await ProductService.getBySlug(req.params.slug);
+      const isAdmin = req.user?.role === 'ADMIN';
+      const product = await ProductService.getBySlug(req.params.slug, isAdmin);
       res.json(product);
-    } catch (err: any) {
-      res.status(404).json({ error: err.message });
+    } catch (err) {
+      next(err);
     }
   }
 
-  public static async create(req: AuthRequest, res: Response) {
+  public static async create(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const files = (req.files as Express.Multer.File[]) || [];
       let uploadedUrls: string[] = [];
@@ -59,12 +66,12 @@ export class ProductController {
         userId: req.user?.id
       });
       res.status(201).json(product);
-    } catch (err: any) {
-      res.status(400).json({ error: err.message });
+    } catch (err) {
+      next(err);
     }
   }
 
-  public static async update(req: AuthRequest, res: Response) {
+  public static async update(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const files = (req.files as Express.Multer.File[]) || [];
       let uploadedUrls: string[] = [];
@@ -116,17 +123,17 @@ export class ProductController {
 
       const product = await ProductService.update(req.params.id, updatePayload);
       res.json(product);
-    } catch (err: any) {
-      res.status(400).json({ error: err.message });
+    } catch (err) {
+      next(err);
     }
   }
 
-  public static async delete(req: Request, res: Response) {
+  public static async delete(req: Request, res: Response, next: NextFunction) {
     try {
       await ProductService.delete(req.params.id);
       res.json({ message: 'Producto eliminado permanentemente.' });
-    } catch (err: any) {
-      res.status(400).json({ error: err.message });
+    } catch (err) {
+      next(err);
     }
   }
 }

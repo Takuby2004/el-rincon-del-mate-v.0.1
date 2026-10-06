@@ -1,7 +1,7 @@
 import { prisma } from '../config/prisma';
 
 export class StatsService {
-  public static async getDashboardStats() {
+  public static async getDashboardStats(days: number = 7) {
     // 1. Counts of payment statuses
     const pendingVerificationCount = await prisma.payment.count({ where: { status: 'PENDING_VERIFICATION' } });
     const approvedCount = await prisma.payment.count({ where: { status: 'APPROVED' } });
@@ -22,15 +22,15 @@ export class StatsService {
     const productSalesMap: Record<string, { name: string; quantity: number; revenue: number }> = {};
 
     for (const order of approvedOrders) {
-      totalRevenue += order.total;
+      totalRevenue += Number(order.total);
       for (const item of order.items) {
-        totalCost += item.unitCost * item.quantity;
+        totalCost += Number(item.unitCost) * item.quantity;
 
         if (!productSalesMap[item.productId]) {
           productSalesMap[item.productId] = { name: '', quantity: 0, revenue: 0 };
         }
         productSalesMap[item.productId].quantity += item.quantity;
-        productSalesMap[item.productId].revenue += item.subtotal;
+        productSalesMap[item.productId].revenue += Number(item.subtotal);
       }
     }
 
@@ -74,7 +74,8 @@ export class StatsService {
     ];
 
     for (const order of approvedOrders) {
-      const targetBin = bins.find((b) => order.total >= b.min && order.total <= b.max);
+      const orderTotalNum = Number(order.total);
+      const targetBin = bins.find((b) => orderTotalNum >= b.min && orderTotalNum <= b.max);
       if (targetBin) {
         targetBin.count += 1;
       }
@@ -87,11 +88,12 @@ export class StatsService {
       percentage: totalApprovedCount > 0 ? Number(((b.count / totalApprovedCount) * 100).toFixed(1)) : 0
     }));
 
-    // 4. Histograma Temporal: Ventas Diarias de los Últimos 7 Días
+    // 4. Histograma Temporal: Ventas Diarias de los Últimos N Días
     const daysOfWeek = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
     const dailySalesHistory: { date: string; label: string; count: number; total: number }[] = [];
+    const effectiveDays = Math.max(1, Math.min(days, 90));
 
-    for (let i = 6; i >= 0; i--) {
+    for (let i = effectiveDays - 1; i >= 0; i--) {
       const targetDate = new Date();
       targetDate.setDate(targetDate.getDate() - i);
       const year = targetDate.getFullYear();
@@ -99,7 +101,7 @@ export class StatsService {
       const day = String(targetDate.getDate()).padStart(2, '0');
       const dateKey = `${year}-${month}-${day}`;
       const dayName = daysOfWeek[targetDate.getDay()];
-      const label = `${dayName} ${day}/${month}`;
+      const label = effectiveDays > 14 ? `${day}/${month}` : `${dayName} ${day}/${month}`;
 
       const dayOrders = approvedOrders.filter((o) => {
         const orderDate = new Date(o.createdAt);
@@ -111,7 +113,7 @@ export class StatsService {
       });
 
       const dayCount = dayOrders.length;
-      const dayTotal = dayOrders.reduce((sum, o) => sum + o.total, 0);
+      const dayTotal = dayOrders.reduce((sum, o) => sum + Number(o.total), 0);
 
       dailySalesHistory.push({
         date: dateKey,

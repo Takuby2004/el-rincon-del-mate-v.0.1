@@ -1,12 +1,14 @@
 import { prisma } from '../config/prisma';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { env } from '../config/env';
+import { AppError } from '../errors/AppError';
 
 export class AuthService {
   public static async register(data: { email: string; password: string; name: string; phone?: string; address?: string; ciNit?: string }) {
     const existingUser = await prisma.user.findUnique({ where: { email: data.email } });
     if (existingUser) {
-      throw new Error('El correo electrónico ya se encuentra registrado.');
+      throw AppError.conflict('El correo electrónico ya se encuentra registrado.');
     }
 
     const hashedPassword = await bcrypt.hash(data.password, 10);
@@ -42,12 +44,12 @@ export class AuthService {
     });
 
     if (!user) {
-      throw new Error('Credenciales inválidas. Verifique su correo y contraseña.');
+      throw AppError.unauthorized('Credenciales inválidas. Verifique su correo y contraseña.');
     }
 
     const isValidPassword = await bcrypt.compare(data.password, user.password);
     if (!isValidPassword) {
-      throw new Error('Credenciales inválidas. Verifique su correo y contraseña.');
+      throw AppError.unauthorized('Credenciales inválidas. Verifique su correo y contraseña.');
     }
 
     const token = this.generateToken(user);
@@ -64,7 +66,6 @@ export class AuthService {
   }
 
   private static generateToken(user: { id: string; email: string; role: string }) {
-    const secret = process.env.JWT_SECRET || 'el_rincon_del_mate_super_secret_jwt_key_2026';
-    return jwt.sign({ id: user.id, email: user.email, role: user.role }, secret, { expiresIn: '7d' });
+    return jwt.sign({ id: user.id, email: user.email, role: user.role }, env.JWT_SECRET, { expiresIn: '7d' });
   }
 }

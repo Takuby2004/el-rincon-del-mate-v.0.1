@@ -9,6 +9,8 @@ import { ImgFallbackDirective } from '../../shared/directives/img-fallback.direc
 import { PaginationComponent } from '../../shared/components/pagination/pagination.component';
 import { environment } from '../../../environments/environment';
 
+import { ToastService } from '../../core/services/toast.service';
+
 @Component({
     selector: 'app-admin-orders',
     imports: [CommonModule, FormsModule, AssetUrlPipe, ImgFallbackDirective, PaginationComponent],
@@ -18,6 +20,7 @@ import { environment } from '../../../environments/environment';
 export class AdminOrdersFeatureComponent implements OnInit {
   private apiService = inject(ApiService);
   private dialogService = inject(DialogService);
+  private toastService = inject(ToastService);
 
   orders: Order[] = [];
   selectedOrder: Order | null = null;
@@ -72,10 +75,25 @@ export class AdminOrdersFeatureComponent implements OnInit {
         search: this.searchQuery
       })
       .subscribe({
-        next: (res) => {
-          this.orders = (res || []).map((o) => ({
+        next: (res: any) => {
+          const list = Array.isArray(res) ? res : (res?.data || []);
+          this.orders = list.map((o: any) => ({
             ...o,
-            status: this.normalizeStatus(o.status)
+            total: Number(o.total) || 0,
+            subtotal: Number(o.subtotal) || 0,
+            status: this.normalizeStatus(o.status),
+            payment: o.payment
+              ? {
+                  ...o.payment,
+                  amount: Number(o.payment.amount) || 0
+                }
+              : o.payment,
+            items: (o.items || []).map((it: any) => ({
+              ...it,
+              unitPrice: Number(it.unitPrice) || 0,
+              unitCost: Number(it.unitCost) || 0,
+              subtotal: Number(it.subtotal) || 0
+            }))
           }));
           this.loading = false;
         },
@@ -104,7 +122,7 @@ export class AdminOrdersFeatureComponent implements OnInit {
   get totalRevenue(): number {
     return this.orders
       .filter((o) => o.paymentStatus === 'APPROVED' || o.status === 'PAID')
-      .reduce((acc, o) => acc + o.total, 0);
+      .reduce((acc, o) => acc + (Number(o.total) || 0), 0);
   }
 
   get paginatedOrders(): Order[] {
@@ -153,6 +171,11 @@ export class AdminOrdersFeatureComponent implements OnInit {
   showNotification(msg: string, type: 'success' | 'error' = 'success') {
     this.notificationMessage = msg;
     this.notificationType = type;
+    if (type === 'success') {
+      this.toastService.success(msg);
+    } else {
+      this.toastService.error(msg);
+    }
     setTimeout(() => {
       if (this.notificationMessage === msg) {
         this.notificationMessage = '';
@@ -163,7 +186,15 @@ export class AdminOrdersFeatureComponent implements OnInit {
   openOrderModal(order: Order) {
     this.selectedOrder = {
       ...order,
-      status: this.normalizeStatus(order.status)
+      total: Number(order.total) || 0,
+      subtotal: Number(order.subtotal) || 0,
+      status: this.normalizeStatus(order.status),
+      items: (order.items || []).map((it: any) => ({
+        ...it,
+        unitPrice: Number(it.unitPrice) || 0,
+        unitCost: Number(it.unitCost) || 0,
+        subtotal: Number(it.subtotal) || 0
+      }))
     };
     this.emailNotifyStatus = order.payment?.status || order.paymentStatus || 'APPROVED';
     this.emailNotifyMessage = '';
@@ -181,7 +212,11 @@ export class AdminOrdersFeatureComponent implements OnInit {
   }
 
   openProofModal(order: Order, url?: string) {
-    this.proofModalOrder = order;
+    this.proofModalOrder = {
+      ...order,
+      total: Number(order.total) || 0,
+      subtotal: Number(order.subtotal) || 0
+    };
     this.zoomImageUrl = url || order.payment?.paymentProof?.imageUrl || null;
     this.zoomLevel = 1;
     this.rotation = 0;

@@ -1,4 +1,5 @@
 import multer from 'multer';
+import { AppError } from '../errors/AppError';
 
 const storage = multer.memoryStorage();
 
@@ -7,7 +8,7 @@ const fileFilter = (req: any, file: Express.Multer.File, cb: multer.FileFilterCa
   if (allowedMimeTypes.includes(file.mimetype.toLowerCase())) {
     cb(null, true);
   } else {
-    cb(new Error('Formato de archivo no permitido. Solo se aceptan imágenes JPG, PNG o WEBP.'));
+    cb(AppError.badRequest('Formato de archivo no permitido. Solo se aceptan imágenes JPG, PNG o WEBP.'));
   }
 };
 

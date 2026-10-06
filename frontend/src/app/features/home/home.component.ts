@@ -75,8 +75,12 @@ export class HomeFeatureComponent implements OnInit, OnDestroy {
     });
 
     this.apiService.getProducts({ activeOnly: true }).subscribe({
-      next: (res) => {
-        this.featuredProducts = res.slice(0, 4);
+      next: (res: any) => {
+        const list = Array.isArray(res) ? res : (res?.data || []);
+        this.featuredProducts = list.slice(0, 4).map((p: any) => ({
+          ...p,
+          price: Number(p.price) || 0
+        }));
         this.loadingProducts = false;
       },
       error: () => (this.loadingProducts = false)
