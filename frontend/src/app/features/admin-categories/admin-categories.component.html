@@ -103,31 +103,57 @@
       </app-pagination>
     }
   </div>
+</div>
 
-  <!-- Modal -->
-  @if (showModal) {
-  <div class="fixed inset-0 bg-mate-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-    <div
-      class="bg-white rounded-3xl p-6 max-w-md w-full border border-wood-200 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
-      <div class="flex justify-between items-center border-b border-wood-100 pb-3">
-        <h3 class="font-bold text-lg text-mate-900">{{ isEditing ? 'Editar Categoría' : 'Nueva Categoría' }}</h3>
-        <button (click)="closeModal()" class="text-wood-400 hover:text-wood-700 text-lg">
+<!-- Modal de Crear / Editar Categoría (Renderizado fuera del contenedor animado) -->
+@if (showModal) {
+  <div class="fixed inset-0 bg-darkness-950/80 backdrop-blur-md z-[100] flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+    <div 
+      class="relative bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full border border-wood-200 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto my-auto"
+      (click)="$event.stopPropagation()">
+      
+      <!-- Cabecera del Modal -->
+      <div class="flex items-center justify-between border-b border-wood-100 pb-3.5">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-mate-100 text-mate-800 flex items-center justify-center font-black text-sm shadow-2xs">
+            <i class="fa-solid fa-layer-group"></i>
+          </div>
+          <div>
+            <h3 class="font-bold text-base text-mate-900">{{ isEditing ? 'Editar Categoría' : 'Nueva Categoría' }}</h3>
+            <p class="text-2xs text-wood-500 font-medium">Clasificación para el catálogo de El Rincón del Mate</p>
+          </div>
+        </div>
+        <button (click)="closeModal()" class="w-8 h-8 rounded-full bg-wood-100 hover:bg-wood-200 text-wood-600 flex items-center justify-center transition-colors">
           <i class="fa-solid fa-xmark"></i>
         </button>
       </div>
 
       <form (ngSubmit)="saveCategory()" class="space-y-4">
-        <div>
+        <!-- Campo Nombre con Validación Reactiva -->
+        <div class="relative">
           <label class="block text-xs font-bold text-wood-700 mb-1">Nombre de la Categoría *</label>
-          <input type="text" [(ngModel)]="formData.name" name="name" required placeholder="Ej: Mates Imperiales"
-            class="w-full px-3.5 py-2.5 rounded-xl border border-wood-300 text-xs focus:ring-2 focus:ring-mate-700 outline-none">
+          <input 
+            type="text" 
+            [(ngModel)]="formData.name" 
+            (input)="onFieldInput('name')"
+            (blur)="onFieldBlur('name')"
+            name="name" 
+            placeholder="Ej: Mates Imperiales"
+            [class.input-error-gradient]="touchedFields['name'] && fieldErrors['name']"
+            class="w-full px-3.5 py-2.5 rounded-xl border border-wood-300 text-xs focus:ring-2 focus:ring-mate-700 outline-none transition-all">
+          
+          @if (touchedFields['name'] && fieldErrors['name']) {
+            <div class="pop-error-badge mt-1.5 flex items-start gap-1.5 bg-rose-50 border border-rose-200 text-rose-700 px-3 py-1.5 rounded-xl text-2xs font-semibold shadow-xs">
+              <i class="fa-solid fa-circle-exclamation text-rose-500 mt-0.5 shrink-0"></i>
+              <span>{{ fieldErrors['name'] }}</span>
+            </div>
+          }
         </div>
 
-        <!-- Image Upload Dropzone -->
+        <!-- Zona de Carga de Imagen / Dropzone -->
         <div class="space-y-2">
           <label class="block text-xs font-bold text-wood-700">Foto o Imagen de la Categoría</label>
 
-          <!-- Dropzone Area -->
           <div (dragover)="onDragOver($event)" (dragleave)="onDragLeave($event)" (drop)="onDrop($event)"
             (click)="fileInput.click()"
             [ngClass]="isDragging ? 'border-mate-700 bg-mate-50' : 'border-wood-300 bg-wood-50'"
@@ -153,7 +179,7 @@
           </div>
           }
 
-          <!-- Preview Area -->
+          <!-- Vista Previa de Imagen -->
           @if (selectedFilePreview) {
           <div class="mt-2 p-3 bg-wood-50 rounded-2xl border border-wood-200 flex items-center justify-between">
             <div class="flex items-center gap-3">
@@ -194,7 +220,9 @@
 
         <div class="pt-3 flex justify-end gap-3 border-t border-wood-100">
           <button type="button" (click)="closeModal()"
-            class="px-4 py-2 bg-wood-200 hover:bg-wood-300 text-wood-800 text-xs font-bold rounded-xl transition-colors">Cancelar</button>
+            class="px-4 py-2 bg-wood-200 hover:bg-wood-300 text-wood-800 text-xs font-bold rounded-xl transition-colors">
+            Cancelar
+          </button>
           <button type="submit" [disabled]="isSaving"
             class="px-5 py-2 bg-mate-700 hover:bg-mate-800 disabled:opacity-50 text-white text-xs font-bold rounded-xl shadow transition-all flex items-center gap-2">
             @if (isSaving) {
@@ -208,5 +236,4 @@
       </form>
     </div>
   </div>
-  }
-</div>
+}

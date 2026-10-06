@@ -49,6 +49,19 @@ export class AdminOrdersFeatureComponent implements OnInit {
   notificationMessage = '';
   notificationType: 'success' | 'error' = 'success';
 
+  @HostListener('window:keydown.escape')
+  handleEscapeKey(): void {
+    if (this.zoomImageUrl) {
+      this.closeProofModal();
+    } else if (this.showRejectModal) {
+      this.showRejectModal = false;
+    } else if (this.showEmailModal) {
+      this.showEmailModal = false;
+    } else if (this.selectedOrder) {
+      this.closeOrderModal();
+    }
+  }
+
   ngOnInit() {
     this.loadOrders();
   }

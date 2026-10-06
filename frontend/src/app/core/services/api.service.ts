@@ -157,7 +157,28 @@ export class ApiService {
     return this.http.get(`${this.apiUrl}/admin/reports/orders/${orderId}/pdf`, { responseType: 'blob' });
   }
 
-  downloadSalesReportPdf(): Observable<Blob> {
-    return this.http.get(`${this.apiUrl}/admin/reports/sales/pdf`, { responseType: 'blob' });
+  downloadSalesReportPdf(days?: number | string): Observable<Blob> {
+    let params = new HttpParams();
+    if (days) params = params.set('days', days.toString());
+    return this.http.get(`${this.apiUrl}/admin/reports/sales/pdf`, { params, responseType: 'blob' });
+  }
+
+  downloadCostReportPdf(days?: number | string): Observable<Blob> {
+    let params = new HttpParams();
+    if (days) params = params.set('days', days.toString());
+    return this.http.get(`${this.apiUrl}/admin/reports/costs/pdf`, { params, responseType: 'blob' });
+  }
+
+  downloadProfitReportPdf(days?: number | string): Observable<Blob> {
+    let params = new HttpParams();
+    if (days) params = params.set('days', days.toString());
+    return this.http.get(`${this.apiUrl}/admin/reports/profits/pdf`, { params, responseType: 'blob' });
+  }
+
+  downloadDemandReportPdf(days?: number | string): Observable<Blob> {
+    let params = new HttpParams();
+    if (days) params = params.set('days', days.toString());
+    return this.http.get(`${this.apiUrl}/admin/reports/demand/pdf`, { params, responseType: 'blob' });
   }
 }
+

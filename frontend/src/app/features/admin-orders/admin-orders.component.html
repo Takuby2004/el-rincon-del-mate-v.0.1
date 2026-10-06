@@ -233,12 +233,18 @@
     </app-pagination>
     }
   </div>
+</div>
 
-  <!-- Order Detail & Buyer Information Modal -->
-  @if (selectedOrder) {
-  <div class="fixed inset-0 bg-mate-950/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-    <div
-      class="bg-white rounded-3xl p-6 max-w-3xl w-full border border-wood-200 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto">
+<!-- ======================================================== -->
+<!-- MODALES ADMINISTRATIVOS (Renderizados fuera del bloque animado) -->
+<!-- ======================================================== -->
+
+<!-- Order Detail & Buyer Information Modal -->
+@if (selectedOrder) {
+<div class="fixed inset-0 bg-darkness-950/80 backdrop-blur-md z-[100] flex items-center justify-center p-4 sm:p-6 overflow-y-auto" (click)="closeOrderModal()">
+  <div
+    class="relative bg-white rounded-3xl p-6 sm:p-8 max-w-3xl w-full border border-wood-200 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto my-auto"
+    (click)="$event.stopPropagation()">
 
       <!-- Modal Header -->
       <div class="flex justify-between items-center border-b border-wood-100 pb-3">
@@ -491,8 +497,8 @@
 
   <!-- Rejection Reason Dialog -->
   @if (showRejectModal) {
-  <div class="fixed inset-0 bg-mate-950/80 z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl p-6 max-w-md w-full border border-red-200 shadow-2xl space-y-4">
+  <div class="fixed inset-0 bg-darkness-950/80 backdrop-blur-md z-[105] flex items-center justify-center p-4 sm:p-6 overflow-y-auto" (click)="showRejectModal = false">
+    <div class="bg-white rounded-3xl p-6 max-w-md w-full border border-red-200 shadow-2xl space-y-4" (click)="$event.stopPropagation()">
       <h3 class="font-bold text-base text-red-900 flex items-center gap-2">
         <i class="fa-solid fa-triangle-exclamation"></i> Rechazar Pago de Pedido
       </h3>
@@ -522,9 +528,9 @@
 
       <div class="flex justify-end gap-3 pt-2 border-t border-wood-100">
         <button (click)="showRejectModal = false"
-          class="px-4 py-2 bg-wood-200 text-wood-800 text-xs font-bold rounded-xl">Cancelar</button>
+          class="px-4 py-2 bg-wood-200 hover:bg-wood-300 text-wood-800 text-xs font-bold rounded-xl transition-colors">Cancelar</button>
         <button (click)="confirmRejectPayment()"
-          class="px-5 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-xl shadow">Confirmar y
+          class="px-5 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-xl shadow transition-colors">Confirmar y
           Notificar</button>
       </div>
     </div>
@@ -533,8 +539,8 @@
 
   <!-- Dedicated Send Email Notification Modal -->
   @if (showEmailModal && selectedOrder) {
-  <div class="fixed inset-0 bg-mate-950/80 z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl p-6 max-w-md w-full border border-wood-200 shadow-2xl space-y-4">
+  <div class="fixed inset-0 bg-darkness-950/80 backdrop-blur-md z-[105] flex items-center justify-center p-4 sm:p-6 overflow-y-auto" (click)="showEmailModal = false">
+    <div class="bg-white rounded-3xl p-6 max-w-md w-full border border-wood-200 shadow-2xl space-y-4" (click)="$event.stopPropagation()">
       <div class="flex justify-between items-center border-b border-wood-100 pb-2">
         <h3 class="font-bold text-base text-mate-900 flex items-center gap-2">
           <i class="fa-solid fa-paper-plane text-mate-700"></i>
@@ -571,9 +577,9 @@
 
       <div class="flex justify-end gap-3 pt-3 border-t border-wood-100">
         <button (click)="showEmailModal = false"
-          class="px-4 py-2 bg-wood-200 text-wood-800 text-xs font-bold rounded-xl">Cancelar</button>
+          class="px-4 py-2 bg-wood-200 hover:bg-wood-300 text-wood-800 text-xs font-bold rounded-xl transition-colors">Cancelar</button>
         <button [disabled]="isSendingEmail" (click)="sendEmailNotification()"
-          class="px-5 py-2 bg-mate-700 hover:bg-mate-800 disabled:bg-gray-300 text-white text-xs font-bold rounded-xl shadow flex items-center gap-2">
+          class="px-5 py-2 bg-mate-700 hover:bg-mate-800 disabled:bg-gray-300 text-white text-xs font-bold rounded-xl shadow flex items-center gap-2 transition-colors">
           @if (isSendingEmail) {
           <i class="fa-solid fa-circle-notch fa-spin text-xs"></i>
           <span>Enviando...</span>
@@ -590,7 +596,7 @@
   <!-- Modal Avanzado de Revisión de Comprobante de Pago -->
   @if (zoomImageUrl) {
   <div
-    class="fixed inset-0 bg-mate-950/85 backdrop-blur-md z-[110] flex items-center justify-center p-3 sm:p-6 animate-fade-in"
+    class="fixed inset-0 bg-darkness-950/80 backdrop-blur-md z-[110] flex items-center justify-center p-3 sm:p-6 animate-fade-in"
     (click)="closeProofModal()">
 
     <div
@@ -765,4 +771,3 @@
     </div>
   </div>
   }
-</div>

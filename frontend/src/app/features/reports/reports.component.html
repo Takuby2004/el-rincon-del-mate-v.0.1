@@ -1,26 +1,394 @@
-<div class="space-y-6 max-w-3xl animate-fade-in">
-  <div>
-    <h1 class="text-2xl font-bold text-mate-900">Gestión de Reportes Exportables</h1>
-    <p class="text-xs text-wood-600">Genera y descarga informes en formato PDF con firma y membrete oficial</p>
-  </div>
-
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-    <!-- Sales PDF Card -->
-    <div class="bg-white p-6 rounded-3xl border border-wood-200 shadow-sm space-y-4 flex flex-col justify-between">
-      <div class="space-y-2">
-        <div class="w-12 h-12 rounded-2xl bg-red-100 text-red-700 flex items-center justify-center text-xl">
-          <i class="fa-solid fa-file-pdf"></i>
-        </div>
-        <h3 class="font-bold text-base text-mate-900">Reporte General de Ventas</h3>
-        <p class="text-xs text-wood-600 leading-relaxed">
-          Exporta el listado completo de transacciones con pagos verificados y aprobados, resumen de ingresos y clientes.
+<div class="space-y-8 animate-fade-in pb-12 max-w-6xl">
+  <!-- Header Principal -->
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-wood-100 pb-5">
+    <div class="flex items-center gap-3">
+      <div class="w-12 h-12 rounded-2xl bg-gold-100 text-gold-800 flex items-center justify-center text-xl shadow-2xs">
+        <i class="fa-solid fa-file-invoice"></i>
+      </div>
+      <div>
+        <h1 class="text-2xl font-black text-mate-950 tracking-tight">Gestión de Reportes Exportables</h1>
+        <p class="text-xs text-wood-600 mt-0.5">
+          Previsualiza y descarga informes auditados en formato horizontal con firma y membrete oficial de El Rincón del Mate
         </p>
       </div>
+    </div>
 
-      <button (click)="downloadSalesReport()" class="w-full py-3 bg-mate-700 hover:bg-mate-800 text-white font-bold text-xs rounded-xl shadow flex items-center justify-center gap-2 transition-all">
-        <i class="fa-solid fa-download"></i>
-        <span>Descargar Reporte de Ventas (PDF)</span>
-      </button>
+    <!-- Selector de Período Temporal -->
+    <div class="flex flex-col sm:flex-row sm:items-center gap-2 bg-white p-1.5 rounded-2xl border border-wood-200 shadow-2xs">
+      <span class="text-3xs font-extrabold uppercase tracking-wider text-wood-500 px-2 sm:border-r border-wood-200">
+        Período:
+      </span>
+      <div class="flex items-center gap-1">
+        <button
+          type="button"
+          (click)="setPeriod('7')"
+          [class.bg-mate-800]="selectedDays === '7'"
+          [class.text-white]="selectedDays === '7'"
+          [class.font-bold]="selectedDays === '7'"
+          [class.text-wood-700]="selectedDays !== '7'"
+          [class.hover:bg-wood-50]="selectedDays !== '7'"
+          class="px-3 py-1.5 rounded-xl text-xs transition-all flex items-center gap-1.5 cursor-pointer"
+        >
+          <span>7 Días</span>
+        </button>
+
+        <button
+          type="button"
+          (click)="setPeriod('30')"
+          [class.bg-mate-800]="selectedDays === '30'"
+          [class.text-white]="selectedDays === '30'"
+          [class.font-bold]="selectedDays === '30'"
+          [class.text-wood-700]="selectedDays !== '30'"
+          [class.hover:bg-wood-50]="selectedDays !== '30'"
+          class="px-3 py-1.5 rounded-xl text-xs transition-all flex items-center gap-1.5 cursor-pointer"
+        >
+          <span>30 Días</span>
+        </button>
+
+        <button
+          type="button"
+          (click)="setPeriod('all')"
+          [class.bg-gold-500]="selectedDays === 'all'"
+          [class.text-mate-950]="selectedDays === 'all'"
+          [class.font-extrabold]="selectedDays === 'all'"
+          [class.text-wood-700]="selectedDays !== 'all'"
+          [class.hover:bg-wood-50]="selectedDays !== 'all'"
+          class="px-3 py-1.5 rounded-xl text-xs transition-all flex items-center gap-1.5 shadow-2xs cursor-pointer"
+        >
+          <i class="fa-solid fa-infinity text-3xs"></i>
+          <span>Todo el Histórico</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Banner Informativo del Período -->
+  <div class="flex items-center justify-between px-4 py-2.5 rounded-xl bg-mate-50/70 border border-mate-200 text-xs">
+    <div class="flex items-center gap-2 text-mate-800">
+      <i class="fa-solid fa-filter text-gold-600"></i>
+      <span>Filtro activo aplicado a las previsualizaciones y descargas:</span>
+      <strong class="font-extrabold text-mate-950 uppercase tracking-wide">{{ getPeriodLabel() }}</strong>
+    </div>
+    <span class="text-3xs text-wood-500 hidden sm:inline">Haz clic en <strong>Previsualizar</strong> para inspeccionar el documento en pantalla</span>
+  </div>
+
+  <!-- Grid de las 4 Tarjetas de Reportes -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+    <!-- ========================================== -->
+    <!-- 1. REPORTE DE VENTAS                       -->
+    <!-- ========================================== -->
+    <div class="bg-white p-6 rounded-3xl border border-wood-200 shadow-sm hover:shadow-md transition-all flex flex-col justify-between space-y-5 group">
+      <div class="space-y-4">
+        <div class="flex items-start justify-between">
+          <div class="w-13 h-13 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-700 flex items-center justify-center text-2xl group-hover:scale-105 transition-transform shadow-2xs">
+            <i class="fa-solid fa-chart-line"></i>
+          </div>
+          <span class="px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-3xs font-extrabold uppercase tracking-wider">
+            Ingresos Brutos
+          </span>
+        </div>
+
+        <div>
+          <h3 class="text-lg font-black text-mate-950">Reporte de Ventas</h3>
+          <p class="text-xs text-wood-600 mt-1 leading-relaxed">
+            Resumen consolidado de facturación, pedidos aprobados, clientes registrados y ticket promedio (AOV).
+          </p>
+        </div>
+
+        <ul class="space-y-2 text-2xs text-wood-700 pt-1 border-t border-wood-100">
+          <li class="flex items-center gap-2">
+            <i class="fa-solid fa-circle-check text-emerald-600 text-3xs"></i>
+            <span>Facturación total en Bs. y desglose por pedido</span>
+          </li>
+          <li class="flex items-center gap-2">
+            <i class="fa-solid fa-circle-check text-emerald-600 text-3xs"></i>
+            <span>Métricas de ticket promedio y clientes compradores</span>
+          </li>
+          <li class="flex items-center gap-2">
+            <i class="fa-solid fa-circle-check text-emerald-600 text-3xs"></i>
+            <span>Listado cronológico con ciudad y número de comprobante</span>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Botones de Acción: Previsualizar + Descargar -->
+      <div class="flex items-center gap-2 pt-2 border-t border-wood-100">
+        <button
+          type="button"
+          (click)="previewReport('sales')"
+          [disabled]="loadingPreview === 'sales' || loadingSales"
+          class="px-3.5 py-2.5 bg-white hover:bg-wood-50 text-wood-800 border border-wood-300 font-bold text-xs rounded-xl shadow-2xs flex items-center justify-center gap-1.5 transition-all disabled:opacity-50 cursor-pointer"
+        >
+          <i class="fa-solid" [class.fa-eye]="loadingPreview !== 'sales'" [class.fa-spinner]="loadingPreview === 'sales'" [class.fa-spin]="loadingPreview === 'sales'"></i>
+          <span>{{ loadingPreview === 'sales' ? 'Cargando...' : 'Previsualizar' }}</span>
+        </button>
+
+        <button
+          type="button"
+          (click)="downloadSalesReport()"
+          [disabled]="loadingSales || loadingPreview === 'sales'"
+          class="flex-1 py-2.5 px-3 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs rounded-xl shadow-2xs flex items-center justify-center gap-1.5 transition-all disabled:opacity-50 cursor-pointer"
+        >
+          <i class="fa-solid" [class.fa-download]="!loadingSales" [class.fa-spinner]="loadingSales" [class.fa-spin]="loadingSales"></i>
+          <span>{{ loadingSales ? 'Generando...' : 'Descargar PDF' }}</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- 2. REPORTE DE COSTOS                       -->
+    <!-- ========================================== -->
+    <div class="bg-white p-6 rounded-3xl border border-wood-200 shadow-sm hover:shadow-md transition-all flex flex-col justify-between space-y-5 group">
+      <div class="space-y-4">
+        <div class="flex items-start justify-between">
+          <div class="w-13 h-13 rounded-2xl bg-amber-50 border border-amber-200 text-amber-700 flex items-center justify-center text-2xl group-hover:scale-105 transition-transform shadow-2xs">
+            <i class="fa-solid fa-coins"></i>
+          </div>
+          <span class="px-2.5 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-3xs font-extrabold uppercase tracking-wider">
+            COGS & Stock
+          </span>
+        </div>
+
+        <div>
+          <h3 class="text-lg font-black text-mate-950">Reporte de Costos</h3>
+          <p class="text-xs text-wood-600 mt-1 leading-relaxed">
+            Auditoría del costo de los bienes vendidos (COGS) y valuación del capital inmovilizado en almacén.
+          </p>
+        </div>
+
+        <ul class="space-y-2 text-2xs text-wood-700 pt-1 border-t border-wood-100">
+          <li class="flex items-center gap-2">
+            <i class="fa-solid fa-circle-check text-amber-600 text-3xs"></i>
+            <span>Costo total de adquisición de mercancía vendida (COGS)</span>
+          </li>
+          <li class="flex items-center gap-2">
+            <i class="fa-solid fa-circle-check text-amber-600 text-3xs"></i>
+            <span>Valoración monetaria de existencias en bodega (Bs.)</span>
+          </li>
+          <li class="flex items-center gap-2">
+            <i class="fa-solid fa-circle-check text-amber-600 text-3xs"></i>
+            <span>Costos unitarios y clasificación por categoría</span>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Botones de Acción: Previsualizar + Descargar -->
+      <div class="flex items-center gap-2 pt-2 border-t border-wood-100">
+        <button
+          type="button"
+          (click)="previewReport('costs')"
+          [disabled]="loadingPreview === 'costs' || loadingCosts"
+          class="px-3.5 py-2.5 bg-white hover:bg-wood-50 text-wood-800 border border-wood-300 font-bold text-xs rounded-xl shadow-2xs flex items-center justify-center gap-1.5 transition-all disabled:opacity-50 cursor-pointer"
+        >
+          <i class="fa-solid" [class.fa-eye]="loadingPreview !== 'costs'" [class.fa-spinner]="loadingPreview === 'costs'" [class.fa-spin]="loadingPreview === 'costs'"></i>
+          <span>{{ loadingPreview === 'costs' ? 'Cargando...' : 'Previsualizar' }}</span>
+        </button>
+
+        <button
+          type="button"
+          (click)="downloadCostReport()"
+          [disabled]="loadingCosts || loadingPreview === 'costs'"
+          class="flex-1 py-2.5 px-3 bg-amber-800 hover:bg-amber-900 text-white font-bold text-xs rounded-xl shadow-2xs flex items-center justify-center gap-1.5 transition-all disabled:opacity-50 cursor-pointer"
+        >
+          <i class="fa-solid" [class.fa-download]="!loadingCosts" [class.fa-spinner]="loadingCosts" [class.fa-spin]="loadingCosts"></i>
+          <span>{{ loadingCosts ? 'Generando...' : 'Descargar PDF' }}</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- 3. REPORTE DE GANANCIAS                    -->
+    <!-- ========================================== -->
+    <div class="bg-white p-6 rounded-3xl border border-wood-200 shadow-sm hover:shadow-md transition-all flex flex-col justify-between space-y-5 group">
+      <div class="space-y-4">
+        <div class="flex items-start justify-between">
+          <div class="w-13 h-13 rounded-2xl bg-indigo-50 border border-indigo-200 text-indigo-700 flex items-center justify-center text-2xl group-hover:scale-105 transition-transform shadow-2xs">
+            <i class="fa-solid fa-scale-balanced"></i>
+          </div>
+          <span class="px-2.5 py-1 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-800 text-3xs font-extrabold uppercase tracking-wider">
+            Margen Neto
+          </span>
+        </div>
+
+        <div>
+          <h3 class="text-lg font-black text-mate-950">Reporte de Ganancias</h3>
+          <p class="text-xs text-wood-600 mt-1 leading-relaxed">
+            Balance contable que deduce los costos de los ingresos para medir la utilidad neta y el margen de retorno.
+          </p>
+        </div>
+
+        <ul class="space-y-2 text-2xs text-wood-700 pt-1 border-t border-wood-100">
+          <li class="flex items-center gap-2">
+            <i class="fa-solid fa-circle-check text-indigo-600 text-3xs"></i>
+            <span>Ganancia neta global y margen porcentual del negocio</span>
+          </li>
+          <li class="flex items-center gap-2">
+            <i class="fa-solid fa-circle-check text-indigo-600 text-3xs"></i>
+            <span>Ranking de productos por utilidad total generada</span>
+          </li>
+          <li class="flex items-center gap-2">
+            <i class="fa-solid fa-circle-check text-indigo-600 text-3xs"></i>
+            <span>Margen individual por producto (% sobre venta)</span>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Botones de Acción: Previsualizar + Descargar -->
+      <div class="flex items-center gap-2 pt-2 border-t border-wood-100">
+        <button
+          type="button"
+          (click)="previewReport('profits')"
+          [disabled]="loadingPreview === 'profits' || loadingProfits"
+          class="px-3.5 py-2.5 bg-white hover:bg-wood-50 text-wood-800 border border-wood-300 font-bold text-xs rounded-xl shadow-2xs flex items-center justify-center gap-1.5 transition-all disabled:opacity-50 cursor-pointer"
+        >
+          <i class="fa-solid" [class.fa-eye]="loadingPreview !== 'profits'" [class.fa-spinner]="loadingPreview === 'profits'" [class.fa-spin]="loadingPreview === 'profits'"></i>
+          <span>{{ loadingPreview === 'profits' ? 'Cargando...' : 'Previsualizar' }}</span>
+        </button>
+
+        <button
+          type="button"
+          (click)="downloadProfitReport()"
+          [disabled]="loadingProfits || loadingPreview === 'profits'"
+          class="flex-1 py-2.5 px-3 bg-indigo-800 hover:bg-indigo-900 text-white font-bold text-xs rounded-xl shadow-2xs flex items-center justify-center gap-1.5 transition-all disabled:opacity-50 cursor-pointer"
+        >
+          <i class="fa-solid" [class.fa-download]="!loadingProfits" [class.fa-spinner]="loadingProfits" [class.fa-spin]="loadingProfits"></i>
+          <span>{{ loadingProfits ? 'Generando...' : 'Descargar PDF' }}</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- 4. REPORTE DE DEMANDAS                     -->
+    <!-- ========================================== -->
+    <div class="bg-white p-6 rounded-3xl border border-wood-200 shadow-sm hover:shadow-md transition-all flex flex-col justify-between space-y-5 group">
+      <div class="space-y-4">
+        <div class="flex items-start justify-between">
+          <div class="w-13 h-13 rounded-2xl bg-cyan-50 border border-cyan-200 text-cyan-700 flex items-center justify-center text-2xl group-hover:scale-105 transition-transform shadow-2xs">
+            <i class="fa-solid fa-arrow-trend-up"></i>
+          </div>
+          <span class="px-2.5 py-1 rounded-full bg-cyan-50 border border-cyan-200 text-cyan-800 text-3xs font-extrabold uppercase tracking-wider">
+            Rotación & Stock
+          </span>
+        </div>
+
+        <div>
+          <h3 class="text-lg font-black text-mate-950">Reporte de Demandas</h3>
+          <p class="text-xs text-wood-600 mt-1 leading-relaxed">
+            Análisis de rotación de artículos, velocidad de demanda diaria y cálculo predictivo de cobertura de inventario.
+          </p>
+        </div>
+
+        <ul class="space-y-2 text-2xs text-wood-700 pt-1 border-t border-wood-100">
+          <li class="flex items-center gap-2">
+            <i class="fa-solid fa-circle-check text-cyan-600 text-3xs"></i>
+            <span>Velocidad de venta diaria promedio por artículo</span>
+          </li>
+          <li class="flex items-center gap-2">
+            <i class="fa-solid fa-circle-check text-cyan-600 text-3xs"></i>
+            <span>Días de inventario restantes antes de quiebre de stock</span>
+          </li>
+          <li class="flex items-center gap-2">
+            <i class="fa-solid fa-circle-check text-cyan-600 text-3xs"></i>
+            <span>Semáforo de reposición (Crítico, Alerta, Óptimo)</span>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Botones de Acción: Previsualizar + Descargar -->
+      <div class="flex items-center gap-2 pt-2 border-t border-wood-100">
+        <button
+          type="button"
+          (click)="previewReport('demand')"
+          [disabled]="loadingPreview === 'demand' || loadingDemand"
+          class="px-3.5 py-2.5 bg-white hover:bg-wood-50 text-wood-800 border border-wood-300 font-bold text-xs rounded-xl shadow-2xs flex items-center justify-center gap-1.5 transition-all disabled:opacity-50 cursor-pointer"
+        >
+          <i class="fa-solid" [class.fa-eye]="loadingPreview !== 'demand'" [class.fa-spinner]="loadingPreview === 'demand'" [class.fa-spin]="loadingPreview === 'demand'"></i>
+          <span>{{ loadingPreview === 'demand' ? 'Cargando...' : 'Previsualizar' }}</span>
+        </button>
+
+        <button
+          type="button"
+          (click)="downloadDemandReport()"
+          [disabled]="loadingDemand || loadingPreview === 'demand'"
+          class="flex-1 py-2.5 px-3 bg-cyan-800 hover:bg-cyan-900 text-white font-bold text-xs rounded-xl shadow-2xs flex items-center justify-center gap-1.5 transition-all disabled:opacity-50 cursor-pointer"
+        >
+          <i class="fa-solid" [class.fa-download]="!loadingDemand" [class.fa-spinner]="loadingDemand" [class.fa-spin]="loadingDemand"></i>
+          <span>{{ loadingDemand ? 'Generando...' : 'Descargar PDF' }}</span>
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ======================================================== -->
+<!-- MODAL VISOR DE PREVISUALIZACIÓN DE REPORTE (PANTALLA COMPLETA) -->
+<!-- ======================================================== -->
+@if (previewModalOpen) {
+<div
+  class="fixed inset-0 z-[100] bg-darkness-950/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-5 animate-fade-in"
+  (click)="closePreviewModal()"
+>
+  <div
+    class="bg-white rounded-3xl shadow-2xl w-full max-w-6xl h-[90vh] flex flex-col overflow-hidden border border-wood-200"
+    (click)="$event.stopPropagation()"
+  >
+    <!-- Cabecera del Modal -->
+    <div class="flex items-center justify-between px-6 py-4 border-b border-wood-100 bg-wood-50/70 shrink-0">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gold-100 text-gold-800 flex items-center justify-center text-lg shadow-2xs">
+          <i class="fa-solid fa-file-pdf"></i>
+        </div>
+        <div>
+          <h3 class="font-bold text-mate-950 text-base leading-tight">{{ previewTitle }}</h3>
+          <p class="text-xs text-wood-600 mt-0.5">{{ previewSubtitle }}</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <!-- Abrir en pestaña nueva -->
+        <button
+          type="button"
+          (click)="openPreviewInNewTab()"
+          title="Abrir en pestaña nueva del navegador"
+          class="px-3 py-2 rounded-xl bg-white border border-wood-200 hover:bg-wood-100 text-wood-700 font-bold text-xs flex items-center gap-1.5 transition-colors shadow-2xs cursor-pointer"
+        >
+          <i class="fa-solid fa-arrow-up-right-from-square text-3xs"></i>
+          <span class="hidden sm:inline">Pestaña Completa</span>
+        </button>
+
+        <!-- Botón de Descarga desde el Visor -->
+        <button
+          type="button"
+          (click)="downloadFromPreview()"
+          title="Descargar este archivo PDF"
+          class="px-4 py-2 bg-mate-800 hover:bg-mate-900 text-white font-bold text-xs rounded-xl shadow-xs flex items-center gap-1.5 transition-all cursor-pointer"
+        >
+          <i class="fa-solid fa-download"></i>
+          <span>Descargar PDF</span>
+        </button>
+
+        <!-- Botón de Cierre -->
+        <button
+          type="button"
+          (click)="closePreviewModal()"
+          title="Cerrar visor (Esc)"
+          class="w-9 h-9 rounded-xl bg-wood-100 hover:bg-wood-200 text-wood-700 flex items-center justify-center text-sm transition-colors cursor-pointer"
+        >
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Cuerpo del Modal: Visor Embebido Iframe -->
+    <div class="flex-1 bg-wood-100/60 p-2 sm:p-3 relative">
+      <iframe
+        [src]="previewPdfUrl"
+        class="w-full h-full rounded-2xl border border-wood-200 bg-white shadow-inner"
+        title="Visor de Reporte PDF Oficial"
+      ></iframe>
     </div>
   </div>
 </div>
+}

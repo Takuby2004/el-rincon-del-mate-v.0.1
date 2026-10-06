@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, HostListener, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
@@ -7,14 +7,13 @@ import { Category } from '../../core/models/models';
 import { AssetUrlPipe } from '../../shared/pipes/asset-url.pipe';
 import { ImgFallbackDirective } from '../../shared/directives/img-fallback.directive';
 import { PaginationComponent } from '../../shared/components/pagination/pagination.component';
-
 import { ToastService } from '../../core/services/toast.service';
 
 @Component({
-    selector: 'app-admin-categories',
-    imports: [CommonModule, FormsModule, AssetUrlPipe, ImgFallbackDirective, PaginationComponent],
-    templateUrl: './admin-categories.component.html',
-    styleUrl: './admin-categories.component.css'
+  selector: 'app-admin-categories',
+  imports: [CommonModule, FormsModule, AssetUrlPipe, ImgFallbackDirective, PaginationComponent],
+  templateUrl: './admin-categories.component.html',
+  styleUrl: './admin-categories.component.css'
 })
 export class AdminCategoriesFeatureComponent implements OnInit {
   private apiService = inject(ApiService);
@@ -37,6 +36,17 @@ export class AdminCategoriesFeatureComponent implements OnInit {
   selectedFilePreview: string | null = null;
   uploadError = '';
   isDragging = false;
+
+  // Validación reactiva por campos
+  touchedFields: Record<string, boolean> = {};
+  fieldErrors: Record<string, string> = {};
+
+  @HostListener('window:keydown.escape')
+  handleEscapeKey(): void {
+    if (this.showModal) {
+      this.closeModal();
+    }
+  }
 
   ngOnInit() {
     this.loadCategories();
@@ -77,7 +87,47 @@ export class AdminCategoriesFeatureComponent implements OnInit {
     this.currentPage = page;
   }
 
+  // Métodos de validación reactiva
+  onFieldInput(field: string): void {
+    if (this.touchedFields[field]) {
+      this.validateField(field);
+    }
+  }
+
+  onFieldBlur(field: string): void {
+    this.touchedFields[field] = true;
+    this.validateField(field);
+  }
+
+  validateField(field: string): boolean {
+    if (field === 'name') {
+      const val = this.formData.name ? this.formData.name.trim() : '';
+      if (!val) {
+        this.fieldErrors['name'] = 'El nombre de la categoría es obligatorio.';
+        return false;
+      }
+      if (val.length < 3) {
+        this.fieldErrors['name'] = 'El nombre debe tener al menos 3 caracteres.';
+        return false;
+      }
+      delete this.fieldErrors['name'];
+      return true;
+    }
+    return true;
+  }
+
+  validateAll(): boolean {
+    this.touchedFields['name'] = true;
+    return this.validateField('name');
+  }
+
+  clearErrors(): void {
+    this.touchedFields = {};
+    this.fieldErrors = {};
+  }
+
   openModal() {
+    this.clearErrors();
     this.isEditing = false;
     this.editingId = '';
     this.formData = { name: '', description: '', imageUrl: '' };
@@ -88,6 +138,7 @@ export class AdminCategoriesFeatureComponent implements OnInit {
   }
 
   editCategory(c: Category) {
+    this.clearErrors();
     this.isEditing = true;
     this.editingId = c.id;
     this.formData = { name: c.name, description: c.description || '', imageUrl: c.imageUrl || '' };
@@ -99,6 +150,7 @@ export class AdminCategoriesFeatureComponent implements OnInit {
 
   closeModal() {
     this.showModal = false;
+    this.clearErrors();
     this.selectedFile = null;
     this.selectedFilePreview = null;
     this.uploadError = '';
@@ -161,7 +213,9 @@ export class AdminCategoriesFeatureComponent implements OnInit {
   }
 
   saveCategory() {
-    if (!this.formData.name.trim()) return;
+    if (!this.validateAll()) {
+      return;
+    }
 
     this.isSaving = true;
     const payload = new FormData();

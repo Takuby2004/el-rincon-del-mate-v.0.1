@@ -36,6 +36,16 @@
       - *Histograma de Ticket Promedio*: Agrupación de compradores por intervalos de monto de pedido (`0-150 Bs`, `151-300 Bs`, `301-600 Bs`, `600+ Bs`).
     - **Ranking de Rendimiento**: Barras horizontales proporcionales del Top 5 productos más vendidos.
     - **Algoritmo Predictivo de Demanda (CU08)**: Cálculo automático de rotación diaria y proyección mensual sugerida para compras a proveedores.
+  - **Módulo Especializado de Reportes Ejecutivos en PDF (`AdminReportsFeatureComponent`)**: Panel administrativo con previsualización en vivo en modal a pantalla completa (`<iframe>` sanitizado con `DomSanitizer`), selector de períodos temporales (`7 Días`, `30 Días`, `Todo el Histórico`), botón de apertura en pestaña completa, feedback interactivo con estados de carga independientes y notificaciones no bloqueantes `ToastService`:
+    - **Reporte de Costos**: Auditoría del Costo de Bienes Vendidos (COGS), capital inmovilizado en bodega y desglose de costos por producto y categoría en formato horizontal (*Landscape*).
+    - **Reporte de Ventas**: Consolidado de transacciones con pagos aprobados, volumen de ingresos en Bs., clientes atendidos y ticket promedio (AOV).
+    - **Reporte de Ganancias**: Balance contable que deduce costos de los ingresos para calcular la utilidad neta en Bs., margen porcentual del negocio y ranking de rentabilidad.
+    - **Reporte de Demandas**: Análisis predictivo de rotación de inventario, velocidad diaria de consumo (Run Rate), cálculo de días de cobertura y semáforo de reposición (Crítico, Alerta, Óptimo).
+  - **Arquitectura y Estandarización de Modales Premium en el Panel**:
+    - **Aislamiento de Stacking Context**: Todos los modales del sistema (Productos, Categorías, Clientes, Pedidos y Reportes) se declaran fuera de contenedores animados, solucionando el *containing block trap* de CSS para garantizar cobertura total de pantalla y superposición correcta sobre el sidebar (`z-[100]` y `z-[105]` para subdiálogos).
+    - **Backdrop Estilizado & Accesibilidad**: Fondo cinematográfico translúcido (`bg-darkness-950/80 backdrop-blur-md`), soporte universal de cierre mediante tecla `Escape` (`@HostListener('window:keydown.escape')`) y clic exterior con detención de propagación en la tarjeta interior (`$event.stopPropagation()`).
+    - **Ficha 360° de Clientes (Lectura)**: Modal informativo de perfil completo con CI/NIT, teléfono con enlace directo a WhatsApp Web, correo electrónico, dirección, ciudad y contador histórico de pedidos.
+    - **Validaciones Reactivas y Badges de Error**: Retroalimentación visual interactiva en tiempo real en formularios modales sin desfasar el diseño visual.
   - **Transiciones y Animaciones del Panel**: Animación de entrada suave (`animate-fade-in`) y efectos de alto impacto escalonado (`animate-dashboard-pop` y `hover-lift`) con micro-transiciones fluidas en barras e histogramas.
 
 ### ⚙️ Backend
@@ -46,7 +56,7 @@
 - **Gestión de Archivos**: Multer para almacenamiento seguro de imágenes (QR bancario y comprobantes de pago de clientes).
 - **Servicios Auxiliares**:
   - Generación de códigos QR con la librería `qrcode`.
-  - Generación de reportes y facturación/resumen de pedidos en PDF con `pdfkit`.
+  - Generación de 4 reportes ejecutivos oficiales en PDF (Costos, Ventas, Ganancias, Demandas) y comprobantes de pedido con `pdfkit`.
 
 ---
 
@@ -70,8 +80,8 @@
 | **CU13** | CRUD de Catálogo | Gestión de productos (creación, edición y eliminación permanente con protección de integridad referencial de pedidos), búsqueda reactiva, filtros multidimensionales (categoría, estado, stock, precio y costo), KPIs y control de stock. |
 | **CU13.1** | Gestión de Categorías | Directorio y administración de categorías con subida de imágenes, búsqueda reactiva por nombre/slug/descripción y paginación inteligente. |
 | **CU14** | Dashboards & Analítica Visual | Tablero unificado con KPI de pedidos, salud financiera, gráficas de barras comparativas, histogramas de frecuencia y pronóstico predictivo de demanda. |
-| **CU15** | Reportes Financieros | Reportes de ventas e inventario con cálculo de margen de ganancia. |
-| **CU16** | Exportación PDF | Generación y descarga de la orden de pedido en formato PDF. |
+| **CU15** | Reportes Financieros Especializados | Generación y exportación de 4 tipos de reportes ejecutivos oficiales en PDF (Costos, Ventas, Ganancias, Demandas) con filtros por período (7 días, 30 días, histórico). |
+| **CU16** | Exportación PDF de Pedido | Generación y descarga individual del comprobante de pedido en formato PDF. |
 
 ---
 

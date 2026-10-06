@@ -1,25 +1,28 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, HostListener, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
 import { DialogService } from '../../core/services/dialog.service';
 import { Client } from '../../core/models/models';
 import { PaginationComponent } from '../../shared/components/pagination/pagination.component';
-
 import { ToastService } from '../../core/services/toast.service';
 
 @Component({
-    selector: 'app-admin-clients',
-    imports: [CommonModule, FormsModule, PaginationComponent],
-    templateUrl: './admin-clients.component.html',
-    styleUrl: './admin-clients.component.css'
+  selector: 'app-admin-clients',
+  imports: [CommonModule, FormsModule, PaginationComponent],
+  templateUrl: './admin-clients.component.html',
+  styleUrl: './admin-clients.component.css'
 })
 export class AdminClientsFeatureComponent implements OnInit {
   private apiService = inject(ApiService);
   private dialogService = inject(DialogService);
   private toastService = inject(ToastService);
+
   clients: Client[] = [];
   loading = true;
+
+  // Modal informativo del cliente
+  selectedClient: Client | null = null;
 
   // Paginación
   currentPage = 1;
@@ -45,6 +48,13 @@ export class AdminClientsFeatureComponent implements OnInit {
     'Tarija'
   ];
 
+  @HostListener('window:keydown.escape')
+  handleEscapeKey(): void {
+    if (this.selectedClient) {
+      this.closeClientModal();
+    }
+  }
+
   ngOnInit() {
     this.loadClients();
   }
@@ -60,6 +70,18 @@ export class AdminClientsFeatureComponent implements OnInit {
         this.loading = false;
       }
     });
+  }
+
+  openClientModal(client: Client): void {
+    this.selectedClient = client;
+  }
+
+  closeClientModal(): void {
+    this.selectedClient = null;
+  }
+
+  cleanPhone(phone: string): string {
+    return phone ? phone.replace(/[^0-9]/g, '') : '';
   }
 
   get filteredClients(): Client[] {
@@ -156,6 +178,9 @@ export class AdminClientsFeatureComponent implements OnInit {
         this.actionMessage = `Los datos de "${client.name}" fueron eliminados exitosamente.`;
         this.toastService.success(this.actionMessage);
         this.clients = this.clients.filter((c) => c.id !== client.id);
+        if (this.selectedClient?.id === client.id) {
+          this.closeClientModal();
+        }
         setTimeout(() => (this.actionMessage = null), 5000);
       },
       error: (err) => {
@@ -175,5 +200,3 @@ export class AdminClientsFeatureComponent implements OnInit {
     this.currentPage = 1;
   }
 }
-
-
