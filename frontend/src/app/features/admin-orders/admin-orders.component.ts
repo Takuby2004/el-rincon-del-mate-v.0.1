@@ -50,6 +50,19 @@ export class AdminOrdersFeatureComponent implements OnInit {
     this.loadOrders();
   }
 
+  normalizeStatus(status: string): any {
+    if (status === 'PENDING_PAYMENT_VERIFICATION' || status === 'PENDING_VERIFICATION') {
+      return 'PENDING_PAYMENT_VERIFICATION';
+    }
+    if (['PAID', 'APPROVED', 'PACKING', 'SHIPPED', 'DELIVERED'].includes(status)) {
+      return 'PAID';
+    }
+    if (['PAYMENT_REJECTED', 'REJECTED', 'CANCELLED'].includes(status)) {
+      return 'PAYMENT_REJECTED';
+    }
+    return 'PENDING_PAYMENT_VERIFICATION';
+  }
+
   loadOrders() {
     this.loading = true;
     this.apiService
@@ -60,7 +73,10 @@ export class AdminOrdersFeatureComponent implements OnInit {
       })
       .subscribe({
         next: (res) => {
-          this.orders = res;
+          this.orders = (res || []).map((o) => ({
+            ...o,
+            status: this.normalizeStatus(o.status)
+          }));
           this.loading = false;
         },
         error: () => {
@@ -108,14 +124,26 @@ export class AdminOrdersFeatureComponent implements OnInit {
   getOrderStatusLabel(status: string): string {
     const map: any = {
       PENDING_PAYMENT_VERIFICATION: 'Pendiente de verificación',
-      PAID: 'Pagado',
-      PACKING: 'Preparando pedido',
-      SHIPPED: 'Enviado',
-      DELIVERED: 'Entregado',
-      PAYMENT_REJECTED: 'Pago rechazado',
-      CANCELLED: 'Cancelado'
+      PAID: 'Aprobado',
+      APPROVED: 'Aprobado',
+      PACKING: 'Aprobado',
+      SHIPPED: 'Aprobado',
+      DELIVERED: 'Aprobado',
+      PAYMENT_REJECTED: 'Rechazado',
+      REJECTED: 'Rechazado',
+      CANCELLED: 'Rechazado'
     };
     return map[status] || status;
+  }
+
+  getOrderStatusBadgeClass(status: string): string {
+    if (status === 'PENDING_PAYMENT_VERIFICATION') {
+      return 'bg-amber-100 text-amber-800';
+    }
+    if (['PAID', 'APPROVED', 'PACKING', 'SHIPPED', 'DELIVERED'].includes(status)) {
+      return 'bg-emerald-100 text-emerald-800';
+    }
+    return 'bg-red-100 text-red-800';
   }
 
   cleanPhone(phone: string): string {
@@ -133,7 +161,10 @@ export class AdminOrdersFeatureComponent implements OnInit {
   }
 
   openOrderModal(order: Order) {
-    this.selectedOrder = order;
+    this.selectedOrder = {
+      ...order,
+      status: this.normalizeStatus(order.status)
+    };
     this.emailNotifyStatus = order.payment?.status || order.paymentStatus || 'APPROVED';
     this.emailNotifyMessage = '';
   }
@@ -309,7 +340,10 @@ export class AdminOrdersFeatureComponent implements OnInit {
   updateOrderStatus() {
     if (this.selectedOrder) {
       this.apiService.updateOrderStatus(this.selectedOrder.id, this.selectedOrder.status).subscribe({
-        next: () => this.showNotification('Estado del pedido actualizado correctamente.', 'success'),
+        next: () => {
+          this.showNotification('Estado del pedido actualizado correctamente.', 'success');
+          this.loadOrders();
+        },
         error: (err) => this.showNotification(err.error?.error || 'Error al actualizar el estado.', 'error')
       });
     }

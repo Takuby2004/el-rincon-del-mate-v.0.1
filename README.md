@@ -54,7 +54,7 @@
 | **CU07** | Checkout (Paso 2) | Visualización del QR oficial del dueño y subida obligatoria del comprobante de pago. |
 | **CU08** | Control de Stock | Reserva y decremento automático del inventario al momento de crear el pedido. |
 | **CU09** | Reversión de Stock | Reincorporación automática de stock si el pago es rechazado o el pedido se cancela. |
-| **CU10** | Verificación de Pagos & Pedidos | Panel administrativo con métricas rápidas (KPIs), barra de búsqueda reactiva por cliente/número/teléfono, filtros por estado de pago/pedido, botón de limpieza rápida, modal avanzado de inspección de comprobantes (zoom, rotación, descarga) y aprobación/rechazo. |
+| **CU10** | Verificación de Pagos & Pedidos | Panel administrativo con 3 estados simplificados (**Pendiente de verificación**, **Aprobado**, **Rechazado**), métricas rápidas (KPIs), barra de búsqueda reactiva por cliente/número/teléfono, filtros por estado, botón de limpieza rápida, modal avanzado de inspección de comprobantes (zoom, rotación, descarga) y sincronización automática de stock. |
 | **CU10.1** | Eliminación de Pedidos | Eliminación permanente de pedidos desde la tabla o el modal de detalle con confirmación visual de seguridad, restauración automática e inteligente de stock reservado y eliminación física de comprobantes. |
 | **CU11** | Rechazo con Motivo | Rechazo de pagos no válidos con registro obligatorio de justificación. |
 | **CU12** | Gestión de QR Dueño | Interfaz administrativa para subir y activar una nueva imagen de QR bancario. |

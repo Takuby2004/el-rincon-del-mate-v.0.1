@@ -230,19 +230,65 @@ export class OrderService {
     return order;
   }
 
-  public static async updateOrderStatus(orderId: string, status: string) {
+  public static async updateOrderStatus(orderId: string, status: string, userId?: string) {
     const order = await prisma.order.findUnique({
       where: { id: orderId },
-      include: { payment: true }
+      include: { payment: true, items: true }
     });
 
     if (!order) throw new Error('Pedido no encontrado');
 
-    // Rule: Cannot move to PACKING, SHIPPED or DELIVERED if payment is not APPROVED
-    if (['PACKING', 'SHIPPED', 'DELIVERED'].includes(status)) {
-      if (!order.payment || order.payment.status !== 'APPROVED') {
-        throw new Error('No es posible cambiar el estado del pedido a Preparando/Enviado/Entregado si el pago no ha sido verificado y APROBADO por el administrador.');
+    if (status === 'PAID') {
+      if (order.payment && order.payment.status !== 'APPROVED') {
+        await prisma.payment.update({
+          where: { id: order.payment.id },
+          data: { status: 'APPROVED', reviewedAt: new Date(), reviewedBy: userId || null }
+        });
       }
+      return prisma.order.update({
+        where: { id: orderId },
+        data: { status: 'PAID', paymentStatus: 'APPROVED' }
+      });
+    } else if (status === 'PAYMENT_REJECTED') {
+      if (order.status !== 'PAYMENT_REJECTED' && order.status !== 'CANCELLED') {
+        for (const item of order.items) {
+          await prisma.product.update({
+            where: { id: item.productId },
+            data: { stock: { increment: item.quantity } }
+          });
+
+          await prisma.inventoryMovement.create({
+            data: {
+              productId: item.productId,
+              userId: userId || null,
+              type: 'PAYMENT_REJECTED',
+              quantity: item.quantity,
+              reason: `Restauración de stock por cambio de estado a Rechazado en pedido #${order.orderNumber}`
+            }
+          });
+        }
+      }
+      if (order.payment && order.payment.status !== 'REJECTED') {
+        await prisma.payment.update({
+          where: { id: order.payment.id },
+          data: { status: 'REJECTED', reviewedAt: new Date(), reviewedBy: userId || null }
+        });
+      }
+      return prisma.order.update({
+        where: { id: orderId },
+        data: { status: 'PAYMENT_REJECTED', paymentStatus: 'REJECTED' }
+      });
+    } else if (status === 'PENDING_PAYMENT_VERIFICATION') {
+      if (order.payment && order.payment.status !== 'PENDING_VERIFICATION') {
+        await prisma.payment.update({
+          where: { id: order.payment.id },
+          data: { status: 'PENDING_VERIFICATION' }
+        });
+      }
+      return prisma.order.update({
+        where: { id: orderId },
+        data: { status: 'PENDING_PAYMENT_VERIFICATION', paymentStatus: 'PENDING_VERIFICATION' }
+      });
     }
 
     return prisma.order.update({

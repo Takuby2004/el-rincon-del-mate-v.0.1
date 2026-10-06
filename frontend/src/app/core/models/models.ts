@@ -84,7 +84,7 @@ export interface Order {
   client?: Client;
   subtotal: number;
   total: number;
-  status: 'PENDING_PAYMENT_VERIFICATION' | 'PAID' | 'PACKING' | 'SHIPPED' | 'DELIVERED' | 'PAYMENT_REJECTED' | 'CANCELLED';
+  status: 'PENDING_PAYMENT_VERIFICATION' | 'PAID' | 'PACKING' | 'SHIPPED' | 'DELIVERED' | 'PAYMENT_REJECTED' | 'CANCELLED' | string;
   paymentStatus: 'PENDING_VERIFICATION' | 'APPROVED' | 'REJECTED';
   address: string;
   city: string;

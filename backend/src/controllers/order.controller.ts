@@ -49,7 +49,7 @@ export class OrderController {
   public static async updateStatus(req: AuthRequest, res: Response) {
     try {
       const { status } = req.body;
-      const updated = await OrderService.updateOrderStatus(req.params.id, status);
+      const updated = await OrderService.updateOrderStatus(req.params.id, status, req.user?.id);
       res.json(updated);
     } catch (err: any) {
       res.status(400).json({ error: err.message });
