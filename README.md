@@ -227,6 +227,8 @@ el-rincon-del-mate-v.0.1/
 │   └── tailwind.config.js      # Paleta artesanal y tokens de animación
 │
 ├── docs/                       # Documentación técnica, planes y auditorías
+│   ├── UIX/                    # Capturas PNG de todas las pantallas e interfaces (Desktop & Mobile)
+│   ├── PLAN_CAPTURAS_UIX.md    # Inventario y documentación de capturas UI/UX
 │   ├── AUDITORIA_INTEGRAL_SISTEMA_V0.1.md
 │   ├── PLAN_UNIFICACION_DASHBOARD_Y_ESTADISTICAS.md
 │   ├── PLAN_DIAGNOSTICO_Y_EVALUACION_V0.2.md

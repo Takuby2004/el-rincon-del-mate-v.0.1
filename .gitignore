@@ -27,8 +27,9 @@ bazel-out/
 .env.*
 !.env.example
 *.local
-
-# 4. Almacenamiento Local de Imágenes y Archivos Temporales
+# 4. Almacenamiento Local de Imágenes, UIX y Archivos Temporales
+docs/UIX/
+docs/**/*.png
 uploads/
 */uploads/
 tmp/
