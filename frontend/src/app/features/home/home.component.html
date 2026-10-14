@@ -5,45 +5,40 @@
   class="relative bg-mate-950 text-white overflow-hidden min-h-[560px] sm:min-h-[620px] lg:min-h-[680px] flex items-center border-b border-mate-700/40">
 
   <!-- Full-Bleed Handcrafted Mates Slider Layer (Right-aligned background) -->
-  <div
-    class="hero-fullbleed-slider absolute inset-0 w-full h-full z-0 overflow-hidden"
-    (mouseenter)="pauseAutoSlide()"
+  <div class="hero-fullbleed-slider absolute inset-0 w-full h-full z-0 overflow-hidden" (mouseenter)="pauseAutoSlide()"
     (mouseleave)="resumeAutoSlide()">
 
     <!-- Slides Horizontal Sweep Track -->
     <div class="w-full h-full relative">
       @for (slide of heroSvgSlides; track slide.src; let idx = $index) {
-      <div
-        class="hero-fullbleed-slide absolute inset-0 w-full h-full transition-all duration-700 ease-out select-none"
-        [class.active-slide]="idx === activeHeroIndex"
-        [class.prev-slide]="idx < activeHeroIndex"
+      <div class="hero-fullbleed-slide absolute inset-0 w-full h-full transition-all duration-700 ease-out select-none"
+        [class.active-slide]="idx === activeHeroIndex" [class.prev-slide]="idx < activeHeroIndex"
         [class.next-slide]="idx > activeHeroIndex">
-        <img
-          [src]="slide.src"
-          [alt]="slide.name"
-          class="hero-fullbleed-img"
-          loading="eager" />
+        <img [src]="slide.src" [alt]="slide.name" class="hero-fullbleed-img" loading="eager" />
       </div>
       }
     </div>
 
     <!-- Seamless Deep Black Fusion Gradient: Solid Dark on Left -> Transparent on Right -->
-    <div class="absolute inset-0 bg-gradient-to-r from-mate-950 via-mate-950/90 sm:via-mate-950/60 to-transparent w-full pointer-events-none z-10"></div>
-    <div class="absolute inset-0 bg-gradient-to-t from-mate-950/90 via-transparent to-transparent pointer-events-none z-10"></div>
-    <div class="absolute inset-0 bg-gradient-to-b from-mate-950/70 via-transparent to-transparent pointer-events-none z-10"></div>
+    <div
+      class="absolute inset-0 bg-gradient-to-r from-mate-950 via-mate-950/90 sm:via-mate-950/60 to-transparent w-full pointer-events-none z-10">
+    </div>
+    <div
+      class="absolute inset-0 bg-gradient-to-t from-mate-950/90 via-transparent to-transparent pointer-events-none z-10">
+    </div>
+    <div
+      class="absolute inset-0 bg-gradient-to-b from-mate-950/70 via-transparent to-transparent pointer-events-none z-10">
+    </div>
 
     <!-- Floating Navigation Controls (Previous / Next & Dots Counter) -->
     <div class="absolute bottom-6 right-4 sm:right-10 lg:right-16 z-30 flex items-center gap-3 sm:gap-4">
       <!-- Dots & Slide Counter Badge -->
-      <div class="flex items-center gap-2 sm:gap-2.5 bg-mate-950/85 backdrop-blur-md px-3.5 sm:px-4 py-2 rounded-full border border-wood-500/30 shadow-2xl">
+      <div
+        class="flex items-center gap-2 sm:gap-2.5 bg-mate-950/85 backdrop-blur-md px-3.5 sm:px-4 py-2 rounded-full border border-wood-500/30 shadow-2xl">
         @for (slide of heroSvgSlides; track slide.src; let idx = $index) {
-        <button
-          (click)="goToHeroSlide(idx)"
-          class="slider-dot-btn transition-all duration-500 rounded-full"
-          [class.active-dot]="idx === activeHeroIndex"
-          [class.inactive-dot]="idx !== activeHeroIndex"
-          [title]="slide.name"
-          [attr.aria-label]="slide.name">
+        <button (click)="goToHeroSlide(idx)" class="slider-dot-btn transition-all duration-500 rounded-full"
+          [class.active-dot]="idx === activeHeroIndex" [class.inactive-dot]="idx !== activeHeroIndex"
+          [title]="slide.name" [attr.aria-label]="slide.name">
         </button>
         }
         <span class="text-3xs font-bold text-mate-300 tracking-wider ml-1">
@@ -53,18 +48,14 @@
 
       <!-- Arrow Controls -->
       <div class="flex items-center gap-1.5 sm:gap-2">
-        <button
-          (click)="prevHeroSlide()"
+        <button (click)="prevHeroSlide()"
           class="hero-nav-arrow w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-xs sm:text-sm shadow-xl transition-all"
-          title="Ver mate anterior"
-          aria-label="Ver mate anterior">
+          title="Ver mate anterior" aria-label="Ver mate anterior">
           <i class="fa-solid fa-chevron-left"></i>
         </button>
-        <button
-          (click)="nextHeroSlide()"
+        <button (click)="nextHeroSlide()"
           class="hero-nav-arrow w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-xs sm:text-sm shadow-xl transition-all"
-          title="Ver siguiente mate"
-          aria-label="Ver siguiente mate">
+          title="Ver siguiente mate" aria-label="Ver siguiente mate">
           <i class="fa-solid fa-chevron-right"></i>
         </button>
       </div>
@@ -105,10 +96,12 @@
 
       <!-- Current Slide Active Badge Details -->
       <div class="pt-2">
-        <div class="inline-flex items-center gap-3 px-4 py-2 rounded-2xl bg-mate-950/80 border border-wood-500/25 backdrop-blur-md shadow-lg">
+        <div
+          class="inline-flex items-center gap-3 px-4 py-2 rounded-2xl bg-mate-950/80 border border-wood-500/25 backdrop-blur-md shadow-lg">
           <i class="fa-solid fa-gem text-wood-400 text-xs"></i>
           <span class="text-xs font-bold text-white">{{ heroSvgSlides[activeHeroIndex].name }}</span>
-          <span class="text-3xs text-mate-300 border-l border-mate-700 pl-3">{{ heroSvgSlides[activeHeroIndex].badge }}</span>
+          <span class="text-3xs text-mate-300 border-l border-mate-700 pl-3">{{ heroSvgSlides[activeHeroIndex].badge
+            }}</span>
         </div>
       </div>
     </div>
@@ -118,11 +111,11 @@
 <!-- ==========================================================
      CATEGORIES GRID SECTION
      ========================================================== -->
-<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+<section class="max-w-7xl mx-auto px-5 sm:px-5 lg:px-5 py-20 ">
   <div class="text-center max-w-2xl mx-auto mb-14 space-y-2 animate-fade-in">
-    <span class="text-xs font-extrabold uppercase tracking-widest text-wood-600">Colecciones Especiales</span>
+    <!-- <span class="text-xs font-extrabold uppercase tracking-widest text-wood-600">Colecciones Especiales</span> -->
     <h2 class="text-3xl sm:text-4xl font-extrabold text-mate-900 tracking-tight">Categorías Principales</h2>
-    <p class="text-wood-600 text-sm">Explora los elementos esenciales para tu ritual diario</p>
+    <p class="text-wood-600 text-sm">Explora los elementos esenciales para tu rutina diaria</p>
   </div>
 
   @if (loadingCategories) {
