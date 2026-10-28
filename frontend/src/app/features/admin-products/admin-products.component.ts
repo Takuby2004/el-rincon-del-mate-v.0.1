@@ -34,6 +34,7 @@ export class AdminProductsFeatureComponent implements OnInit {
   isSaving = false;
   isDragging = false;
   editingId = '';
+  editingProductQr = '';
   uploadError = '';
 
   // Paginación
@@ -321,6 +322,7 @@ export class AdminProductsFeatureComponent implements OnInit {
     this.clearErrors();
     this.isEditing = false;
     this.editingId = '';
+    this.editingProductQr = '';
     this.uploadError = '';
     this.existingImages = [];
     this.selectedFiles = [];
@@ -341,6 +343,7 @@ export class AdminProductsFeatureComponent implements OnInit {
     this.clearErrors();
     this.isEditing = true;
     this.editingId = p.id;
+    this.editingProductQr = p.qrCodeUrl || '';
     this.uploadError = '';
     this.selectedFiles = [];
     
@@ -369,6 +372,7 @@ export class AdminProductsFeatureComponent implements OnInit {
     this.clearErrors();
     this.showModal = false;
     this.isSaving = false;
+    this.editingProductQr = '';
   }
 
   onDragOver(e: DragEvent) {
@@ -538,5 +542,203 @@ export class AdminProductsFeatureComponent implements OnInit {
           })
       });
     }
+  }
+
+  printProductQr() {
+    if (!this.editingProductQr) {
+      this.toastService.error('Este producto no cuenta con un código QR disponible.');
+      return;
+    }
+
+    const printWindow = window.open('', '_blank', 'width=650,height=750');
+    if (!printWindow) {
+      this.toastService.error('El navegador bloqueó la ventana emergente. Por favor, permite ventanas emergentes para imprimir.');
+      return;
+    }
+
+    const productName = this.formData.name || 'Producto';
+    const priceFormatted = Number(this.formData.price || 0).toFixed(2);
+    const categoryName = this.categories.find((c) => c.id === this.formData.categoryId)?.name || 'Catálogo General';
+
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html lang="es">
+      <head>
+        <meta charset="UTF-8">
+        <title>Imprimir QR - ${productName}</title>
+        <style>
+          @page {
+            size: auto;
+            margin: 10mm;
+          }
+          * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+          }
+          body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #fdfbf7;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 24px;
+            color: #2b1f14;
+          }
+          .ticket {
+            width: 320px;
+            background: #ffffff;
+            border: 2px dashed #b89b72;
+            border-radius: 20px;
+            padding: 24px;
+            text-align: center;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+          }
+          .ticket-header {
+            border-bottom: 2px solid #f2ede4;
+            padding-bottom: 12px;
+            margin-bottom: 16px;
+          }
+          .brand-name {
+            font-size: 14px;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: #1a4231;
+          }
+          .brand-subtitle {
+            font-size: 11px;
+            color: #8c7355;
+            margin-top: 2px;
+            font-weight: 500;
+          }
+          .qr-wrapper {
+            background: #ffffff;
+            display: inline-block;
+            padding: 12px;
+            border: 1px solid #ebdcc5;
+            border-radius: 16px;
+            margin-bottom: 16px;
+          }
+          .qr-image {
+            width: 190px;
+            height: 190px;
+            display: block;
+          }
+          .product-name {
+            font-size: 16px;
+            font-weight: 800;
+            color: #1a4231;
+            line-height: 1.3;
+            margin-bottom: 6px;
+          }
+          .category-pill {
+            display: inline-block;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #7a6045;
+            background-color: #f7f3eb;
+            padding: 3px 10px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            border: 1px solid #e8dec8;
+          }
+          .price-tag {
+            font-size: 22px;
+            font-weight: 900;
+            color: #1a4231;
+            margin-bottom: 14px;
+          }
+          .ticket-footer {
+            border-top: 1px solid #f2ede4;
+            padding-top: 12px;
+            font-size: 10px;
+            color: #8c7355;
+            line-height: 1.4;
+          }
+          .no-print-bar {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+          }
+          .btn-print {
+            background-color: #1a4231;
+            color: #ffffff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+          }
+          .btn-close {
+            background-color: #e5ded3;
+            color: #4a3b32;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+          }
+          @media print {
+            body {
+              background-color: transparent;
+              padding: 0;
+              min-height: auto;
+            }
+            .ticket {
+              box-shadow: none;
+              border: 1.5px dashed #555555;
+              page-break-inside: avoid;
+            }
+            .no-print-bar {
+              display: none !important;
+            }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="ticket">
+          <div class="ticket-header">
+            <div class="brand-name">🌿 El Rincón del Mate</div>
+            <div class="brand-subtitle">Catálogo Oficial de Productos</div>
+          </div>
+
+          <div class="qr-wrapper">
+            <img src="${this.editingProductQr}" class="qr-image" alt="QR ${productName}" />
+          </div>
+
+          <div class="product-name">${productName}</div>
+          <div class="category-pill">${categoryName}</div>
+          <div class="price-tag">Bs. ${priceFormatted}</div>
+
+          <div class="ticket-footer">
+            Escanea este código con la cámara de tu celular para ver detalles, disponibilidad y comprar en línea.
+          </div>
+        </div>
+
+        <div class="no-print-bar">
+          <button class="btn-print" onclick="window.print()">🖨️ Imprimir Ahora</button>
+          <button class="btn-close" onclick="window.close()">Cerrar</button>
+        </div>
+
+        <script>
+          window.addEventListener('load', () => {
+            setTimeout(() => {
+              window.print();
+            }, 300);
+          });
+        </script>
+      </body>
+      </html>
+    `;
+
+    printWindow.document.open();
+    printWindow.document.write(htmlContent);
+    printWindow.document.close();
   }
 }

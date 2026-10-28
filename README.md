@@ -22,6 +22,7 @@
 - **Iconografía & Tipografía**: FontAwesome 6 + Google Font *Outfit*.
 - **UI/UX & Animaciones**:
   - Directiva de resiliencia `[appImgFallback]` con arte vectorial SVG embebido sin dependencias externas.
+  - **Diseño Inmersivo Dark Luxury Unificado (Landing Page)**: Continuidad de fondo verde oscuro profundo (`bg-mate-950`) en todas las secciones principales (Hero Slider, Categorías Principales, Productos Destacados y Beneficios de Compra) para lograr una experiencia inmersiva y armónica.
   - **Skeleton Loaders** con efecto *Shimmer Wave* para evitar saltos de diseño (*Cumulative Layout Shift*).
   - Micro-animaciones escalonadas (*staggered*) y rebote interactivo en badge de carrito de compras.
   - **Sistema de Modales Aislados & Validación Reactiva (Admin)**: Capa de profundidad `z-[100]` con bloqueo de interacción exterior, marcos con gradiente rojo (`linear-gradient`) y mensajes emergentes (*Pop Messages*) interactivos por campo.
@@ -46,6 +47,10 @@
     - **Backdrop Estilizado & Accesibilidad**: Fondo cinematográfico translúcido (`bg-darkness-950/80 backdrop-blur-md`), soporte universal de cierre mediante tecla `Escape` (`@HostListener('window:keydown.escape')`) y clic exterior con detención de propagación en la tarjeta interior (`$event.stopPropagation()`).
     - **Ficha 360° de Clientes (Lectura)**: Modal informativo de perfil completo con CI/NIT, teléfono con enlace directo a WhatsApp Web, correo electrónico, dirección, ciudad y contador histórico de pedidos.
     - **Validaciones Reactivas y Badges de Error**: Retroalimentación visual interactiva en tiempo real en formularios modales sin desfasar el diseño visual.
+  - **Diseño 100% Responsivo (Mobile-First)**:
+    - **Panel Administrativo Adaptativo**: Menú lateral deslizable (*Sidebar Drawer*) con overlay oscuro de desenfoque táctil para móviles y tabletas (`< 1024px`), botón hamburguesa en cabecera y cierre automático al interactuar con rutas o el fondo. Persistencia fija en pantallas de escritorio (`lg:`).
+    - **Cabecera y Navegación Flexibles**: Topbar y header con tipografía escalable, botones compactos e identificación de sucursales optimizada para pantallas estrechas.
+    - **Tablas con Desplazamiento Táctil**: Contenedores horizontales seguros (`overflow-x-auto`) en las tablas de Productos, Pedidos, Categorías y Clientes para evitar rotura de maquetación en teléfonos.
   - **Transiciones y Animaciones del Panel**: Animación de entrada suave (`animate-fade-in`) y efectos de alto impacto escalonado (`animate-dashboard-pop` y `hover-lift`) con micro-transiciones fluidas en barras e histogramas.
 
 ### ⚙️ Backend
@@ -68,7 +73,7 @@
 | **CU02** | Filtrado & Búsqueda | Búsqueda reactiva por texto y filtrado por categoría de productos. |
 | **CU03** | Detalle de Producto | Ficha técnica con descripción, selector de cantidad y badge de estado de stock. |
 | **CU04** | Carrito de Compras | Gestión reactiva de ítems, cálculo automático de subtotales y total general. |
-| **CU05** | QR por Producto | Generación de código QR único por cada producto para compartir en redes. |
+| **CU05** | QR por Producto | Generación de código QR único por cada producto, visualización destacada en el modal de edición del panel administrativo, descarga en PNG e impresión directa de etiquetas físicas con membrete oficial. |
 | **CU06** | Checkout (Paso 1) | Formulario de datos del cliente (nombre, celular, ciudad y dirección). |
 | **CU07** | Checkout (Paso 2) | Visualización del QR oficial del dueño y subida obligatoria del comprobante de pago. |
 | **CU08** | Control de Stock | Reserva y decremento automático del inventario al momento de crear el pedido. |
@@ -77,7 +82,7 @@
 | **CU10.1** | Eliminación de Pedidos | Eliminación permanente de pedidos desde la tabla o el modal de detalle con confirmación visual de seguridad, restauración automática e inteligente de stock reservado y eliminación física de comprobantes. |
 | **CU11** | Rechazo con Motivo | Rechazo de pagos no válidos con registro obligatorio de justificación. |
 | **CU12** | Gestión de QR Dueño | Interfaz administrativa para subir y activar una nueva imagen de QR bancario. |
-| **CU13** | CRUD de Catálogo | Gestión de productos (creación, edición y eliminación permanente con protección de integridad referencial de pedidos), búsqueda reactiva, filtros multidimensionales (categoría, estado, stock, precio y costo), KPIs y control de stock. |
+| **CU13** | CRUD de Catálogo | Gestión de productos (creación, edición y eliminación permanente con protección de integridad referencial de pedidos), vista previa e impresión de códigos QR en modal de edición, búsqueda reactiva, filtros multidimensionales (categoría, estado, stock, precio y costo), KPIs y control de stock. |
 | **CU13.1** | Gestión de Categorías | Directorio y administración de categorías con subida de imágenes, búsqueda reactiva por nombre/slug/descripción y paginación inteligente. |
 | **CU14** | Dashboards & Analítica Visual | Tablero unificado con KPI de pedidos, salud financiera, gráficas de barras comparativas, histogramas de frecuencia y pronóstico predictivo de demanda. |
 | **CU15** | Reportes Financieros Especializados | Generación y exportación de 4 tipos de reportes ejecutivos oficiales en PDF (Costos, Ventas, Ganancias, Demandas) con filtros por período (7 días, 30 días, histórico). |
@@ -229,6 +234,7 @@ el-rincon-del-mate-v.0.1/
 ├── docs/                       # Documentación técnica, planes y auditorías
 │   ├── UIX/                    # Capturas PNG de todas las pantallas e interfaces (Desktop & Mobile)
 │   ├── PLAN_CAPTURAS_UIX.md    # Inventario y documentación de capturas UI/UX
+│   ├── PLAN_UNIFICACION_COLOR_PANTALLAS_CLIENTE.md # Plan Maestro Dark Luxury Storefront
 │   ├── AUDITORIA_INTEGRAL_SISTEMA_V0.1.md
 │   ├── PLAN_UNIFICACION_DASHBOARD_Y_ESTADISTICAS.md
 │   ├── PLAN_DIAGNOSTICO_Y_EVALUACION_V0.2.md
@@ -239,6 +245,19 @@ el-rincon-del-mate-v.0.1/
 │
 └── README.md                   # Documentación principal del sistema
 ```
+
+---
+
+## 🎨 Sistema de Diseño: Dark Luxury (Storefront del Cliente)
+
+Toda la experiencia pública y de compra del cliente se encuentra 100% unificada bajo la línea de diseño prémium **Dark Luxury**:
+
+- **Fondo Base Universal:** Verde bosque noche ultra profundo (`bg-mate-950` / `#0a140d`) aplicado al `body`, header y páginas.
+- **Tarjetas Translúcidas:** Vidrio esmerilado con tintes verde mate (`bg-mate-900/80 backdrop-blur-md`) con micro-animaciones al cursor (*hover-lift*).
+- **Bordes y Acentos Cálidos:** Delicados marcos y etiquetas en oro y madera artesanal (`border-wood-500/25` y `text-wood-400`).
+- **Botones de Conversión:** Gradiente cálido de cuero y madera (`from-wood-500 to-wood-600`) con sombras profundas y transiciones suaves.
+- **Skeletons Oscuros:** Componentes de carga (`.skeleton-box-dark`) con ondas de brillo sutiles para transiciones fluidas sin destellos blancos.
+- **Vistas Comprendidas:** Barra de navegación (Header), Catálogo de Productos (`/productos`), Categorías (`/categorias`), Detalle de Producto (`/productos/:slug`), Carrito de Compras (`/carrito`), Checkout de Envío (`/checkout`), Pago QR (`/checkout/pago`) y Confirmación de Pedido (`/pedido/:orderNumber`).
 
 ---
 

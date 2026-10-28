@@ -11,12 +11,12 @@ import { environment } from '../../../environments/environment';
 export class AuthService {
   private apiUrl = environment.apiUrl;
   public currentUser = signal<User | null>(this.getStoredUser());
-  public token = signal<string | null>(localStorage.getItem('mate_token'));
+  public token = signal<string | null>(sessionStorage.getItem('mate_token'));
 
   constructor(private http: HttpClient, private router: Router) {}
 
   private getStoredUser(): User | null {
-    const userStr = localStorage.getItem('mate_user');
+    const userStr = sessionStorage.getItem('mate_user');
     return userStr ? JSON.parse(userStr) : null;
   }
 
@@ -40,7 +40,7 @@ export class AuthService {
     return this.http.get<User>(`${this.apiUrl}/profile`).pipe(
       tap((user) => {
         this.currentUser.set(user);
-        localStorage.setItem('mate_user', JSON.stringify(user));
+        sessionStorage.setItem('mate_user', JSON.stringify(user));
       })
     );
   }
@@ -49,7 +49,7 @@ export class AuthService {
     return this.http.put<User>(`${this.apiUrl}/profile`, data).pipe(
       tap((user) => {
         this.currentUser.set(user);
-        localStorage.setItem('mate_user', JSON.stringify(user));
+        sessionStorage.setItem('mate_user', JSON.stringify(user));
       })
     );
   }
@@ -57,15 +57,15 @@ export class AuthService {
   public saveSession(user: User, token: string) {
     this.currentUser.set(user);
     this.token.set(token);
-    localStorage.setItem('mate_user', JSON.stringify(user));
-    localStorage.setItem('mate_token', token);
+    sessionStorage.setItem('mate_user', JSON.stringify(user));
+    sessionStorage.setItem('mate_token', token);
   }
 
   public logout() {
     this.currentUser.set(null);
     this.token.set(null);
-    localStorage.removeItem('mate_user');
-    localStorage.removeItem('mate_token');
+    sessionStorage.removeItem('mate_user');
+    sessionStorage.removeItem('mate_token');
     this.router.navigate(['/admin/login']);
   }
 

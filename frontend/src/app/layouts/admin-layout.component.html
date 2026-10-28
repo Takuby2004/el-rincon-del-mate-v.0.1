@@ -1,21 +1,42 @@
 <div class="min-h-screen bg-cream-50 flex">
+  <!-- Mobile Backdrop / Overlay -->
+  @if (sidebarOpen) {
+    <div 
+      (click)="closeSidebar()"
+      class="fixed inset-0 bg-darkness-950/70 backdrop-blur-xs z-[115] lg:hidden transition-opacity duration-300">
+    </div>
+  }
+
   <!-- Admin Sidebar -->
   <aside
-    class="w-64 bg-darkness-950 text-cream-100 flex flex-col fixed inset-y-0 z-[110] border-r border-darkness-900 shadow-xl">
-    <!-- Brand Header with Official Emblem SVG -->
-    <div class="h-20 flex items-center px-6 gap-3.5 border-b border-darkness-900 bg-darkness-900/60">
-      <div class="w-12 h-12 rounded-full bg-darkness-900 p-0.5 border-2 border-gold-400 shadow">
-        <img src="assets/logo-emblem.svg" alt="Emblema Oficial El Rincón del Mate" class="w-full h-full object-contain">
+    [class.translate-x-0]="sidebarOpen"
+    [class.-translate-x-full]="!sidebarOpen"
+    class="w-64 bg-darkness-950 text-cream-100 flex flex-col fixed inset-y-0 z-[120] border-r border-darkness-900 shadow-xl transition-transform duration-300 ease-in-out lg:translate-x-0">
+    <!-- Brand Header with Official Emblem SVG & Mobile Close Button -->
+    <div class="h-20 flex items-center justify-between px-6 border-b border-darkness-900 bg-darkness-900/60">
+      <div class="flex items-center gap-3.5">
+        <div class="w-12 h-12 rounded-full bg-darkness-900 p-0.5 border-2 border-gold-400 shadow">
+          <img src="assets/logo-emblem.svg" alt="Emblema Oficial El Rincón del Mate" class="w-full h-full object-contain">
+        </div>
+        <div>
+          <h1 class="font-black text-xs text-white tracking-wider leading-tight">PANEL ADMINISTRATIVO</h1>
+          <span class="text-2xs text-gold-400 font-extrabold uppercase tracking-wide">El Rincón del Mate</span>
+        </div>
       </div>
-      <div>
-        <h1 class="font-black text-xs text-white tracking-wider leading-tight">PANEL ADMINISTRATIVO</h1>
-        <span class="text-2xs text-gold-400 font-extrabold uppercase tracking-wide">El Rincón del Mate</span>
-      </div>
+
+      <!-- Close Button on Mobile -->
+      <button 
+        (click)="closeSidebar()"
+        class="lg:hidden text-cream-300 hover:text-white p-1.5 rounded-lg hover:bg-darkness-900 transition-colors"
+        aria-label="Cerrar menú lateral">
+        <i class="fa-solid fa-xmark text-lg"></i>
+      </button>
     </div>
 
     <!-- Navigation Menu -->
     <nav class="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
       <a routerLink="/admin/dashboard"
+        (click)="closeSidebar()"
         routerLinkActive="bg-darkness-900 text-gold-300 font-extrabold border-l-4 border-gold-400"
         class="flex items-center gap-3 px-4 py-3 text-sm rounded-r-xl text-cream-200 hover:bg-darkness-900 hover:text-white transition-all">
         <i class="fa-solid fa-chart-line text-gold-400 w-5"></i>
@@ -23,6 +44,7 @@
       </a>
 
       <a routerLink="/admin/productos"
+        (click)="closeSidebar()"
         routerLinkActive="bg-darkness-900 text-gold-300 font-extrabold border-l-4 border-gold-400"
         class="flex items-center gap-3 px-4 py-3 text-sm rounded-r-xl text-cream-200 hover:bg-darkness-900 hover:text-white transition-all">
         <i class="fa-solid fa-box text-gold-400 w-5"></i>
@@ -30,6 +52,7 @@
       </a>
 
       <a routerLink="/admin/categorias"
+        (click)="closeSidebar()"
         routerLinkActive="bg-darkness-900 text-gold-300 font-extrabold border-l-4 border-gold-400"
         class="flex items-center gap-3 px-4 py-3 text-sm rounded-r-xl text-cream-200 hover:bg-darkness-900 hover:text-white transition-all">
         <i class="fa-solid fa-layer-group text-gold-400 w-5"></i>
@@ -37,6 +60,7 @@
       </a>
 
       <a routerLink="/admin/clientes"
+        (click)="closeSidebar()"
         routerLinkActive="bg-darkness-900 text-gold-300 font-extrabold border-l-4 border-gold-400"
         class="flex items-center gap-3 px-4 py-3 text-sm rounded-r-xl text-cream-200 hover:bg-darkness-900 hover:text-white transition-all">
         <i class="fa-solid fa-users text-gold-400 w-5"></i>
@@ -44,6 +68,7 @@
       </a>
 
       <a routerLink="/admin/pedidos"
+        (click)="closeSidebar()"
         routerLinkActive="bg-darkness-900 text-gold-300 font-extrabold border-l-4 border-gold-400"
         class="flex items-center gap-3 px-4 py-3 text-sm rounded-r-xl text-cream-200 hover:bg-darkness-900 hover:text-white transition-all">
         <i class="fa-solid fa-receipt text-gold-400 w-5"></i>
@@ -51,6 +76,7 @@
       </a>
 
       <a routerLink="/admin/reportes"
+        (click)="closeSidebar()"
         routerLinkActive="bg-darkness-900 text-gold-300 font-extrabold border-l-4 border-gold-400"
         class="flex items-center gap-3 px-4 py-3 text-sm rounded-r-xl text-cream-200 hover:bg-darkness-900 hover:text-white transition-all">
         <i class="fa-solid fa-file-pdf text-gold-400 w-5"></i>
@@ -60,6 +86,7 @@
       <div class="pt-4 pb-2 px-4 text-xs font-bold text-cream-400 uppercase tracking-wider">Configuración</div>
 
       <a routerLink="/admin/configuracion/pago-qr"
+        (click)="closeSidebar()"
         routerLinkActive="bg-darkness-900 text-gold-300 font-extrabold border-l-4 border-gold-400"
         class="flex items-center gap-3 px-4 py-3 text-sm rounded-r-xl text-cream-200 hover:bg-darkness-900 hover:text-white transition-all">
         <i class="fa-solid fa-qrcode text-gold-400 w-5"></i>
@@ -67,6 +94,7 @@
       </a>
 
       <a routerLink="/admin/perfil"
+        (click)="closeSidebar()"
         routerLinkActive="bg-darkness-900 text-gold-300 font-extrabold border-l-4 border-gold-400"
         class="flex items-center gap-3 px-4 py-3 text-sm rounded-r-xl text-cream-200 hover:bg-darkness-900 hover:text-white transition-all">
         <i class="fa-solid fa-user-gear text-gold-400 w-5"></i>
@@ -96,24 +124,35 @@
   </aside>
 
   <!-- Main Admin Content Area -->
-  <div class="pl-64 flex-1 flex flex-col min-w-0">
+  <div class="lg:pl-64 pl-0 flex-1 flex flex-col min-w-0 transition-all duration-300">
     <header
-      class="h-20 bg-white border-b border-cream-300/60 px-8 flex items-center justify-between sticky top-0 z-40 shadow-xs">
+      class="h-20 bg-white border-b border-cream-300/60 px-4 sm:px-6 lg:px-8 flex items-center justify-between sticky top-0 z-40 shadow-xs">
       <div class="flex items-center gap-3">
-        <h2 class="text-lg font-extrabold text-darkness-900">Panel de Control El Rincón del Mate</h2>
-        <span
-          class="text-2xs font-extrabold text-gold-700 bg-gold-50 px-3 py-1 rounded-full border border-gold-200">Tarija
-          &amp; La Paz</span>
+        <!-- Mobile Sidebar Toggle Button -->
+        <button
+          (click)="toggleSidebar()"
+          class="lg:hidden text-darkness-900 hover:text-gold-600 p-2 rounded-xl hover:bg-cream-100 transition-colors"
+          aria-label="Abrir menú de navegación">
+          <i class="fa-solid fa-bars text-lg"></i>
+        </button>
+
+        <div>
+          <h2 class="text-base sm:text-lg font-extrabold text-darkness-900 truncate">Panel de Control</h2>
+          <span
+            class="text-3xs sm:text-2xs font-extrabold text-gold-700 bg-gold-50 px-2 sm:px-3 py-0.5 sm:py-1 rounded-full border border-gold-200 inline-block">
+            Tarija &amp; La Paz
+          </span>
+        </div>
       </div>
 
       <a routerLink="/" target="_blank"
-        class="text-xs font-bold text-darkness-900 bg-cream-100 hover:bg-cream-200 px-4 py-2.5 rounded-xl border border-gold-300/50 flex items-center gap-2 transition-colors">
+        class="text-xs font-bold text-darkness-900 bg-cream-100 hover:bg-cream-200 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl border border-gold-300/50 flex items-center gap-2 transition-colors">
         <i class="fa-solid fa-arrow-up-right-from-square text-gold-600"></i>
-        <span>Ver Tienda Pública</span>
+        <span class="hidden sm:inline">Ver Tienda Pública</span>
       </a>
     </header>
 
-    <main class="p-8 flex-1">
+    <main class="p-4 sm:p-6 lg:p-8 flex-1">
       <router-outlet></router-outlet>
     </main>
   </div>

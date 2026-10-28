@@ -139,4 +139,48 @@ export class HomeFeatureComponent implements OnInit, OnDestroy {
       }
     }, 1500);
   }
+
+  getCategoryDisplayImage(category: Category): string {
+    const slug = (category.slug || '').toLowerCase();
+    const name = (category.name || '').toLowerCase();
+    const img = category.imageUrl || '';
+
+    // Si la imagen actual es una de las URLs de prueba de café de Unsplash, usar el SVG artesanal correspondiente
+    const isCoffeePlaceholder = img.includes('photo-1517256064527') ||
+                               img.includes('photo-1514432324607') ||
+                               img.includes('photo-1544816155-12df9643f363') ||
+                               !img;
+
+    if (isCoffeePlaceholder) {
+      if (slug.includes('mate') || name.includes('mate')) return 'assets/producto_mate_16.svg';
+      if (slug.includes('termo') || name.includes('termo')) return 'assets/producto_mate_18.svg';
+      if (slug.includes('bombilla') || name.includes('bombilla')) return 'assets/producto_mate_27.svg';
+      return 'assets/producto_mate_31.svg';
+    }
+
+    return img;
+  }
+
+  getProductDisplayImage(product: Product): string {
+    const slug = (product.slug || '').toLowerCase();
+    const name = (product.name || '').toLowerCase();
+    const img = product.imageUrl || '';
+
+    const isCoffeePlaceholder = img.includes('photo-1517256064527') ||
+                               img.includes('photo-1576092768241') ||
+                               img.includes('photo-1544816155-12df9643f363') ||
+                               img.includes('photo-1514432324607') ||
+                               !img;
+
+    if (isCoffeePlaceholder) {
+      if (slug.includes('imperial') || name.includes('imperial')) return 'assets/producto_mate_16.svg';
+      if (slug.includes('torpedo') || name.includes('torpedo')) return 'assets/producto_mate_27.svg';
+      if (slug.includes('termo') || name.includes('termo')) return 'assets/producto_mate_18.svg';
+      if (slug.includes('bombilla') || name.includes('bombilla')) return 'assets/producto_mate_31.svg';
+      return 'assets/producto_mate_16.svg';
+    }
+
+    return img;
+  }
 }
+

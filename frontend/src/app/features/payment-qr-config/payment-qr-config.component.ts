@@ -9,10 +9,10 @@ import { ImgFallbackDirective } from '../../shared/directives/img-fallback.direc
 import { ToastService } from '../../core/services/toast.service';
 
 @Component({
-    selector: 'app-payment-qr-config',
-    imports: [CommonModule, AssetUrlPipe, ImgFallbackDirective],
-    templateUrl: './payment-qr-config.component.html',
-    styleUrl: './payment-qr-config.component.css'
+  selector: 'app-payment-qr-config',
+  imports: [CommonModule, AssetUrlPipe, ImgFallbackDirective],
+  templateUrl: './payment-qr-config.component.html',
+  styleUrl: './payment-qr-config.component.css'
 })
 export class AdminPaymentQrConfigFeatureComponent implements OnInit {
   private apiService = inject(ApiService);
@@ -90,9 +90,9 @@ export class AdminPaymentQrConfigFeatureComponent implements OnInit {
 
   async deactivateQr(id: string) {
     const confirmed = await this.dialogService.confirm({
-      title: '¿Desactivar Código QR?',
-      message: '¿Deseas desactivar este QR de pago?\nLos clientes no verán ningún QR activo durante la finalización de compra hasta que actives uno nuevo.',
-      confirmText: 'Sí, desactivar',
+      title: 'Eliminar Código QR?',
+      message: '¿Deseas eliminar este QR de pago?\nLos clientes no verán ningún QR activo durante la finalización de compra hasta que actives uno nuevo.',
+      confirmText: 'Sí, eliminar',
       cancelText: 'Cancelar',
       type: 'warning',
       icon: 'fa-solid fa-qrcode'
@@ -100,7 +100,7 @@ export class AdminPaymentQrConfigFeatureComponent implements OnInit {
 
     if (confirmed) {
       this.apiService.deactivatePaymentQr(id).subscribe(() => {
-        this.toastService.info('Código QR desactivado.');
+        this.toastService.info('Código QR eliminado.');
         this.loadActiveQr();
       });
     }

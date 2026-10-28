@@ -1,13 +1,18 @@
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 animate-fade-in">
   <!-- Header -->
   <div class="mb-8">
-    <span class="text-xs font-extrabold uppercase tracking-widest text-wood-600 block mb-1">Catálogo Oficial</span>
-    <h1 class="text-3xl sm:text-4xl font-black text-mate-900 tracking-tight">Colección de Mates &amp; Accesorios</h1>
-    <p class="text-wood-600 text-sm mt-1">Explora nuestros mates artesanales, termos térmicos y bombillas de alpaca con entrega garantizada.</p>
+    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-wood-500/15 border border-wood-500/30 text-wood-300 text-3xs font-extrabold uppercase tracking-widest shadow-sm mb-2">
+      <i class="fa-solid fa-layer-group text-wood-400"></i>
+      <span>Catálogo Oficial</span>
+    </div>
+    <h1 class="text-3xl sm:text-4xl font-black text-white tracking-tight">
+      Colección de <span class="text-transparent bg-clip-text bg-gradient-to-r from-wood-300 via-wood-400 to-wood-200">Mates &amp; Accesorios</span>
+    </h1>
+    <p class="text-mate-200 text-sm mt-1">Explora nuestros mates artesanales, termos térmicos y bombillas de alpaca con entrega garantizada a toda Bolivia.</p>
   </div>
 
   <!-- Filters & Search Bar -->
-  <div class="bg-white p-4 rounded-3xl shadow-sm border border-wood-200 mb-8 flex flex-col md:flex-row gap-4 items-center justify-between">
+  <div class="bg-mate-900/80 backdrop-blur-md p-4 rounded-3xl shadow-xl border border-wood-500/25 mb-8 flex flex-col md:flex-row gap-4 items-center justify-between">
     <!-- Search Input -->
     <div class="relative flex-1 w-full">
       <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-wood-400 text-sm"></i>
@@ -16,7 +21,7 @@
         [(ngModel)]="searchQuery"
         (ngModelChange)="onFilterChange()"
         placeholder="Buscar por nombre, tipo de mate o descripción..."
-        class="w-full pl-11 pr-4 py-3 rounded-2xl border border-wood-200 focus:outline-none focus:ring-2 focus:ring-wood-500 text-sm bg-wood-50/50 transition-all"
+        class="w-full pl-11 pr-4 py-3 rounded-2xl border border-wood-500/30 focus:outline-none focus:ring-2 focus:ring-wood-500 text-sm bg-mate-950/90 text-white placeholder-mate-400 transition-all"
       />
     </div>
 
@@ -25,11 +30,11 @@
       <select
         [(ngModel)]="selectedCategory"
         (ngModelChange)="onFilterChange()"
-        class="w-full px-4 py-3 rounded-2xl border border-wood-200 focus:outline-none focus:ring-2 focus:ring-wood-500 text-sm bg-white font-medium text-mate-900 cursor-pointer transition-all shadow-xs"
+        class="w-full px-4 py-3 rounded-2xl border border-wood-500/30 focus:outline-none focus:ring-2 focus:ring-wood-500 text-sm bg-mate-950 text-white font-medium cursor-pointer transition-all shadow-md"
       >
-        <option value="">Todas las Categorías</option>
+        <option value="" class="bg-mate-950 text-white">Todas las Categorías</option>
         @for (cat of categories; track cat.id) {
-          <option [value]="cat.id">{{ cat.name }}</option>
+          <option [value]="cat.id" class="bg-mate-950 text-white">{{ cat.name }}</option>
         }
       </select>
     </div>
@@ -39,28 +44,28 @@
   @if (loading) {
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       @for (n of [1, 2, 3, 4, 5, 6, 7, 8]; track n) {
-        <div class="bg-white rounded-3xl overflow-hidden border border-wood-200/80 p-4 space-y-4 shadow-sm">
-          <div class="skeleton-box h-56 rounded-2xl w-full"></div>
+        <div class="bg-mate-900/80 rounded-3xl overflow-hidden border border-wood-500/20 p-4 space-y-4 shadow-xl">
+          <div class="skeleton-box-dark h-56 rounded-2xl w-full"></div>
           <div class="space-y-2">
-            <div class="skeleton-box h-3 w-1/3 rounded"></div>
-            <div class="skeleton-box h-5 w-3/4 rounded"></div>
-            <div class="skeleton-box h-3 w-full rounded"></div>
+            <div class="skeleton-box-dark h-3 w-1/3 rounded"></div>
+            <div class="skeleton-box-dark h-5 w-3/4 rounded"></div>
+            <div class="skeleton-box-dark h-3 w-full rounded"></div>
           </div>
-          <div class="pt-2 border-t border-wood-100 flex gap-2">
-            <div class="skeleton-box h-10 flex-1 rounded-xl"></div>
-            <div class="skeleton-box h-10 w-10 rounded-xl"></div>
+          <div class="pt-2 border-t border-wood-500/15 flex gap-2">
+            <div class="skeleton-box-dark h-10 flex-1 rounded-xl"></div>
+            <div class="skeleton-box-dark h-10 w-10 rounded-xl"></div>
           </div>
         </div>
       }
     </div>
   } @else if (products.length === 0) {
-    <div class="bg-white rounded-3xl p-14 text-center border border-wood-200 my-8 shadow-sm animate-pop-in">
-      <div class="w-16 h-16 rounded-2xl bg-wood-100 text-wood-500 mx-auto flex items-center justify-center text-3xl mb-4">
+    <div class="bg-mate-900/80 backdrop-blur-md rounded-3xl p-14 text-center border border-wood-500/25 my-8 shadow-xl animate-pop-in">
+      <div class="w-16 h-16 rounded-2xl bg-wood-500/15 text-wood-400 border border-wood-500/30 mx-auto flex items-center justify-center text-3xl mb-4 shadow-md">
         <i class="fa-solid fa-box-open"></i>
       </div>
-      <h3 class="font-extrabold text-mate-900 text-xl">No se encontraron productos</h3>
-      <p class="text-wood-600 text-sm mt-1 max-w-md mx-auto">No hay artículos disponibles con los criterios seleccionados. Prueba buscando otra palabra clave o limpiando los filtros.</p>
-      <button (click)="resetFilters()" class="mt-5 px-6 py-2.5 rounded-xl bg-mate-800 hover:bg-mate-900 text-white font-bold text-xs transition-all shadow-md">
+      <h3 class="font-extrabold text-white text-xl">No se encontraron productos</h3>
+      <p class="text-mate-300 text-sm mt-1 max-w-md mx-auto">No hay artículos disponibles con los criterios seleccionados. Prueba buscando otra palabra clave o limpiando los filtros.</p>
+      <button (click)="resetFilters()" class="mt-5 px-6 py-2.5 rounded-xl bg-gradient-to-r from-wood-500 to-wood-600 hover:from-wood-600 hover:to-wood-700 text-white font-bold text-xs transition-all shadow-lg shadow-wood-950/40">
         Restablecer Filtros
       </button>
     </div>
@@ -68,45 +73,49 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       @for (product of products; track product.id; let idx = $index) {
         <div 
-          class="bg-white rounded-3xl overflow-hidden shadow-sm hover-lift border border-wood-200/80 flex flex-col group animate-fade-in"
+          class="bg-mate-900/80 backdrop-blur-md rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl hover:shadow-wood-950/80 hover:-translate-y-2 border border-wood-500/20 hover:border-wood-400/60 transition-all duration-500 flex flex-col group animate-fade-in"
           [ngClass]="'stagger-' + ((idx % 6) + 1)"
         >
-          <div class="relative h-60 bg-wood-50 overflow-hidden">
+          <div class="relative h-64 bg-mate-950/80 overflow-hidden flex items-center justify-center p-4">
             <img 
               [src]="product.imageUrl | assetUrl" 
               [alt]="product.name" 
               appImgFallback
-              class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              class="w-full h-full object-contain group-hover:scale-108 transition-transform duration-700 filter drop-shadow-[0_10px_20px_rgba(0,0,0,0.55)]"
             >
-            <span class="absolute top-3 right-3 bg-mate-950/85 backdrop-blur-md text-white text-xs font-black px-3 py-1.5 rounded-full shadow border border-mate-700/50">
+            <span class="absolute top-3.5 right-3.5 bg-mate-950/90 backdrop-blur-md text-wood-300 text-xs font-black px-3.5 py-1.5 rounded-full shadow-lg border border-wood-500/35">
               Bs. {{ (product.price || 0) | number:'1.2-2' }}
             </span>
-            @if (product.stock <= 0) {
-              <span class="absolute top-3 left-3 bg-red-600/90 backdrop-blur-md text-white text-xs font-black px-3 py-1 rounded-full shadow">
+            @if (product.stock && product.stock > 0) {
+              <span class="absolute bottom-3 left-3 bg-emerald-950/80 backdrop-blur-md text-emerald-400 text-3xs font-extrabold px-2.5 py-1 rounded-full border border-emerald-500/30">
+                En Stock
+              </span>
+            } @else {
+              <span class="absolute bottom-3 left-3 bg-red-950/80 backdrop-blur-md text-red-400 text-3xs font-extrabold px-2.5 py-1 rounded-full border border-red-500/30">
                 Agotado
               </span>
             }
           </div>
 
-          <div class="p-6 flex-1 flex flex-col justify-between space-y-4">
+          <div class="p-6 flex-1 flex flex-col justify-between space-y-4 bg-mate-900/90 border-t border-wood-500/15">
             <div>
-              <span class="text-2xs font-black text-wood-600 uppercase tracking-widest">{{ product.category?.name }}</span>
-              <a [routerLink]="['/productos', product.slug]" class="block font-black text-base text-mate-900 hover:text-wood-700 transition-colors mt-1 line-clamp-1">
+              <span class="text-3xs font-extrabold text-wood-400 uppercase tracking-widest block">{{ product.category?.name }}</span>
+              <a [routerLink]="['/productos', product.slug]" class="block font-black text-base text-white hover:text-wood-300 transition-colors mt-1 line-clamp-1">
                 {{ product.name }}
               </a>
-              <p class="text-xs text-wood-500 mt-1 line-clamp-2 leading-relaxed">{{ product.description }}</p>
+              <p class="text-xs text-mate-300 mt-1 line-clamp-2 leading-relaxed">{{ product.description }}</p>
             </div>
 
-            <div class="flex items-center gap-2 pt-3 border-t border-wood-100">
+            <div class="flex items-center gap-2 pt-3 border-t border-wood-500/15">
               <button
                 [disabled]="product.stock <= 0"
                 (click)="addToCart(product)"
-                class="flex-1 bg-mate-700 hover:bg-mate-800 active:scale-95 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed text-white font-extrabold py-3 px-4 rounded-2xl text-xs flex items-center justify-center gap-2 shadow-md transition-all"
+                class="flex-1 bg-gradient-to-r from-wood-500 to-wood-600 hover:from-wood-600 hover:to-wood-700 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed text-white font-extrabold py-3 px-4 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-wood-950/40 hover:shadow-wood-950/60 transition-all duration-300"
               >
                 <i class="fa-solid fa-cart-plus"></i>
                 <span>{{ product.stock > 0 ? (addedProductId === product.id ? '¡Agregado!' : 'Agregar') : 'Sin Stock' }}</span>
               </button>
-              <a [routerLink]="['/productos', product.slug]" class="p-3 rounded-2xl border border-wood-200 text-wood-700 hover:bg-wood-100 text-xs transition-all flex items-center justify-center">
+              <a [routerLink]="['/productos', product.slug]" class="p-3 rounded-xl border border-wood-500/30 bg-mate-950/60 text-wood-300 hover:text-white hover:bg-wood-500/20 text-xs transition-all flex items-center justify-center" title="Ver detalle">
                 <i class="fa-solid fa-eye"></i>
               </a>
             </div>

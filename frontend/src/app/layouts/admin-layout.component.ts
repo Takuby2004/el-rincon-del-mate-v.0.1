@@ -11,4 +11,13 @@ import { AuthService } from '../core/services/auth.service';
 })
 export class AdminLayoutComponent {
   authService = inject(AuthService);
+  sidebarOpen = false;
+
+  toggleSidebar(): void {
+    this.sidebarOpen = !this.sidebarOpen;
+  }
+
+  closeSidebar(): void {
+    this.sidebarOpen = false;
+  }
 }

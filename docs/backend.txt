@@ -1,0 +1,445 @@
+================================================================================
+                    DOCUMENTACIÓN DEL BACKEND - EL RINCÓN DEL MATE
+                        Arquitectura, Servicios y Paquetes
+================================================================================
+
+1. INTRODUCCIÓN Y PROPÓSITO
+--------------------------------------------------------------------------------
+El backend de "El Rincón del Mate" es un servidor web construido sobre Node.js y
+Express utilizando TypeScript. Su misión principal es actuar como el "cerebro" y el
+"guardián" de la información de la tienda. 
+
+El backend no tiene interfaz visual propia; en su lugar, expone una API REST que
+responde a las solicitudes que envía la aplicación web (Frontend en Angular 19) o
+herramientas administrativas.
+
+Responsabilidades clave del backend:
+a) Recibir y procesar pedidos y carritos de compras.
+b) Calcular precios y subtotales en el servidor para evitar manipulaciones.
+c) Controlar el inventario de productos y descontar stock de forma segura.
+d) Gestionar los comprobantes de pago por QR y su validación manual/administrativa.
+e) Autenticar usuarios y restringir acciones exclusivas de administradores.
+f) Emitir comprobantes y reportes ejecutivos en formato PDF.
+g) Enviar notificaciones por correo electrónico a compradores y administradores.
+
+
+================================================================================
+2. ARQUITECTURA DEL SISTEMA (PATRÓN EN CAPAS)
+================================================================================
+El proyecto sigue una arquitectura en capas (Layered Architecture). Esta separación
+garantiza que cada parte del código tenga una única responsabilidad bien definida:
+
+             [ Cliente Web / Frontend Angular 19 ]
+                               │
+                               ▼ (Petición HTTP JSON / FormData)
+             ┌──────────────────────────────────────────────┐
+             │ 1. SEGURIDAD Y PRE-PROCESAMIENTO             │
+             │    - Helmet (Cabeceras de protección)        │
+             │    - CORS (Validación de dominios permitidos)│
+             │    - Express-Rate-Limit (Filtro anti-ataques)│
+             └──────────────────────┬───────────────────────┘
+                                    ▼
+             ┌──────────────────────────────────────────────┐
+             │ 2. ENRUTADOR (Routes / Express Router)       │
+             │    - Mapea URLs (/api/orders, /api/auth...)  │
+             └──────────────────────┬───────────────────────┘
+                                    ▼
+             ┌──────────────────────────────────────────────┐
+             │ 3. MIDDLEWARES DE CONTROL                    │
+             │    - Auth Middleware (Verificación de JWT)   │
+             │    - Zod Validation (Valida campos y tipos)  │
+             │    - Multer (Recepción de archivos binarios) │
+             └──────────────────────┬───────────────────────┘
+                                    ▼
+             ┌──────────────────────────────────────────────┐
+             │ 4. CONTROLADORES (Controllers)               │
+             │    - Extrae datos de req.body, req.params    │
+             │    - Invoca al servicio correspondiente      │
+             │    - Devuelve la respuesta HTTP (200, 201...)│
+             └──────────────────────┬───────────────────────┘
+                                    ▼
+             ┌──────────────────────────────────────────────┐
+             │ 5. SERVICIOS (Services - Lógica de Negocio)  │
+             │    - Reglas del negocio (descuento de stock) │
+             │    - Transacciones atómicas ($transaction)   │
+             │    - Disparo de emails y generación de PDFs  │
+             └──────────────────────┬───────────────────────┘
+                                    ▼
+             ┌──────────────────────────────────────────────┐
+             │ 6. ACCESO A DATOS (Prisma ORM Client)        │
+             │    - Traduce consultas TypeScript a SQL      │
+             └──────────────────────┬───────────────────────┘
+                                    ▼
+                 [ Base de Datos PostgreSQL (Supabase) ]
+
+
+Flujo de una petición típica (Ejemplo: Crear un Pedido):
+1. El usuario envía los datos del cliente, productos y la foto del comprobante QR.
+2. Helmet y CORS validan que la petición provenga de un origen seguro.
+3. El Rate Limiter verifica que el cliente no esté saturando el servidor.
+4. Multer recibe el archivo en memoria y FileStorageService valida sus Magic Bytes.
+5. El validador Zod comprueba que los teléfonos, direcciones y correos tengan formato correcto.
+6. El controlador pasa los datos limpios a OrderService.
+7. OrderService consulta los precios oficiales en la base de datos (ignorando precios que vengan del cliente), verifica el stock disponible, descuenta el stock dentro de una transacción atómica de Prisma y crea el registro del pedido y pago.
+8. EmailService envía un correo de confirmación con el detalle de la compra.
+9. El controlador devuelve la confirmación con código HTTP 201 Created.
+
+
+================================================================================
+3. ESTRUCTURA DE DIRECTORIOS Y ARCHIVOS
+================================================================================
+
+backend/
+├── prisma/
+│   ├── schema.prisma       -> Definición de modelos, tablas, campos y relaciones de BD.
+│   ├── migrations/         -> Historial de cambios ejecutados en PostgreSQL.
+│   └── seed.ts             -> Datos iniciales (usuario administrador y categorías demo).
+├── uploads/                -> Carpeta local donde se almacenan fotos de productos y comprobantes.
+├── src/
+│   ├── server.ts           -> Punto de entrada que levanta el puerto HTTP (listen).
+│   ├── app.ts              -> Configuración principal de Express, CORS, Helmet y middlewares.
+│   ├── config/
+│   │   ├── env.ts          -> Carga y valida variables de entorno críticas (JWT_SECRET, PORT).
+│   │   ├── multer.ts       -> Configuración de subida de archivos (límite 5MB, almacenamiento en memoria).
+│   │   └── prisma.ts       -> Instancia global reutilizable de PrismaClient.
+│   ├── errors/
+│   │   └── AppError.ts     -> Clase personalizada para errores controlados (400, 401, 404, 409).
+│   ├── middlewares/
+│   │   ├── auth.middleware.ts     -> Valida el token JWT y restringe acceso a administradores.
+│   │   ├── error.middleware.ts    -> Captura cualquier excepción y devuelve respuestas claras en JSON.
+│   │   ├── security.middleware.ts -> Define límites de peticiones (Rate Limit) por IP.
+│   │   └── validate.middleware.ts -> Ejecuta esquemas de validación Zod en body o query.
+│   ├── routes/
+│   │   ├── index.ts        -> Agrupador central de todas las rutas bajo el prefijo "/api".
+│   │   ├── auth.routes.ts  -> Endpoints de login y registro de clientes.
+│   │   ├── category.routes.ts -> CRUD de categorías (público para ver, admin para editar).
+│   │   ├── client.routes.ts   -> Gestión administrativa de clientes registrados.
+│   │   ├── order.routes.ts    -> Creación de pedidos, listados y actualización de estados.
+│   │   ├── payment.routes.ts  -> Aprobación o rechazo de pagos y reenvío de emails.
+│   │   ├── paymentQr.routes.ts-> Obtención y subida del QR bancario de la tienda.
+│   │   ├── product.routes.ts  -> CRUD de productos del catálogo e inventario.
+│   │   ├── profile.routes.ts  -> Consulta y edición del perfil del usuario en sesión.
+│   │   ├── report.routes.ts   -> Descarga de reportes ejecutivos y comprobantes PDF.
+│   │   └── stats.routes.ts    -> Métricas y KPIs para el dashboard de administración.
+│   ├── controllers/        -> Receptores de peticiones HTTP (desempaquetan datos y responden).
+│   ├── services/           -> Lógica dura de negocio, cálculos y comunicación con base de datos.
+│   ├── utils/
+│   │   ├── fileStorageService.ts -> Guarda archivos en disco o Supabase con validación binaria.
+│   │   ├── pagination.ts         -> Estandariza paginación (?page=1&limit=10) y metadatos.
+│   │   ├── pdfGenerator.ts       -> Diseña y dibuja comprobantes y reportes con PDFKit.
+│   │   └── qrGenerator.ts        -> Convierte texto en imágenes QR en base64.
+│   └── validators/         -> Esquemas Zod que definen qué campos son obligatorios.
+
+
+================================================================================
+4. LIBRERÍAS Y PAQUETES UTILIZADOS (DEPENDENCIAS)
+================================================================================
+
+A) DEPENDENCIAS DE PRODUCCIÓN (dependencies):
+
+1. express (^4.18.3)
+   - ¿Qué es?: El framework web más popular y ligero para Node.js.
+   - ¿Para qué se usa?: Gestiona el ciclo de vida de peticiones HTTP, rutas, parámetros y respuestas.
+
+2. @prisma/client & prisma (^5.10.0)
+   - ¿Qué es?: Un ORM (Object-Relational Mapping) moderno de nueva generación con tipado estricto.
+   - ¿Para qué se usa?: Se conecta a PostgreSQL, ejecuta consultas seguras evitando inyecciones SQL, y maneja transacciones atómicas ($transaction).
+
+3. zod (^3.23.8)
+   - ¿Qué es?: Una biblioteca de declaración y validación de esquemas TypeScript-first.
+   - ¿Para qué se usa?: Valida que los datos que llegan del cliente (nombres, correos, precios, arrays de ítems) tengan el tipo y longitud exacta antes de procesarlos.
+
+4. jsonwebtoken (^9.0.2)
+   - ¿Qué es?: Implementación del estándar de tokens JWT.
+   - ¿Para qué se usa?: Genera credenciales digitales firmadas al iniciar sesión y valida la identidad del usuario en cada petición protegida.
+
+5. bcryptjs (^2.4.3)
+   - ¿Qué es?: Librería de cifrado para hashing unidireccional de contraseñas.
+   - ¿Para qué se usa?: Encripta contraseñas con salt criptográfico antes de guardarlas en base de datos y compara contraseñas en el login sin guardarlas en texto plano.
+
+6. helmet (^8.3.0)
+   - ¿Qué es?: Middleware de seguridad que configura cabeceras HTTP defensivas.
+   - ¿Para qué se usa?: Protege la API contra ataques comunes como Clickjacking, Sniffing de MIME types y XSS.
+
+7. cors (^2.8.5)
+   - ¿Qué es?: Control de Acceso de Origen Cruzado (Cross-Origin Resource Sharing).
+   - ¿Para qué se usa?: Define qué dominios (por ejemplo http://localhost:4200 en desarrollo o el dominio de producción) tienen permiso de consultar la API.
+
+8. express-rate-limit (^8.7.0)
+   - ¿Qué es?: Limitador de frecuencia de peticiones por dirección IP.
+   - ¿Para qué se usa?: Protege la API de ataques de denegación de servicio (DoS) y fuerza bruta (máximo 5 intentos de login por minuto).
+
+9. multer (^1.4.5-lts.1)
+   - ¿Qué es?: Middleware para procesar `multipart/form-data`.
+   - ¿Para qué se usa?: Permite la subida de imágenes de productos y fotos de comprobantes de pago recibidas desde el navegador.
+
+10. nodemailer (^10.0.9)
+    - ¿Qué es?: El cliente estándar para envío de correos electrónicos en Node.js.
+    - ¿Para qué se usa?: Envía notificaciones automáticas por SMTP (Gmail u otros) con comprobantes PDF adjuntos y mensajes de estado.
+
+11. pdfkit (^0.15.0)
+    - ¿Qué es?: Un motor de generación de documentos PDF programable en JavaScript.
+    - ¿Para qué se usa?: Construye dinámicamente comprobantes de compra y reportes administrativos (ventas, costos, ganancias y demanda) con tablas, colores y tipografía personalizada.
+
+12. qrcode (^1.5.3)
+    - ¿Qué es?: Generador de códigos de respuesta rápida (QR).
+    - ¿Para qué se usa?: Genera códigos QR en base64 para facilitar links directos a pedidos y pagos.
+
+13. dotenv (^16.4.5)
+    - ¿Qué es?: Cargador de variables de entorno desde archivos `.env`.
+    - ¿Para qué se usa?: Mantiene credenciales sensibles (claves de BD, contraseñas de correo, secretos JWT) fuera del repositorio de código.
+
+
+B) DEPENDENCIAS DE DESARROLLO (devDependencies):
+
+1. typescript (^5.3.3)
+   - Agrega tipado estático a JavaScript, detectando errores en tiempo de escritura.
+
+2. ts-node (^10.9.2) & ts-node-dev (^2.0.0)
+   - Ejecutan TypeScript directamente sin necesidad de compilar manualmente a JavaScript, recargando el servidor automáticamente ante cualquier cambio de archivo.
+
+3. @types/* (@types/node, @types/express, @types/cors, @types/jsonwebtoken, etc.)
+   - Archivos de definición de tipos TypeScript para autocompletado y validación de las librerías.
+
+
+================================================================================
+5. SERVICIOS DEL BACKEND Y SU FUNCIONAMIENTO DETALLADO
+================================================================================
+
+1. AuthService (auth.service.ts)
+   - Funcionalidad: Gestiona el registro y login de usuarios.
+   - Lógica: Hashea la contraseña con `bcryptjs.hash()` antes de almacenarla. Al hacer login, verifica con `bcryptjs.compare()` y genera un token JWT con vigencia definida (ej. 24 horas) que contiene el ID, email y rol (ADMIN o CLIENT).
+
+2. OrderService (order.service.ts)
+   - Funcionalidad: Coordina la creación, cálculo, búsqueda y cambio de estados de pedidos.
+   - Lógica:
+     * Recalcula subtotales y costos directamente desde la base de datos (nunca confía en los precios que envía el frontend).
+     * Ejecuta una transacción atómica `prisma.$transaction`. Si algún producto no tiene stock suficiente, cancela toda la operación y no guarda nada.
+     * Genera un número de pedido único con entropía criptográfica (ej. `ORD-261014-A3F8`).
+     * Registra el comprobante de pago vinculado al pedido.
+     * Controla transiciones de estado permitidas (ej. no se puede pasar un pedido de CANCELLED a PAID).
+
+3. PaymentService (payment.service.ts)
+   - Funcionalidad: Administración de comprobantes y validación de pagos.
+   - Lógica:
+     * Si el administrador aprueba el pago: marca el estado del pago como APPROVED y el pedido como PAID, registrando el usuario administrador y fecha de revisión.
+     * Si el administrador rechaza el pago: marca el pago como REJECTED, pasa el pedido a PAYMENT_REJECTED y devuelve automáticamente el stock reservado al inventario creando un `InventoryMovement` compensatorio.
+     * Dispara notificaciones por correo al cliente informando la decisión.
+
+4. ProductService (product.service.ts)
+   - Funcionalidad: Catálogo de productos y control de existencias.
+   - Lógica:
+     * Administra creación, edición y borrado de productos con soporte para múltiples imágenes.
+     * Genera slugs únicos para URLs amigables (ej. "termo-stanley-verde-1l").
+     * Registra movimientos en la tabla `InventoryMovement` (INITIAL, RESTOCK, ADJUSTMENT).
+     * Oculta el campo confidencial `cost` (costo de adquisición) a usuarios públicos o clientes no administradores.
+
+5. CategoryService (category.service.ts)
+   - Funcionalidad: Clasificación de productos (Termos, Mates, Bombillas, Yerbas, etc.).
+   - Lógica: Permite crear categorías con imágenes de portada e impide borrar categorías si aún tienen productos asignados.
+
+6. ClientService (client.service.ts)
+   - Funcionalidad: Directorio y perfil de clientes compradores.
+   - Lógica: Mantiene la libreta de direcciones, teléfonos, NIT/CI y relaciona pedidos con clientes autenticados o compradores anónimos.
+
+7. EmailService (email.service.ts)
+   - Funcionalidad: Notificaciones por correo electrónico transaccional.
+   - Lógica:
+     * Diseña correos HTML limpios y adaptables a móviles.
+     * Si existen credenciales SMTP en `.env`, envía correos reales a través de servidores de correo (como Gmail o SendGrid).
+     * Si NO existen credenciales SMTP (entorno de pruebas local), crea automáticamente una cuenta de prueba en Ethereal Email e imprime el enlace de previsualización en la consola.
+     * Adjunta el PDF del pedido cuando el pago es aprobado.
+
+8. PaymentQrService (paymentQr.service.ts)
+   - Funcionalidad: Control del código QR bancario de la tienda.
+   - Lógica: Permite al administrador cargar la imagen del QR oficial donde los clientes deben transferir. Mantiene activo el último QR configurado y desactiva los anteriores.
+
+9. ReportService (report.service.ts)
+   - Funcionalidad: Generador de reportes ejecutivos e inteligencia de negocio.
+   - Lógica:
+     * Genera comprobantes de compra individuales en PDF (A4 vertical).
+     * Genera reportes contables en orientación horizontal (Landscape) para Ventas, Costos, Margen de Ganancia Bruta y Demanda de productos con cálculo de totales acumulados.
+
+10. StatsService (stats.service.ts)
+    - Funcionalidad: Alimentador de datos numéricos para el Dashboard.
+    - Lógica: Realiza agregaciones en la base de datos (suma de ingresos mensuales, conteo de pedidos clasificados por estado, número de clientes registrados y lista de productos con stock bajo crítico).
+
+11. ProfileService (profile.service.ts)
+    - Funcionalidad: Gestión de perfil personal del usuario autenticado.
+    - Lógica: Permite consultar datos personales y actualizar nombre, teléfono o contraseña asegurando que el email sea único.
+
+
+================================================================================
+6. SERVICIOS AUXILIARES Y DE ALMACENAMIENTO (src/utils)
+================================================================================
+
+1. FileStorageService (fileStorageService.ts)
+   - Resuelve el almacenamiento de archivos de forma híbrida:
+     * Soporta subida local a la carpeta `uploads/`.
+     * Soporta subida en la nube a Supabase Storage mediante API REST autenticada.
+   - Validación de "Magic Bytes": Lee los primeros bytes hexadecimales del archivo (ej. `FF D8 FF` para JPEG, `89 50 4E 47` para PNG, `52 49 46 46` para WebP). Si un atacante renombra un archivo `.exe` o `.php` a `.jpg`, el sistema detecta que los bytes reales no corresponden a una imagen y rechaza la subida inmediatamente.
+
+2. PdfGenerator (pdfGenerator.ts)
+   - Utiliza PDFKit para dibujar vectores, textos, encabezados verdes de marca y tablas con líneas divisorias.
+   - Gestiona paginación automática y márgenes para evitar desbordes de texto.
+
+3. Pagination Helper (pagination.ts)
+   - Extrae de forma segura los parámetros `page` y `limit` de la URL, evitando valores negativos o excesivamente grandes.
+   - Construye respuestas con formato estándar:
+     {
+       data: [...],
+       pagination: {
+         total: 100,
+         page: 1,
+         limit: 10,
+         totalPages: 10,
+         hasNextPage: true,
+         hasPrevPage: false
+       }
+     }
+
+4. QrGenerator (qrGenerator.ts)
+   - Convierte identificadores o enlaces en imágenes QR en formato Data URL (base64) listas para ser incrustadas en el frontend o en documentos PDF.
+
+
+================================================================================
+7. SEGURIDAD Y RESILIENCIA
+================================================================================
+
+- Autenticación Stateless (JWT): El servidor no guarda sesiones pesadas en memoria RAM. Cada petición lleva su token en la cabecera `Authorization: Bearer <token>`.
+- Control de Roles: El middleware `requireAdmin` garantiza que únicamente usuarios con rol `ADMIN` puedan modificar productos, ver costos, descargar balances o aprobar pagos.
+- Sanitización y Validación con Zod: Los datos recibidos son tipados y restringidos; campos adicionales inesperados son descartados.
+- Transacciones ACID de Base de Datos: El uso de `prisma.$transaction()` asegura que nunca se descuente inventario de un producto si la creación del pedido falla a mitad del proceso.
+- Rate Limiting: Previene abusos por peticiones repetitivas o intentos automatizados de hackeo de contraseñas.
+
+
+================================================================================
+8. MODELOS DE BASE DE DATOS (PRISMA SCHEMA)
+================================================================================
+
+1. User: Administradores y usuarios registrados en la tienda (email, password hasheada, rol).
+2. Client: Ficha de contacto y envío de quien compra (nombre, email, teléfono, ciudad, dirección, NIT/CI).
+3. Category: Categorías de productos (nombre, slug, imagen).
+4. Product: Artículos en venta (nombre, slug, descripción, precio, costo, stock, imágenes).
+5. Order: Pedidos realizados (número único, total, subtotal, estado del pedido y estado del pago).
+6. OrderItem: Detalle de cada producto incluido en un pedido (precio unitario histórico, costo unitario histórico, cantidad y subtotal).
+7. Payment: Información del pago asociado al pedido (monto, método QR, estado de revisión, revisado por).
+8. PaymentProof: Archivo de imagen con el comprobante de transferencia bancaria enviado por el cliente.
+9. PaymentQrConfig: Imagen del código QR bancario de la tienda configurado por el administrador.
+10. InventoryMovement: Historial de auditoría de cada entrada o salida de stock (motivo, tipo, cantidad).
+
+
+================================================================================
+9. GLOSARIO DE TÉRMINOS COMPLEJOS PARA DESARROLLADORES JUNIOR
+================================================================================
+
+Para entender este backend como un profesional, aquí tienes los conceptos clave
+explicados de forma simple y práctica:
+
+1. API REST (Representational State Transfer):
+   Imagina un restaurante. El cliente es el Frontend (la persona sentada en la mesa),
+   el mozo es la API REST (lleva y trae mensajes) y la cocina es el Backend con su
+   base de datos. Una API REST es simplemente un conjunto de reglas estándar para que
+   dos programas conversen enviando y recibiendo datos en formato JSON a través de
+   la red.
+
+2. Endpoint (Punto de Entrada / Ruta):
+   Es la dirección web específica a la que llamas para pedir algo. Por ejemplo:
+   `POST /api/orders` es el endpoint para crear un pedido, y `GET /api/products` es
+   el endpoint para consultar el catálogo de productos.
+
+3. Middleware:
+   Es como un guardia de seguridad o una aduana en un aeropuerto. Antes de que tu
+   solicitud llegue al controlador para procesarse, pasa por una cadena de middlewares.
+   Un middleware puede revisar si tu pasaporte (token JWT) es válido, otro puede pesar
+   tu maleta (validar el tamaño del archivo con Multer) y otro puede revisar que no traigas
+   objetos prohibidos (validar campos con Zod).
+
+4. ORM (Object-Relational Mapping):
+   Un traductor automático entre el mundo de la programación y las bases de datos.
+   En lugar de escribir código SQL manual como:
+   "SELECT * FROM products WHERE stock > 0;",
+   con el ORM (Prisma) simplemente escribes en TypeScript:
+   `prisma.product.findMany({ where: { stock: { gt: 0 } } })`.
+   Es más seguro, más legible y previene errores de tipeo.
+
+5. Transacción Atómica (ACID / $transaction):
+   La palabra "átomo" aquí significa algo que no se puede dividir: "O todo se hace,
+   o nada se hace".
+   Imagina que compras un termo: el backend debe (1) crear el pedido y (2) restar 1 al
+   stock del termo. Si el servidor se apaga o falla justo después del paso 1, sin
+   transacciones te quedarías con un pedido creado pero el stock no se habría restado.
+   Con una transacción atómica, si el paso 2 falla, el paso 1 se deshace automáticamente
+   (Rollback), dejando la base de datos limpia y consistente.
+
+6. Condición de Carrera (Race Condition):
+   Ocurre cuando dos usuarios intentan hacer algo al mismo tiempo sobre el mismo dato.
+   Por ejemplo, si queda solo 1 mate en stock y dos personas hacen clic en "Comprar" en
+   el mismo milisegundo. Si no hay control de concurrencia y transacciones, ambos podrían
+   comprar el mismo artículo y tendrías un stock de -1. Las transacciones de Prisma evitan
+   este problema.
+
+7. JWT (JSON Web Token):
+   Es el equivalente a una pulsera digital en un concierto VIP. Cuando inicias sesión con
+   éxito, el backend te entrega una pulsera codificada y firmada criptográficamente (el token).
+   Cada vez que quieras entrar a una zona restringida (crear productos, ver reportes),
+   le muestras esa pulsera al servidor en la cabecera `Authorization`. El servidor no necesita
+   preguntarle a la base de datos quién eres cada vez; solo verifica la firma de la pulsera.
+
+8. Hashing y Salt (bcryptjs):
+   - Hashing: Es una función matemática de una sola vía. Convierte una contraseña como
+     "mate123" en un texto ininteligible como `$2a$10$e8wF...`. No existe forma de "des-hashear"
+     para volver a leer "mate123". Para validar la contraseña, el servidor vuelve a aplicar
+     la fórmula matemática a lo que ingresó el usuario y compara si el resultado coincide.
+   - Salt: Es un fragmento de texto aleatorio que se mezcla con la contraseña antes de
+     hashearla. Esto evita que dos contraseñas idénticas tengan el mismo resultado y protege
+     contra tablas de contraseñas precalculadas (Rainbow Tables).
+
+9. Rate Limiting:
+   Control de velocidad o aforo. Evita que un robot o atacante intente 10.000 contraseñas
+   por segundo o envíe 50.000 peticiones para saturar el servidor. Si alguien supera el límite
+   (por ejemplo, 5 intentos fallidos de login), el servidor le dice: "Espera 1 minuto antes
+   de volver a intentar".
+
+10. CORS (Cross-Origin Resource Sharing):
+    Mecanismo de seguridad de los navegadores. Si tu frontend corre en el puerto 4200 y tu
+    backend en el puerto 3000, pertenecen a "orígenes" diferentes. El navegador le pregunta al
+    backend: "¿Me das permiso de entregarle estos datos a la página del puerto 4200?". CORS
+    es la lista blanca de invitados donde el backend responde "Sí, permito a ese origen".
+
+11. Magic Bytes (Firmas Binarias):
+    Son los primeros números hexadecimales con los que empieza cualquier archivo en disco.
+    Cualquiera puede renombrar un archivo peligroso `virus.exe` a `foto_mate.jpg`. Sin embargo,
+    los magic bytes de un ejecutable siempre empiezan con `4D 5A` (MZ), mientras que una foto
+    JPG real siempre empieza con `FF D8 FF`. El backend revisa estos bytes reales para asegurarse
+    de que lo que subieron sea 100% una imagen real.
+
+12. MIME Spoofing:
+    El engaño donde un usuario malintencionado miente sobre el tipo de archivo que está enviando
+    (por ejemplo, enviando un script malicioso con la etiqueta `image/jpeg`). La validación
+    por Magic Bytes neutraliza por completo este ataque.
+
+13. Seed (Sembrado de Base de Datos):
+    Un script de inicialización (`seed.ts`) que llena la base de datos con datos básicos cuando
+    el proyecto se instala por primera vez (por ejemplo, crea las categorías iniciales y la cuenta
+    del administrador para que el sistema pueda usarse de inmediato).
+
+14. Migración de Base de Datos (Prisma Migrate):
+    Es como un sistema de control de versiones (similar a Git), pero para las tablas de la
+    base de datos. Si agregas una columna nueva a la tabla `Product`, Prisma genera un archivo
+    de migración SQL con fecha y hora. De esta forma, cualquier compañero de equipo puede correr
+    la migración y tener exactamente la misma estructura de base de datos.
+
+15. DTO (Data Transfer Object):
+    Un objeto simple diseñado exclusivamente para transportar datos entre el cliente y el servidor.
+    Se utiliza para no exponer información interna de la base de datos (por ejemplo, devolver el
+    pedido al cliente sin mostrar el costo de compra o datos privados del sistema).
+
+16. Fallback:
+    Un "Plan B" automático. Por ejemplo, en el servicio de correo, el Plan A es usar un servidor
+    SMTP real; si no está configurado, el Fallback es crear automáticamente una cuenta de prueba
+    en Ethereal Email para que el desarrollo no se detenga.
+
+================================================================================
+FIN DEL DOCUMENTO
+================================================================================

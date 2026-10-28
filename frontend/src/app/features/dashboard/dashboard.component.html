@@ -477,10 +477,9 @@
             <div class="flex items-center gap-2.5 min-w-0">
               <span
                 class="w-6 h-6 rounded-full flex items-center justify-center font-black text-2xs shrink-0 shadow-2xs"
-                [class.bg-gold-400]="rank === 0" [class.text-darkness-950]="rank === 0"
-                [class.bg-slate-300]="rank === 1" [class.text-darkness-950]="rank === 1"
-                [class.bg-amber-600]="rank === 2" [class.text-white]="rank === 2" [class.bg-wood-200]="rank > 2"
-                [class.text-wood-700]="rank > 2">
+                [class.bg-gold-400]="rank === 0" [class.text-whi]="rank === 0" [class.bg-slate-300]="rank === 1"
+                [class.text-white]="rank === 1" [class.bg-amber-600]="rank === 2" [class.text-white]="rank === 2"
+                [class.bg-wood-200]="rank > 2" [class.text-wood-700]="rank > 2">
                 #{{ rank + 1 }}
               </span>
               <span class="font-bold text-xs text-mate-950 truncate">{{ prod.name }}</span>

@@ -7,8 +7,8 @@
 @layer base {
   body {
     font-family: 'Outfit', sans-serif;
-    background-color: #f8f6f0;
-    color: #141414;
+    background-color: #0a140d;
+    color: #ffffff;
     overflow-x: hidden;
   }
 }
@@ -101,6 +101,32 @@
   animation: shimmerWave 1.8s infinite;
 }
 
+/* Skeleton Loader Dark (Dark Luxury Theme) */
+.skeleton-box-dark {
+  position: relative;
+  overflow: hidden;
+  background-color: #142618;
+  border-radius: 0.75rem;
+}
+
+.skeleton-box-dark::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  transform: translateX(-100%);
+  background-image: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0,
+    rgba(184, 137, 80, 0.15) 20%,
+    rgba(255, 255, 255, 0.12) 60%,
+    rgba(255, 255, 255, 0)
+  );
+  animation: shimmerWave 1.8s infinite;
+}
+
 /* Glassmorphism Cards */
 .glass-card {
   background: rgba(255, 255, 255, 0.92);
@@ -146,14 +172,14 @@ img.img-loading {
 }
 
 ::-webkit-scrollbar-track {
-  background: #eee5d3;
+  background: #0a140d;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #c5a059;
+  background: #b88950;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #9a7732;
+  background: #d0a777;
 }

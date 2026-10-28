@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import path from 'path';
-import dotenv from 'dotenv';
+// import dotenv from 'dotenv';
 import apiRouter from './routes';
 import { errorHandler } from './middlewares/error.middleware';
 import { generalApiLimiter } from './middlewares/security.middleware';

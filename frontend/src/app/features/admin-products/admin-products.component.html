@@ -195,76 +195,78 @@
         </button>
       </div>
     } @else {
-      <table class="w-full text-left border-collapse">
-        <thead>
-          <tr class="bg-wood-100/70 border-b border-wood-200 text-2xs font-bold text-wood-700 uppercase tracking-wider">
-            <th class="p-4">Producto</th>
-            <th class="p-4">Galería</th>
-            <th class="p-4">Categoría</th>
-            <th class="p-4">Precio (Bs.)</th>
-            <th class="p-4">Costo (Bs.)</th>
-            <th class="p-4">Stock</th>
-            <th class="p-4">QR</th>
-            <th class="p-4">Estado</th>
-            <th class="p-4 text-right">Acciones</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-wood-100 text-xs">
-          @for (product of paginatedProducts; track product.id) {
-            <tr class="hover:bg-wood-50/50 transition-colors">
-              <td class="p-4">
-                <div class="flex items-center gap-3">
-                  <img [src]="product.imageUrl | assetUrl" [alt]="product.name" appImgFallback class="w-10 h-10 object-cover rounded-lg border border-wood-200">
-                  <div>
-                    <div class="font-bold text-mate-900 line-clamp-1">{{ product.name }}</div>
-                    <div class="text-2xs text-wood-500 font-mono">{{ product.slug }}</div>
-                  </div>
-                </div>
-              </td>
-              <td class="p-4">
-                <div class="flex items-center gap-1.5">
-                  @if (product.images && product.images.length > 0) {
-                    <span class="px-2 py-0.5 rounded-full bg-wood-100 text-wood-700 font-bold text-2xs flex items-center gap-1">
-                      <i class="fa-solid fa-images text-3xs"></i>
-                      {{ product.images.length }} fotos
-                    </span>
-                  } @else if (product.imageUrl) {
-                    <span class="px-2 py-0.5 rounded-full bg-wood-50 text-wood-600 text-2xs">1 foto</span>
-                  } @else {
-                    <span class="text-wood-400 text-2xs italic">Sin fotos</span>
-                  }
-                </div>
-              </td>
-              <td class="p-4 font-semibold text-wood-700">{{ product.category?.name }}</td>
-              <td class="p-4 font-extrabold text-mate-900">Bs. {{ (product.price || 0) | number:'1.2-2' }}</td>
-              <td class="p-4 font-medium text-wood-600">Bs. {{ (product.cost || 0) | number:'1.2-2' }}</td>
-              <td class="p-4">
-                <span class="px-2.5 py-1 rounded-full font-bold text-2xs" [ngClass]="product.stock > 5 ? 'bg-emerald-100 text-emerald-800' : (product.stock > 0 ? 'bg-amber-100 text-amber-800' : 'bg-red-100 text-red-800')">
-                  {{ product.stock }} un.
-                </span>
-              </td>
-              <td class="p-4">
-                @if (product.qrCodeUrl) {
-                  <img [src]="product.qrCodeUrl" [alt]="'QR ' + product.name" class="w-8 h-8 rounded border border-wood-300">
-                }
-              </td>
-              <td class="p-4">
-                <span class="px-2 py-0.5 rounded text-2xs font-semibold" [ngClass]="product.active ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-100 text-gray-600'">
-                  {{ product.active ? 'Activo' : 'Inactivo' }}
-                </span>
-              </td>
-              <td class="p-4 text-right space-x-2">
-                <button (click)="editProduct(product)" class="p-2 text-mate-700 hover:bg-mate-50 rounded-lg transition-colors" title="Editar Producto">
-                  <i class="fa-solid fa-pen"></i>
-                </button>
-                <button (click)="deleteProduct(product.id)" class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Eliminar Producto">
-                  <i class="fa-solid fa-trash-can"></i>
-                </button>
-              </td>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-wood-100/70 border-b border-wood-200 text-2xs font-bold text-wood-700 uppercase tracking-wider">
+              <th class="p-4">Producto</th>
+              <th class="p-4">Galería</th>
+              <th class="p-4">Categoría</th>
+              <th class="p-4">Precio (Bs.)</th>
+              <th class="p-4">Costo (Bs.)</th>
+              <th class="p-4">Stock</th>
+              <th class="p-4">QR</th>
+              <th class="p-4">Estado</th>
+              <th class="p-4 text-right">Acciones</th>
             </tr>
-          }
-        </tbody>
-      </table>
+          </thead>
+          <tbody class="divide-y divide-wood-100 text-xs">
+            @for (product of paginatedProducts; track product.id) {
+              <tr class="hover:bg-wood-50/50 transition-colors">
+                <td class="p-4">
+                  <div class="flex items-center gap-3">
+                    <img [src]="product.imageUrl | assetUrl" [alt]="product.name" appImgFallback class="w-10 h-10 object-cover rounded-lg border border-wood-200">
+                    <div>
+                      <div class="font-bold text-mate-900 line-clamp-1">{{ product.name }}</div>
+                      <div class="text-2xs text-wood-500 font-mono">{{ product.slug }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="p-4">
+                  <div class="flex items-center gap-1.5">
+                    @if (product.images && product.images.length > 0) {
+                      <span class="px-2 py-0.5 rounded-full bg-wood-100 text-wood-700 font-bold text-2xs flex items-center gap-1">
+                        <i class="fa-solid fa-images text-3xs"></i>
+                        {{ product.images.length }} fotos
+                      </span>
+                    } @else if (product.imageUrl) {
+                      <span class="px-2 py-0.5 rounded-full bg-wood-50 text-wood-600 text-2xs">1 foto</span>
+                    } @else {
+                      <span class="text-wood-400 text-2xs italic">Sin fotos</span>
+                    }
+                  </div>
+                </td>
+                <td class="p-4 font-semibold text-wood-700">{{ product.category?.name }}</td>
+                <td class="p-4 font-extrabold text-mate-900">Bs. {{ (product.price || 0) | number:'1.2-2' }}</td>
+                <td class="p-4 font-medium text-wood-600">Bs. {{ (product.cost || 0) | number:'1.2-2' }}</td>
+                <td class="p-4">
+                  <span class="px-2.5 py-1 rounded-full font-bold text-2xs" [ngClass]="product.stock > 5 ? 'bg-emerald-100 text-emerald-800' : (product.stock > 0 ? 'bg-amber-100 text-amber-800' : 'bg-red-100 text-red-800')">
+                    {{ product.stock }} un.
+                  </span>
+                </td>
+                <td class="p-4">
+                  @if (product.qrCodeUrl) {
+                    <img [src]="product.qrCodeUrl" [alt]="'QR ' + product.name" class="w-8 h-8 rounded border border-wood-300">
+                  }
+                </td>
+                <td class="p-4">
+                  <span class="px-2 py-0.5 rounded text-2xs font-semibold" [ngClass]="product.active ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-100 text-gray-600'">
+                    {{ product.active ? 'Activo' : 'Inactivo' }}
+                  </span>
+                </td>
+                <td class="p-4 text-right space-x-2">
+                  <button (click)="editProduct(product)" class="p-2 text-mate-700 hover:bg-mate-50 rounded-lg transition-colors" title="Editar Producto">
+                    <i class="fa-solid fa-pen"></i>
+                  </button>
+                  <button (click)="deleteProduct(product.id)" class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Eliminar Producto">
+                    <i class="fa-solid fa-trash-can"></i>
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
 
       <!-- Paginador de Productos (aparece cuando totalItems > 5) -->
       <app-pagination 
@@ -537,6 +539,64 @@
               placeholder="Detalles adicionales, tamaño, materiales..."
               class="w-full px-3.5 py-2.5 rounded-xl border border-wood-300 text-xs focus:ring-2 focus:ring-mate-700 outline-none transition-all"></textarea>
           </div>
+
+          <!-- Vista y Gestión de Código QR (Solo visible en modo Edición) -->
+          @if (isEditing) {
+            <div class="bg-wood-50/70 border border-wood-200/90 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-center gap-5 shadow-xs transition-all">
+              <!-- QR Image Box -->
+              <div class="relative group shrink-0">
+                @if (editingProductQr) {
+                  <div class="w-28 h-28 bg-white p-2 rounded-2xl border border-wood-200 shadow-sm flex items-center justify-center overflow-hidden">
+                    <img 
+                      [src]="editingProductQr" 
+                      [alt]="'Código QR de ' + formData.name" 
+                      class="w-full h-full object-contain">
+                  </div>
+                } @else {
+                  <div class="w-28 h-28 bg-wood-100/70 rounded-2xl border border-dashed border-wood-300 flex flex-col items-center justify-center p-2 text-center">
+                    <i class="fa-solid fa-qrcode text-wood-400 text-2xl mb-1"></i>
+                    <span class="text-3xs text-wood-500 font-semibold leading-tight">Sin QR disponible</span>
+                  </div>
+                }
+              </div>
+
+              <!-- Info and Actions -->
+              <div class="flex-1 text-center sm:text-left space-y-2">
+                <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                  <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-2xs font-extrabold bg-mate-100 text-mate-800 border border-mate-200">
+                    <i class="fa-solid fa-qrcode text-mate-700"></i> Código QR Oficial
+                  </span>
+                  <span class="text-3xs text-wood-500 font-medium">Uso en góndola, etiquetas o redes</span>
+                </div>
+
+                <p class="text-xs text-wood-600 leading-relaxed">
+                  Este código QR enlaza directamente a la ficha pública de este producto en el catálogo online para que tus clientes puedan escanearlo y comprarlo al instante.
+                </p>
+
+                <div class="pt-1 flex flex-wrap items-center justify-center sm:justify-start gap-3">
+                  <button 
+                    type="button" 
+                    (click)="printProductQr()"
+                    [disabled]="!editingProductQr"
+                    class="inline-flex items-center gap-2 px-4 py-2 bg-white hover:bg-wood-50 disabled:bg-gray-100 text-mate-800 hover:text-mate-900 disabled:text-gray-400 border border-wood-300 rounded-xl text-xs font-bold shadow-2xs hover:shadow-xs transition-all active:scale-95 cursor-pointer disabled:cursor-not-allowed">
+                    <i class="fa-solid fa-print text-gold-500"></i>
+                    <span>Imprimir código QR</span>
+                  </button>
+
+                  @if (editingProductQr) {
+                    <a 
+                      [href]="editingProductQr" 
+                      [download]="'qr-' + (formData.name | lowercase) + '.png'"
+                      class="inline-flex items-center gap-2 px-3.5 py-2 bg-wood-100/80 hover:bg-wood-200/80 text-wood-700 border border-wood-200 rounded-xl text-xs font-semibold shadow-2xs transition-all active:scale-95"
+                      title="Descargar imagen PNG del QR">
+                      <i class="fa-solid fa-download text-wood-500"></i>
+                      <span>Descargar PNG</span>
+                    </a>
+                  }
+                </div>
+              </div>
+            </div>
+          }
 
           <!-- Modal Action Buttons (Exclusively Cancelar or Guardar Producto) -->
           <div class="pt-3 flex justify-end gap-3 border-t border-wood-100">
