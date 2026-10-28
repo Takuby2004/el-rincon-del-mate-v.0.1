@@ -50,3 +50,11 @@ scratch/
 *.sw?
 .DS_Store
 Thumbs.db
+
+# 6. Copias de Seguridad y Base de Datos (Seguridad de Credenciales)
+DB-backups/
+*/DB-backups/
+*.sql
+*.dump
+*.tar
+

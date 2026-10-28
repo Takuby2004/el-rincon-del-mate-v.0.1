@@ -4,8 +4,8 @@ import { authenticateToken, requireAdmin } from '../middlewares/auth.middleware'
 
 const router = Router();
 
-// Comprobante de pedido individual
-router.get('/orders/:id/pdf', ReportController.downloadOrderPdf);
+// Comprobante de pedido individual (Solo administradores o cliente propietario del pedido)
+router.get('/orders/:id/pdf', authenticateToken, ReportController.downloadOrderPdf);
 
 // Reportes ejecutivos administrativos
 router.get('/sales/pdf', authenticateToken, requireAdmin, ReportController.downloadSalesReportPdf);

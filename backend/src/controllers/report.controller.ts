@@ -1,10 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
 import { ReportService } from '../services/report.service';
+import { AuthRequest } from '../middlewares/auth.middleware';
 
 export class ReportController {
-  public static async downloadOrderPdf(req: Request, res: Response, next: NextFunction) {
+  public static async downloadOrderPdf(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const pdfBuffer = await ReportService.generateOrderPdf(req.params.id);
+      const pdfBuffer = await ReportService.generateOrderPdf(req.params.id, req.user);
       res.setHeader('Content-Type', 'application/pdf');
       res.setHeader('Content-Disposition', `attachment; filename=pedido-${req.params.id}.pdf`);
       res.send(pdfBuffer);

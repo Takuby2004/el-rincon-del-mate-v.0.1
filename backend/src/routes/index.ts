@@ -22,5 +22,6 @@ apiRouter.use('/payment-qr', paymentQrRoutes);
 apiRouter.use('/', paymentRoutes); // Handles /api/admin/payments/:id/approve & reject
 apiRouter.use('/admin/statistics', statsRoutes);
 apiRouter.use('/admin/reports', reportRoutes);
+apiRouter.use('/reports', reportRoutes);
 
 export default apiRouter;

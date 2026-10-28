@@ -72,6 +72,7 @@ export class FileStorageService {
       );
     }
 
+    const isProduction = process.env.NODE_ENV === 'production';
     const supabaseUrl = process.env.SUPABASE_URL?.trim();
     const supabaseKey = (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY)?.trim();
     const supabaseBucket = process.env.SUPABASE_STORAGE_BUCKET || 'el-rincon-del-mate';
@@ -80,7 +81,14 @@ export class FileStorageService {
     const safeExt = validation.extension;
     const uniqueFileName = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}${safeExt}`;
 
-    // 1. Si Supabase Storage está configurado en producción, subir a la nube
+    // En producción, es mandatorio que el almacenamiento en la nube esté configurado
+    if (isProduction && (!supabaseUrl || !supabaseKey)) {
+      throw AppError.internal(
+        'El almacenamiento permanente en la nube (Supabase) no está configurado. No se permite almacenamiento efímero local en producción.'
+      );
+    }
+
+    // 1. Si Supabase Storage está configurado, subir a la nube
     if (supabaseUrl && supabaseKey) {
       try {
         const objectPath = `${folder}/${uniqueFileName}`;
@@ -105,14 +113,26 @@ export class FileStorageService {
           };
         } else {
           const errText = await response.text();
+          if (isProduction) {
+            console.error('[FileStorageService] Fallo crítico al subir archivo a Supabase Storage:', errText);
+            throw AppError.internal(
+              `Error al persistir la imagen en el almacenamiento en la nube: ${errText || 'Respuesta no exitosa'}`
+            );
+          }
           console.warn('[FileStorageService] Advertencia en Supabase Storage. Usando almacenamiento local:', errText);
         }
-      } catch (cloudErr) {
+      } catch (cloudErr: any) {
+        if (isProduction) {
+          console.error('[FileStorageService] Excepción de conexión con Supabase Storage:', cloudErr);
+          throw AppError.internal(
+            `Error de conexión con el servicio de almacenamiento en la nube: ${cloudErr?.message || cloudErr}`
+          );
+        }
         console.warn('[FileStorageService] Excepción en Supabase Storage. Usando almacenamiento local:', cloudErr);
       }
     }
 
-    // 2. Fallback: Almacenamiento local en disco
+    // 2. Fallback: Almacenamiento local en disco (Solo en desarrollo local)
     this.ensureUploadDirExists();
     const targetFolder = path.join(this.uploadDir, folder);
     if (!fs.existsSync(targetFolder)) {
@@ -140,15 +160,36 @@ export class FileStorageService {
 
   public static async deleteFile(fileUrl: string): Promise<boolean> {
     try {
-      if (!fileUrl || !fileUrl.startsWith('/uploads/')) return false;
-      const relativePath = fileUrl.replace('/uploads/', '');
-      const fullPath = path.join(this.uploadDir, relativePath);
-      if (fs.existsSync(fullPath)) {
-        await fs.promises.unlink(fullPath);
-        return true;
+      if (!fileUrl) return false;
+
+      const supabaseUrl = process.env.SUPABASE_URL?.trim();
+      const supabaseKey = (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY)?.trim();
+      const supabaseBucket = process.env.SUPABASE_STORAGE_BUCKET || 'el-rincon-del-mate';
+
+      if (supabaseUrl && supabaseKey && fileUrl.includes(`/storage/v1/object/public/${supabaseBucket}/`)) {
+        const objectPath = fileUrl.split(`/storage/v1/object/public/${supabaseBucket}/`)[1];
+        if (objectPath) {
+          const deleteEndpoint = `${supabaseUrl}/storage/v1/object/${supabaseBucket}/${objectPath}`;
+          await fetch(deleteEndpoint, {
+            method: 'DELETE',
+            headers: {
+              'Authorization': `Bearer ${supabaseKey}`
+            }
+          });
+          return true;
+        }
+      }
+
+      if (fileUrl.startsWith('/uploads/')) {
+        const relativePath = fileUrl.replace('/uploads/', '');
+        const fullPath = path.join(this.uploadDir, relativePath);
+        if (fs.existsSync(fullPath)) {
+          await fs.promises.unlink(fullPath);
+          return true;
+        }
       }
     } catch (error) {
-      console.error('Error deleting file:', error);
+      console.error('[FileStorageService] Error al eliminar archivo:', error);
     }
     return false;
   }

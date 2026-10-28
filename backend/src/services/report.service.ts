@@ -1,5 +1,6 @@
 import { prisma } from '../config/prisma';
 import { PdfGenerator } from '../utils/pdfGenerator';
+import { AppError } from '../errors/AppError';
 
 function getPeriodFilter(days?: string | number) {
   if (!days || days === 'all') {
@@ -17,9 +18,17 @@ function getPeriodFilter(days?: string | number) {
 
 export class ReportService {
   /**
-   * Comprobante individual de un pedido
+   * Comprobante individual de un pedido.
+   * Exige autenticación y restringe acceso a administradores o al cliente dueño del pedido.
    */
-  public static async generateOrderPdf(orderId: string) {
+  public static async generateOrderPdf(
+    orderId: string,
+    user?: { id: string; email: string; role: string }
+  ) {
+    if (!user) {
+      throw AppError.unauthorized('Se requiere autenticación para acceder al comprobante.');
+    }
+
     const order = await prisma.order.findFirst({
       where: { OR: [{ id: orderId }, { orderNumber: orderId }] },
       include: {
@@ -29,7 +38,20 @@ export class ReportService {
       }
     });
 
-    if (!order) throw new Error('Pedido no encontrado');
+    if (!order) {
+      throw AppError.notFound('Pedido no encontrado');
+    }
+
+    const isAdmin = user.role === 'ADMIN';
+    const isOwner =
+      order.client?.userId === user.id ||
+      (Boolean(order.client?.email) &&
+        Boolean(user.email) &&
+        order.client.email.toLowerCase() === user.email.toLowerCase());
+
+    if (!isAdmin && !isOwner) {
+      throw AppError.forbidden('No tienes permiso para descargar el comprobante de este pedido.');
+    }
 
     return PdfGenerator.generateOrderPdf(order);
   }

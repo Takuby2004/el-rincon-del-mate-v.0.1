@@ -7,9 +7,23 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('Seeding database...');
 
-  // Create Admin User seguro desde variables de entorno
+  const isProduction = process.env.NODE_ENV === 'production';
+  const frontendBaseUrl = (process.env.FRONTEND_URL || 'http://localhost:4200').replace(/\/$/, '');
+
+  // 1. Create / Upsert Admin User seguro
   const adminEmail = process.env.ADMIN_EMAIL || 'admin@elrincondelmate.com';
-  const adminRawPassword = process.env.ADMIN_PASSWORD || 'ChangeMeInProduction_2026!';
+  let adminRawPassword = process.env.ADMIN_PASSWORD;
+
+  if (!adminRawPassword) {
+    if (isProduction) {
+      throw new Error(
+        'CRITICAL: ADMIN_PASSWORD es estrictamente obligatoria en entorno de producción. No se permite el uso de contraseñas por defecto en el seed.'
+      );
+    }
+    console.warn('[Seed] Advertencia: ADMIN_PASSWORD no está definida. Usando contraseña temporal de desarrollo.');
+    adminRawPassword = 'DevLocalPassword_2026!';
+  }
+
   const adminPassword = await bcrypt.hash(adminRawPassword, 10);
   const admin = await prisma.user.upsert({
     where: { email: adminEmail },
@@ -23,16 +37,26 @@ async function main() {
     }
   });
 
-  // Create Demo Active Payment QR
-  await prisma.paymentQrConfig.create({
-    data: {
-      imageUrl: 'https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=500&q=80',
-      fileName: 'qr-bancario-dueno.png',
-      mimeType: 'image/png',
-      active: true,
-      uploadedBy: admin.id
+  // 2. Configuración de QR de Pago (Idempotente y Seguro)
+  if (isProduction) {
+    console.log('[Seed] Modo producción: Se omite la creación de QR bancario demo para evitar pagos a destinos ficticios.');
+  } else {
+    const existingQr = await prisma.paymentQrConfig.findFirst();
+    if (!existingQr) {
+      await prisma.paymentQrConfig.create({
+        data: {
+          imageUrl: 'https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=500&q=80',
+          fileName: 'qr-bancario-demo.png',
+          mimeType: 'image/png',
+          active: true,
+          uploadedBy: admin.id
+        }
+      });
+      console.log('[Seed] QR demo de desarrollo creado exitosamente.');
+    } else {
+      console.log('[Seed] Ya existe una configuración de QR de pago activa. Omitiendo duplicación.');
     }
-  });
+  }
 
   // Create Categories
   const catMates = await prisma.category.upsert({
@@ -119,7 +143,7 @@ async function main() {
   ];
 
   for (const prod of productsData) {
-    const qrText = `http://localhost:4200/productos/${prod.slug}`;
+    const qrText = `${frontendBaseUrl}/productos/${prod.slug}`;
     const qrCodeUrl = await QRCode.toDataURL(qrText);
 
     const product = await prisma.product.upsert({
@@ -134,15 +158,25 @@ async function main() {
       }
     });
 
-    await prisma.inventoryMovement.create({
-      data: {
+    // Idempotencia: Registrar movimiento INITIAL solo si no existe previamente
+    const existingMovement = await prisma.inventoryMovement.findFirst({
+      where: {
         productId: product.id,
-        userId: admin.id,
-        type: 'INITIAL',
-        quantity: prod.stock,
-        reason: 'Carga inicial de inventario en seed'
+        type: 'INITIAL'
       }
     });
+
+    if (!existingMovement) {
+      await prisma.inventoryMovement.create({
+        data: {
+          productId: product.id,
+          userId: admin.id,
+          type: 'INITIAL',
+          quantity: prod.stock,
+          reason: 'Carga inicial de inventario en seed'
+        }
+      });
+    }
   }
 
   console.log('Database seeded successfully!');

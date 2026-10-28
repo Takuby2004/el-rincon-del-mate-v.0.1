@@ -115,10 +115,12 @@
    ```bash
    cp .env.example .env
    ```
-   *Genera un `JWT_SECRET` seguro de al menos 32 caracteres con:*
-   ```bash
-   node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
-   ```
+   - *Genera un `JWT_SECRET` seguro de al menos 32 caracteres con:*
+     ```bash
+     node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+     ```
+   - *En Producción (Render / Cloud): Configura obligatoriamente `SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY` para evitar pérdida de comprobantes e imágenes por reinicio de discos efímeros.*
+   - *Define `ADMIN_PASSWORD` con una contraseña robusta; el seed bloquea contraseñas por defecto en modo producción.*
 
 4. Genera el cliente de Prisma y ejecuta las migraciones:
    ```bash
@@ -126,10 +128,11 @@
    npx prisma migrate dev --name init
    ```
 
-5. Ejecuta el semillado de datos (*seed* con usuario admin, categorías y productos iniciales):
+5. Ejecuta el semillado de datos (*seed* idempotente con usuario admin, categorías y productos iniciales):
    ```bash
    npx prisma db seed
    ```
+   *El sembrado es 100% idempotente: no duplica movimientos de inventario ni crea QRs ficticios en producción.*
 
 6. Inicia el servidor de desarrollo:
    ```bash
@@ -187,7 +190,7 @@
 - `GET /api/orders/:id`: Detalle completo de pedido (requiere auth).
 - `PATCH /api/orders/:id/status`: Actualización del estado de envío (requiere auth).
 - `DELETE /api/orders/:id`: Eliminación física de pedido con reposición automática de stock (requiere auth).
-- `GET /api/orders/:id/pdf`: Descarga del comprobante de pedido en formato PDF.
+- `GET /api/reports/orders/:id/pdf`: Descarga protegida del comprobante en PDF (requiere `authenticateToken`: accesible exclusivamente para Administradores o para el Cliente propietario del pedido).
 - `PATCH /api/payments/:id/approve`: Aprobación de pago (requiere auth).
 - `PATCH /api/payments/:id/reject`: Rechazo de pago con motivo y restauración de inventario (requiere auth).
 
@@ -235,6 +238,7 @@ el-rincon-del-mate-v.0.1/
 │   ├── UIX/                    # Capturas PNG de todas las pantallas e interfaces (Desktop & Mobile)
 │   ├── PLAN_CAPTURAS_UIX.md    # Inventario y documentación de capturas UI/UX
 │   ├── PLAN_UNIFICACION_COLOR_PANTALLAS_CLIENTE.md # Plan Maestro Dark Luxury Storefront
+│   ├── PLAN_CORRECCION_VULNERABILIDADES_Y_SEGURIDAD_V0.1.md # Hardening, mitigación de vulnerabilidades y seguridad
 │   ├── AUDITORIA_INTEGRAL_SISTEMA_V0.1.md
 │   ├── PLAN_UNIFICACION_DASHBOARD_Y_ESTADISTICAS.md
 │   ├── PLAN_DIAGNOSTICO_Y_EVALUACION_V0.2.md
