@@ -76,7 +76,12 @@ export class AuthService {
     });
 
     if (authError || !authData.user || !authData.session) {
-      throw AppError.unauthorized('Credenciales inválidas. Verifique su correo y contraseña en Supabase Auth.');
+      console.warn('[AuthService.login] Error al autenticar en Supabase Auth:', authError?.message || authError);
+      let errorMsg = 'Credenciales inválidas. Verifique su correo y contraseña en Supabase Auth.';
+      if (authError?.message?.toLowerCase().includes('email not confirmed')) {
+        errorMsg = 'El correo electrónico aún no ha sido confirmado en Supabase. En Authentication > Users haga clic en "..." y elija "Confirm user" o active "Auto Confirm".';
+      }
+      throw AppError.unauthorized(errorMsg);
     }
 
     // 2. Localizar o auto-vincular el perfil en la base de datos de la tienda
