@@ -7,7 +7,7 @@ import { environment } from '../../../environments/environment';
 })
 export class AssetUrlPipe implements PipeTransform {
   private readonly baseUrl = environment.baseUrl;
-  private readonly defaultFallback = 'https://images.unsplash.com/photo-1517256064527-09c73fc73e38?w=600&q=80';
+  private readonly defaultFallback = 'assets/producto_mate_16.svg';
 
   transform(value: string | null | undefined, fallback: string = this.defaultFallback): string {
     if (!value || value.trim() === '') {
@@ -16,9 +16,12 @@ export class AssetUrlPipe implements PipeTransform {
 
     const cleanValue = value.trim();
 
-    // Reemplazar URL rota conocida de Unsplash
-    if (cleanValue.includes('photo-1594750853874-9549f7b19688')) {
-      return fallback;
+    // Reemplazar URLs de prueba de café por el mate correspondiente
+    if (cleanValue.includes('photo-1576092768241')) return 'assets/producto_mate_27.svg';
+    if (cleanValue.includes('photo-1544816155-12df9643f363')) return 'assets/producto_mate_18.svg';
+    if (cleanValue.includes('photo-1514432324607')) return 'assets/producto_mate_31.svg';
+    if (cleanValue.includes('photo-1517256064527') || cleanValue.includes('photo-1594750853874-9549f7b19688')) {
+      return 'assets/producto_mate_16.svg';
     }
 
     // Manejar rutas relativas de backend (uploads)

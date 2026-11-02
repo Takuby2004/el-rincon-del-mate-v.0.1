@@ -7,6 +7,7 @@ import { CartService } from '../../core/services/cart.service';
 import { Product } from '../../core/models/models';
 import { AssetUrlPipe } from '../../shared/pipes/asset-url.pipe';
 import { ImgFallbackDirective } from '../../shared/directives/img-fallback.directive';
+import { resolveProductImages } from '../../core/utils/product-image.util';
 
 @Component({
     selector: 'app-product-detail',
@@ -27,11 +28,7 @@ export class ProductDetailFeatureComponent implements OnInit {
   Math = Math;
 
   get allImages(): string[] {
-    if (!this.product) return [];
-    if (this.product.images && this.product.images.length > 0) {
-      return this.product.images;
-    }
-    return this.product.imageUrl ? [this.product.imageUrl] : [];
+    return resolveProductImages(this.product);
   }
 
   get currentImageUrl(): string {

@@ -62,39 +62,39 @@ async function main() {
   const catMates = await prisma.category.upsert({
     where: { slug: 'mates' },
     update: {
-      imageUrl: 'https://images.unsplash.com/photo-1517256064527-09c73fc73e38?w=600&q=80'
+      imageUrl: 'assets/producto_mate_16.svg'
     },
     create: {
       name: 'Mates Artesanales',
       slug: 'mates',
       description: 'Mates de calabaza, madera de algarrobo y acero inoxidable con virola grabada.',
-      imageUrl: 'https://images.unsplash.com/photo-1517256064527-09c73fc73e38?w=600&q=80'
+      imageUrl: 'assets/producto_mate_16.svg'
     }
   });
 
   const catTermos = await prisma.category.upsert({
     where: { slug: 'termos' },
     update: {
-      imageUrl: 'https://images.unsplash.com/photo-1544816155-12df9643f363?w=600&q=80'
+      imageUrl: 'assets/producto_mate_18.svg'
     },
     create: {
       name: 'Termos Térmicos',
       slug: 'termos',
       description: 'Termos de alta conservación de temperatura de 1L y 1.3L.',
-      imageUrl: 'https://images.unsplash.com/photo-1544816155-12df9643f363?w=600&q=80'
+      imageUrl: 'assets/producto_mate_18.svg'
     }
   });
 
   const catBombillas = await prisma.category.upsert({
     where: { slug: 'bombillas' },
     update: {
-      imageUrl: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=600&q=80'
+      imageUrl: 'assets/producto_mate_31.svg'
     },
     create: {
       name: 'Bombillas de Alpaca y Acero',
       slug: 'bombillas',
       description: 'Bombillas con filtro resorte o cuchara de acero 304 y alpaca pura.',
-      imageUrl: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=600&q=80'
+      imageUrl: 'assets/producto_mate_31.svg'
     }
   });
 
@@ -108,7 +108,7 @@ async function main() {
       price: 250.0,
       cost: 120.0,
       stock: 15,
-      imageUrl: 'https://images.unsplash.com/photo-1517256064527-09c73fc73e38?w=600&q=80'
+      imageUrl: 'assets/producto_mate_16.svg'
     },
     {
       categoryId: catMates.id,
@@ -118,7 +118,7 @@ async function main() {
       price: 210.0,
       cost: 95.0,
       stock: 20,
-      imageUrl: 'https://images.unsplash.com/photo-1576092768241-dec231879fc3?w=600&q=80'
+      imageUrl: 'assets/producto_mate_27.svg'
     },
     {
       categoryId: catTermos.id,
@@ -128,7 +128,7 @@ async function main() {
       price: 320.0,
       cost: 180.0,
       stock: 10,
-      imageUrl: 'https://images.unsplash.com/photo-1544816155-12df9643f363?w=600&q=80'
+      imageUrl: 'assets/producto_mate_18.svg'
     },
     {
       categoryId: catBombillas.id,
@@ -138,7 +138,7 @@ async function main() {
       price: 85.0,
       cost: 35.0,
       stock: 40,
-      imageUrl: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=600&q=80'
+      imageUrl: 'assets/producto_mate_31.svg'
     }
   ];
 
