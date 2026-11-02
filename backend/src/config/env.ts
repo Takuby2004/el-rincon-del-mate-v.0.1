@@ -23,5 +23,6 @@ export const env = {
     : ['http://localhost:4200', 'http://localhost:3000', 'http://127.0.0.1:4200'],
   SUPABASE_URL: (process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || '').trim(),
   SUPABASE_SERVICE_ROLE_KEY: (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY || '').trim(),
-  SUPABASE_ANON_KEY: (process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || '').trim()
+  SUPABASE_ANON_KEY: (process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || '').trim(),
+  SUPABASE_STORAGE_BUCKET: (process.env.SUPABASE_STORAGE_BUCKET || 'el-rincon-del-mate').trim()
 };

@@ -58,7 +58,7 @@
 - **Framework Web**: Express.js.
 - **Base de Datos & ORM**: PostgreSQL gestionado con Prisma ORM.
 - **Seguridad & Autenticación**: Supabase Auth (gestión aislada de credenciales en la nube con protección nativa contra fuerza bruta) + Autenticación Delegada en Servidor con JWT oficial.
-- **Gestión de Archivos**: Multer para almacenamiento seguro de imágenes (QR bancario y comprobantes de pago de clientes).
+- **Gestión de Archivos & Storage**: Multer en memoria con validación binaria de *Magic Bytes* (JPG, PNG, WEBP) e integración directa con **Supabase Storage** a través del SDK oficial `@supabase/supabase-js` (`supabaseAdmin.storage`) para persistencia en la nube, con mecanismo de *fallback* resiliente a almacenamiento local en disco (`/uploads/`) para desarrollo local.
 - **Servicios Auxiliares**:
   - Generación de códigos QR con la librería `qrcode`.
   - Generación de 4 reportes ejecutivos oficiales en PDF (Costos, Ventas, Ganancias, Demandas) y comprobantes de pedido con `pdfkit`.
@@ -94,7 +94,7 @@
      ```bash
      node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
      ```
-   - *En Producción (Render / Cloud): Configura obligatoriamente `SUPABASE_URL`, `SUPABASE_ANON_KEY` (para el login y registro seguro de usuarios) y `SUPABASE_SERVICE_ROLE_KEY` (para el almacenamiento en Supabase Storage de comprobantes y productos).*
+   - *En Producción (Render / Cloud): Configura obligatoriamente `SUPABASE_URL`, `SUPABASE_ANON_KEY` (para el login y registro seguro de usuarios), `SUPABASE_SERVICE_ROLE_KEY` (clave maestra JWT para el almacenamiento en Supabase Storage de comprobantes y productos) y `SUPABASE_STORAGE_BUCKET` (por defecto `el-rincon-del-mate`).*
    - *Define `ADMIN_PASSWORD` con una contraseña robusta; el seed bloquea contraseñas por defecto en modo producción.*
 
 4. Genera el cliente de Prisma y sincroniza el esquema:

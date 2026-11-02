@@ -1,6 +1,8 @@
 import fs from 'fs';
 import path from 'path';
 import { AppError } from '../errors/AppError';
+import { supabaseAdmin } from '../config/supabase';
+import { env } from '../config/env';
 
 export interface ImageValidationResult {
   isValid: boolean;
@@ -72,64 +74,61 @@ export class FileStorageService {
       );
     }
 
-    const isProduction = process.env.NODE_ENV === 'production';
-    const supabaseUrl = process.env.SUPABASE_URL?.trim();
-    const supabaseKey = (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY)?.trim();
-    const supabaseBucket = process.env.SUPABASE_STORAGE_BUCKET || 'el-rincon-del-mate';
+    const isProduction = env.NODE_ENV === 'production';
+    const supabaseBucket = env.SUPABASE_STORAGE_BUCKET || 'el-rincon-del-mate';
+    const isCloudConfigured = Boolean(env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY);
 
     // Generar nombre de archivo único con la extensión garantizada por los magic bytes
     const safeExt = validation.extension;
     const uniqueFileName = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}${safeExt}`;
+    const objectPath = `${folder}/${uniqueFileName}`;
 
-    // En producción, es mandatorio que el almacenamiento en la nube esté configurado
-    if (isProduction && (!supabaseUrl || !supabaseKey)) {
-      throw AppError.internal(
-        'El almacenamiento permanente en la nube (Supabase) no está configurado. No se permite almacenamiento efímero local en producción.'
-      );
-    }
-
-    // 1. Si Supabase Storage está configurado, subir a la nube
-    if (supabaseUrl && supabaseKey) {
+    // 1. Si Supabase Storage está configurado con clave administrativa (service_role), subir a la nube
+    if (isCloudConfigured) {
       try {
-        const objectPath = `${folder}/${uniqueFileName}`;
-        const uploadEndpoint = `${supabaseUrl}/storage/v1/object/${supabaseBucket}/${objectPath}`;
+        const { data, error: uploadError } = await supabaseAdmin.storage
+          .from(supabaseBucket)
+          .upload(objectPath, file.buffer, {
+            contentType: validation.detectedMime,
+            upsert: true
+          });
 
-        const response = await fetch(uploadEndpoint, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${supabaseKey}`,
-            'Content-Type': validation.detectedMime,
-            'x-upsert': 'true'
-          },
-          body: file.buffer as any
-        });
+        if (uploadError) {
+          console.error('[FileStorageService] Error al subir archivo a Supabase Storage:', uploadError);
+          if (isProduction) {
+            throw AppError.internal(
+              `Error al persistir la imagen en Supabase Storage: ${uploadError.message || JSON.stringify(uploadError)}`
+            );
+          }
+          console.warn('[FileStorageService] Fallback a almacenamiento local debido a error en Supabase Storage.');
+        } else {
+          const { data: publicUrlData } = supabaseAdmin.storage
+            .from(supabaseBucket)
+            .getPublicUrl(objectPath);
 
-        if (response.ok) {
-          const publicUrl = `${supabaseUrl}/storage/v1/object/public/${supabaseBucket}/${objectPath}`;
           return {
-            url: publicUrl,
+            url: publicUrlData.publicUrl,
             fileName: file.originalname,
             mimeType: validation.detectedMime
           };
-        } else {
-          const errText = await response.text();
-          if (isProduction) {
-            console.error('[FileStorageService] Fallo crítico al subir archivo a Supabase Storage:', errText);
-            throw AppError.internal(
-              `Error al persistir la imagen en el almacenamiento en la nube: ${errText || 'Respuesta no exitosa'}`
-            );
-          }
-          console.warn('[FileStorageService] Advertencia en Supabase Storage. Usando almacenamiento local:', errText);
         }
       } catch (cloudErr: any) {
+        if (cloudErr instanceof AppError) {
+          throw cloudErr;
+        }
+        console.error('[FileStorageService] Excepción de conexión con Supabase Storage:', cloudErr);
         if (isProduction) {
-          console.error('[FileStorageService] Excepción de conexión con Supabase Storage:', cloudErr);
           throw AppError.internal(
             `Error de conexión con el servicio de almacenamiento en la nube: ${cloudErr?.message || cloudErr}`
           );
         }
-        console.warn('[FileStorageService] Excepción en Supabase Storage. Usando almacenamiento local:', cloudErr);
+        console.warn('[FileStorageService] Fallback a almacenamiento local tras excepción en la nube.');
       }
+    } else if (isProduction) {
+      throw AppError.internal(
+        'El almacenamiento permanente en la nube (Supabase) no está configurado. ' +
+        'Falta la variable SUPABASE_SERVICE_ROLE_KEY en el entorno de producción.'
+      );
     }
 
     // 2. Fallback: Almacenamiento local en disco (Solo en desarrollo local)
@@ -162,20 +161,18 @@ export class FileStorageService {
     try {
       if (!fileUrl) return false;
 
-      const supabaseUrl = process.env.SUPABASE_URL?.trim();
-      const supabaseKey = (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY)?.trim();
-      const supabaseBucket = process.env.SUPABASE_STORAGE_BUCKET || 'el-rincon-del-mate';
+      const supabaseBucket = env.SUPABASE_STORAGE_BUCKET || 'el-rincon-del-mate';
 
-      if (supabaseUrl && supabaseKey && fileUrl.includes(`/storage/v1/object/public/${supabaseBucket}/`)) {
+      if (fileUrl.includes(`/storage/v1/object/public/${supabaseBucket}/`)) {
         const objectPath = fileUrl.split(`/storage/v1/object/public/${supabaseBucket}/`)[1];
         if (objectPath) {
-          const deleteEndpoint = `${supabaseUrl}/storage/v1/object/${supabaseBucket}/${objectPath}`;
-          await fetch(deleteEndpoint, {
-            method: 'DELETE',
-            headers: {
-              'Authorization': `Bearer ${supabaseKey}`
-            }
-          });
+          const { error } = await supabaseAdmin.storage
+            .from(supabaseBucket)
+            .remove([objectPath]);
+          if (error) {
+            console.error('[FileStorageService] Error al eliminar archivo en Supabase Storage:', error);
+            return false;
+          }
           return true;
         }
       }
