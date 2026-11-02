@@ -1,7 +1,7 @@
 <div class="space-y-6 max-w-xl">
   <div>
-    <h1 class="text-2xl font-bold text-mate-900">Perfil del Usuario / Administrador</h1>
-    <p class="text-xs text-wood-600">Visualiza tu cuenta y actualiza tus credenciales de acceso</p>
+    <h1 class="text-2xl font-bold text-mate-900">Perfil del Administrador</h1>
+    <p class="text-xs text-wood-600">Visualiza tu cuenta y actualiza tu correo y contraseña de acceso</p>
   </div>
 
   @if (successMessage) {
@@ -11,21 +11,50 @@
     </div>
   }
 
+  @if (errorMessage) {
+    <div class="bg-red-50 text-red-800 p-3.5 rounded-xl text-xs font-medium border border-red-200 flex items-center gap-2">
+      <i class="fa-solid fa-triangle-exclamation"></i>
+      <span>{{ errorMessage }}</span>
+    </div>
+  }
+
   <div class="bg-white p-6 rounded-3xl border border-wood-200 shadow-sm space-y-4">
     <form (ngSubmit)="updateProfile()" class="space-y-4">
       <div>
-        <label class="block text-xs font-bold text-wood-700 mb-1">Correo Electrónico (No modificable)</label>
-        <input type="email" [value]="formData.email" disabled class="w-full px-3.5 py-2.5 rounded-xl border border-wood-200 bg-wood-50 text-xs text-wood-500 font-mono">
+        <label class="block text-xs font-bold text-wood-700 mb-1">Correo Electrónico de Acceso</label>
+        <input
+          type="email"
+          [(ngModel)]="formData.email"
+          name="email"
+          required
+          placeholder="tu-correo@ejemplo.com"
+          class="w-full px-3.5 py-2.5 rounded-xl border border-wood-300 focus:border-mate-600 focus:ring-1 focus:ring-mate-600 text-xs font-medium text-wood-800">
+        <p class="text-[11px] text-wood-500 mt-1">Este correo se usará para iniciar sesión en la tienda y en Supabase Auth.</p>
       </div>
 
       <div>
         <label class="block text-xs font-bold text-wood-700 mb-1">Nueva Contraseña (Dejar en blanco para mantener actual)</label>
-        <input type="password" [(ngModel)]="formData.password" name="password" placeholder="••••••••" class="w-full px-3.5 py-2.5 rounded-xl border border-wood-300 text-xs">
+        <input
+          type="password"
+          [(ngModel)]="formData.password"
+          name="password"
+          placeholder="••••••••"
+          class="w-full px-3.5 py-2.5 rounded-xl border border-wood-300 focus:border-mate-600 focus:ring-1 focus:ring-mate-600 text-xs">
+        <p class="text-[11px] text-wood-500 mt-1">Mínimo 6 caracteres si deseas cambiarla.</p>
       </div>
 
       <div class="pt-2 flex justify-end">
-        <button type="submit" class="px-6 py-3 bg-mate-700 hover:bg-mate-800 text-white font-bold text-xs rounded-xl shadow">
-          Actualizar Perfil
+        <button
+          type="submit"
+          [disabled]="isSaving"
+          class="px-6 py-3 bg-mate-700 hover:bg-mate-800 disabled:opacity-50 text-white font-bold text-xs rounded-xl shadow flex items-center gap-2 transition-colors cursor-pointer">
+          @if (isSaving) {
+            <i class="fa-solid fa-circle-notch fa-spin"></i>
+            <span>Guardando...</span>
+          } @else {
+            <i class="fa-solid fa-floppy-disk"></i>
+            <span>Actualizar Perfil</span>
+          }
         </button>
       </div>
     </form>

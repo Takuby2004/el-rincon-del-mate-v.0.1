@@ -57,7 +57,7 @@
 - **Entorno de Ejecución**: Node.js con TypeScript.
 - **Framework Web**: Express.js.
 - **Base de Datos & ORM**: PostgreSQL gestionado con Prisma ORM.
-- **Seguridad & Autenticación**: Supabase Auth (gestión aislada de credenciales en la nube con protección nativa contra fuerza bruta) + Autenticación Delegada en Servidor con JWT oficial.
+- **Seguridad & Autenticación**: Supabase Auth (gestión aislada de credenciales en la nube con protección nativa contra fuerza bruta) + Autenticación Delegada en Servidor con JWT oficial. Sincronización atómica de credenciales (correo electrónico y contraseña con auto-confirmación instantánea) desde la sección "Perfil" del panel administrativo con Supabase Auth y PostgreSQL.
 - **Gestión de Archivos & Storage**: Multer en memoria con validación binaria de *Magic Bytes* (JPG, PNG, WEBP) e integración directa con **Supabase Storage** a través del SDK oficial `@supabase/supabase-js` (`supabaseAdmin.storage`) para persistencia en la nube, con mecanismo de *fallback* resiliente a almacenamiento local en disco (`/uploads/`) para desarrollo local, **limpieza automática de archivos huérfanos al editar o eliminar productos/categorías** para optimizar la cuota de almacenamiento, y script de migración en lote de archivos locales a la nube (`npm run storage:migrate`).
 - **Servicios Auxiliares**:
   - Generación de códigos QR con la librería `qrcode`.

@@ -17,7 +17,8 @@ export class ProfileController {
       const updated = await ProfileService.updateProfile(req.user!.id, req.body);
       res.json(updated);
     } catch (err: any) {
-      res.status(400).json({ error: err.message });
+      const statusCode = err.statusCode || 400;
+      res.status(statusCode).json({ error: err.message || 'Error al actualizar el perfil.' });
     }
   }
 }
