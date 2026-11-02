@@ -164,7 +164,8 @@ export class FileStorageService {
       const supabaseBucket = env.SUPABASE_STORAGE_BUCKET || 'el-rincon-del-mate';
 
       if (fileUrl.includes(`/storage/v1/object/public/${supabaseBucket}/`)) {
-        const objectPath = fileUrl.split(`/storage/v1/object/public/${supabaseBucket}/`)[1];
+        const rawPath = fileUrl.split(`/storage/v1/object/public/${supabaseBucket}/`)[1];
+        const objectPath = rawPath?.split('?')[0]?.trim();
         if (objectPath) {
           const { error } = await supabaseAdmin.storage
             .from(supabaseBucket)
@@ -173,6 +174,7 @@ export class FileStorageService {
             console.error('[FileStorageService] Error al eliminar archivo en Supabase Storage:', error);
             return false;
           }
+          console.log(`[FileStorageService] Archivo liberado de Supabase Storage: ${objectPath}`);
           return true;
         }
       }

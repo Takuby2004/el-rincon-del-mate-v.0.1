@@ -2,6 +2,7 @@ import { prisma } from '../config/prisma';
 import { QrGenerator } from '../utils/qrGenerator';
 import { AppError } from '../errors/AppError';
 import { parsePaginationParams, buildPaginatedResponse } from '../utils/pagination';
+import { FileStorageService } from '../utils/fileStorageService';
 
 export class ProductService {
   public static async getAll(
@@ -207,6 +208,20 @@ export class ProductService {
       updateData.qrCodeUrl = await QrGenerator.generateDataUrl(qrText);
     }
 
+    // Detección y limpieza de imágenes descartadas durante la edición para no desperdiciar espacio en Supabase
+    if (data.images !== undefined && Array.isArray(currentProduct.images)) {
+      const newImagesSet = new Set(data.images);
+      if (data.imageUrl) newImagesSet.add(data.imageUrl);
+
+      const removedImages = currentProduct.images.filter(
+        (img: string) => typeof img === 'string' && !newImagesSet.has(img) && img !== data.imageUrl
+      );
+
+      for (const removedImg of removedImages) {
+        await FileStorageService.deleteFile(removedImg);
+      }
+    }
+
     return prisma.$transaction(async (tx) => {
       if (data.stockAdjustment && data.stockAdjustment !== 0) {
         const newStock = currentProduct.stock + data.stockAdjustment;
@@ -244,9 +259,25 @@ export class ProductService {
       );
     }
 
-    return prisma.$transaction(async (tx) => {
+    // Recolectar todas las imágenes asociadas al producto para liberarlas de Supabase Storage
+    const imagesToDelete = new Set<string>();
+    if (product.imageUrl) imagesToDelete.add(product.imageUrl);
+    if (Array.isArray(product.images)) {
+      for (const img of product.images) {
+        if (typeof img === 'string') imagesToDelete.add(img);
+      }
+    }
+
+    const deleted = await prisma.$transaction(async (tx) => {
       await tx.inventoryMovement.deleteMany({ where: { productId: id } });
       return tx.product.delete({ where: { id } });
     });
+
+    // Limpieza efectiva de archivos en Supabase Storage / disco local
+    for (const imgUrl of imagesToDelete) {
+      await FileStorageService.deleteFile(imgUrl);
+    }
+
+    return deleted;
   }
 }

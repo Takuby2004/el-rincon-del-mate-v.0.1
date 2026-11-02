@@ -1,5 +1,6 @@
 import { prisma } from '../config/prisma';
 import { AppError } from '../errors/AppError';
+import { FileStorageService } from '../utils/fileStorageService';
 
 export class CategoryService {
   public static async getAll() {
@@ -50,7 +51,13 @@ export class CategoryService {
       updateData.slug = data.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
     }
     if (data.description !== undefined) updateData.description = data.description;
-    if (data.imageUrl !== undefined) updateData.imageUrl = data.imageUrl;
+    if (data.imageUrl !== undefined) {
+      updateData.imageUrl = data.imageUrl;
+      // Si se reemplaza la imagen existente por una nueva, eliminar la imagen anterior del storage
+      if (existing.imageUrl && existing.imageUrl !== data.imageUrl) {
+        await FileStorageService.deleteFile(existing.imageUrl);
+      }
+    }
 
     return prisma.category.update({
       where: { id },
@@ -66,6 +73,14 @@ export class CategoryService {
     if (productsCount > 0) {
       throw AppError.conflict(`No se puede eliminar la categoría porque contiene ${productsCount} productos asociados.`);
     }
-    return prisma.category.delete({ where: { id } });
+
+    const deleted = await prisma.category.delete({ where: { id } });
+
+    // Limpieza de imagen en Supabase Storage / disco local tras eliminar la categoría
+    if (category.imageUrl) {
+      await FileStorageService.deleteFile(category.imageUrl);
+    }
+
+    return deleted;
   }
 }

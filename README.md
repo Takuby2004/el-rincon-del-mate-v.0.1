@@ -58,7 +58,7 @@
 - **Framework Web**: Express.js.
 - **Base de Datos & ORM**: PostgreSQL gestionado con Prisma ORM.
 - **Seguridad & Autenticación**: Supabase Auth (gestión aislada de credenciales en la nube con protección nativa contra fuerza bruta) + Autenticación Delegada en Servidor con JWT oficial.
-- **Gestión de Archivos & Storage**: Multer en memoria con validación binaria de *Magic Bytes* (JPG, PNG, WEBP) e integración directa con **Supabase Storage** a través del SDK oficial `@supabase/supabase-js` (`supabaseAdmin.storage`) para persistencia en la nube, con mecanismo de *fallback* resiliente a almacenamiento local en disco (`/uploads/`) para desarrollo local.
+- **Gestión de Archivos & Storage**: Multer en memoria con validación binaria de *Magic Bytes* (JPG, PNG, WEBP) e integración directa con **Supabase Storage** a través del SDK oficial `@supabase/supabase-js` (`supabaseAdmin.storage`) para persistencia en la nube, con mecanismo de *fallback* resiliente a almacenamiento local en disco (`/uploads/`) para desarrollo local, **limpieza automática de archivos huérfanos al editar o eliminar productos/categorías** para optimizar la cuota de almacenamiento, y script de migración en lote de archivos locales a la nube (`npm run storage:migrate`).
 - **Servicios Auxiliares**:
   - Generación de códigos QR con la librería `qrcode`.
   - Generación de 4 reportes ejecutivos oficiales en PDF (Costos, Ventas, Ganancias, Demandas) y comprobantes de pedido con `pdfkit`.
@@ -109,7 +109,12 @@
    ```
    *El sembrado es 100% idempotente: no duplica movimientos de inventario ni crea QRs ficticios en producción.*
 
-6. Inicia el servidor de desarrollo:
+6. *(Opcional)* Si tienes imágenes locales en `uploads/`, puedes migrarlas en lote a Supabase Storage:
+   ```bash
+   pnpm run storage:migrate
+   ```
+
+7. Inicia el servidor de desarrollo:
    ```bash
    pnpm run dev
    ```
