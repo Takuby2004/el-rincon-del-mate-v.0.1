@@ -57,36 +57,11 @@
 - **Entorno de Ejecución**: Node.js con TypeScript.
 - **Framework Web**: Express.js.
 - **Base de Datos & ORM**: PostgreSQL gestionado con Prisma ORM.
-- **Seguridad & Autenticación**: JSON Web Tokens (JWT) + Hashing seguro con Bcrypt.js.
+- **Seguridad & Autenticación**: Supabase Auth (gestión aislada de credenciales en la nube con protección nativa contra fuerza bruta) + Autenticación Delegada en Servidor con JWT oficial.
 - **Gestión de Archivos**: Multer para almacenamiento seguro de imágenes (QR bancario y comprobantes de pago de clientes).
 - **Servicios Auxiliares**:
   - Generación de códigos QR con la librería `qrcode`.
   - Generación de 4 reportes ejecutivos oficiales en PDF (Costos, Ventas, Ganancias, Demandas) y comprobantes de pedido con `pdfkit`.
-
----
-
-## 📋 Matriz de Casos de Uso del Negocio
-
-| Código | Módulo | Descripción Funcional |
-| :--- | :--- | :--- |
-| **CU01** | Catálogo Público | Visualización de productos con precios en Bolivianos (Bs.), stock y categorías. |
-| **CU02** | Filtrado & Búsqueda | Búsqueda reactiva por texto y filtrado por categoría de productos. |
-| **CU03** | Detalle de Producto | Ficha técnica con descripción, selector de cantidad y badge de estado de stock. |
-| **CU04** | Carrito de Compras | Gestión reactiva de ítems, cálculo automático de subtotales y total general. |
-| **CU05** | QR por Producto | Generación de código QR único por cada producto, visualización destacada en el modal de edición del panel administrativo, descarga en PNG e impresión directa de etiquetas físicas con membrete oficial. |
-| **CU06** | Checkout (Paso 1) | Formulario de datos del cliente (nombre, celular, ciudad y dirección). |
-| **CU07** | Checkout (Paso 2) | Visualización del QR oficial del dueño y subida obligatoria del comprobante de pago. |
-| **CU08** | Control de Stock | Reserva y decremento automático del inventario al momento de crear el pedido. |
-| **CU09** | Reversión de Stock | Reincorporación automática de stock si el pago es rechazado o el pedido se cancela. |
-| **CU10** | Verificación de Pagos & Pedidos | Panel administrativo con 3 estados simplificados (**Pendiente de verificación**, **Aprobado**, **Rechazado**), métricas rápidas (KPIs), normalización numérica integral de decimales (`Decimal` a `Number`) en backend y frontend, formateo seguro tolerante a fallos mediante el pipe `| number:'1.2-2'`, barra de búsqueda reactiva por cliente/número/teléfono, filtros por estado, botón de limpieza rápida, modal avanzado de inspección de comprobantes (zoom, rotación, descarga) y sincronización automática de stock. |
-| **CU10.1** | Eliminación de Pedidos | Eliminación permanente de pedidos desde la tabla o el modal de detalle con confirmación visual de seguridad, restauración automática e inteligente de stock reservado y eliminación física de comprobantes. |
-| **CU11** | Rechazo con Motivo | Rechazo de pagos no válidos con registro obligatorio de justificación. |
-| **CU12** | Gestión de QR Dueño | Interfaz administrativa para subir y activar una nueva imagen de QR bancario. |
-| **CU13** | CRUD de Catálogo | Gestión de productos (creación, edición y eliminación permanente con protección de integridad referencial de pedidos), vista previa e impresión de códigos QR en modal de edición, búsqueda reactiva, filtros multidimensionales (categoría, estado, stock, precio y costo), KPIs y control de stock. |
-| **CU13.1** | Gestión de Categorías | Directorio y administración de categorías con subida de imágenes, búsqueda reactiva por nombre/slug/descripción y paginación inteligente. |
-| **CU14** | Dashboards & Analítica Visual | Tablero unificado con KPI de pedidos, salud financiera, gráficas de barras comparativas, histogramas de frecuencia y pronóstico predictivo de demanda. |
-| **CU15** | Reportes Financieros Especializados | Generación y exportación de 4 tipos de reportes ejecutivos oficiales en PDF (Costos, Ventas, Ganancias, Demandas) con filtros por período (7 días, 30 días, histórico). |
-| **CU16** | Exportación PDF de Pedido | Generación y descarga individual del comprobante de pedido en formato PDF. |
 
 ---
 

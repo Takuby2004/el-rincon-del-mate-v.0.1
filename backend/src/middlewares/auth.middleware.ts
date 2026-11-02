@@ -1,6 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { env } from '../config/env';
+import { supabase } from '../config/supabase';
+import { prisma } from '../config/prisma';
 
 export interface AuthRequest extends Request {
   user?: {
@@ -10,7 +12,7 @@ export interface AuthRequest extends Request {
   };
 }
 
-export const authenticateToken = (req: AuthRequest, res: Response, next: NextFunction) => {
+export const authenticateToken = async (req: AuthRequest, res: Response, next: NextFunction) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
 
@@ -18,20 +20,48 @@ export const authenticateToken = (req: AuthRequest, res: Response, next: NextFun
     return res.status(401).json({ error: 'Acceso no autorizado. Se requiere token de autenticación.' });
   }
 
-  jwt.verify(token, env.JWT_SECRET, (err: any, user: any) => {
-    if (err) {
-      return res.status(403).json({ error: 'Token inválido o expirado.' });
+  try {
+    // 1. Verificación primaria: Bóveda de Supabase Auth
+    const { data, error } = await supabase.auth.getUser(token);
+    if (!error && data?.user) {
+      const email = data.user.email?.toLowerCase() || '';
+      const adminEmail = (process.env.ADMIN_EMAIL || 'admin@elrincondelmate.com').toLowerCase();
+      const isEmailAdmin = email === adminEmail;
+
+      const dbUser = await prisma.user.findFirst({
+        where: { email }
+      });
+
+      req.user = {
+        id: dbUser?.id || data.user.id,
+        email,
+        role: dbUser?.role || (isEmailAdmin ? 'ADMIN' : 'CLIENT')
+      };
+      return next();
     }
-    req.user = user;
-    next();
-  });
+
+    // 2. Verificación secundaria: Token legacy local
+    if (env.JWT_SECRET) {
+      try {
+        const decoded = jwt.verify(token, env.JWT_SECRET) as any;
+        req.user = decoded;
+        return next();
+      } catch {
+        // Falló también legacy
+      }
+    }
+
+    return res.status(403).json({ error: 'Token inválido o expirado.' });
+  } catch (err) {
+    return res.status(403).json({ error: 'Error al verificar token de autenticación.' });
+  }
 };
 
 /**
  * Autenticación opcional: Si viene cabecera Authorization válida, extrae el usuario;
  * si no viene o es anónimo, continúa la petición sin arrojar error 401.
  */
-export const optionalAuthenticateToken = (req: AuthRequest, res: Response, next: NextFunction) => {
+export const optionalAuthenticateToken = async (req: AuthRequest, res: Response, next: NextFunction) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
 
@@ -39,12 +69,38 @@ export const optionalAuthenticateToken = (req: AuthRequest, res: Response, next:
     return next();
   }
 
-  jwt.verify(token, env.JWT_SECRET, (err: any, user: any) => {
-    if (!err && user) {
-      req.user = user;
+  try {
+    const { data, error } = await supabase.auth.getUser(token);
+    if (!error && data?.user) {
+      const email = data.user.email?.toLowerCase() || '';
+      const adminEmail = (process.env.ADMIN_EMAIL || 'admin@elrincondelmate.com').toLowerCase();
+      const isEmailAdmin = email === adminEmail;
+
+      const dbUser = await prisma.user.findFirst({
+        where: { email }
+      });
+
+      req.user = {
+        id: dbUser?.id || data.user.id,
+        email,
+        role: dbUser?.role || (isEmailAdmin ? 'ADMIN' : 'CLIENT')
+      };
+      return next();
     }
-    next();
-  });
+
+    if (env.JWT_SECRET) {
+      try {
+        const decoded = jwt.verify(token, env.JWT_SECRET) as any;
+        req.user = decoded;
+      } catch {
+        // No bloquea
+      }
+    }
+  } catch {
+    // No bloquea
+  }
+
+  next();
 };
 
 export const requireAdmin = (req: AuthRequest, res: Response, next: NextFunction) => {

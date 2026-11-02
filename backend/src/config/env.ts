@@ -20,5 +20,8 @@ export const env = {
   FRONTEND_URL: process.env.FRONTEND_URL || 'http://localhost:4200',
   ALLOWED_ORIGINS: process.env.ALLOWED_ORIGINS
     ? process.env.ALLOWED_ORIGINS.split(',').map((origin) => origin.trim())
-    : ['http://localhost:4200', 'http://localhost:3000', 'http://127.0.0.1:4200']
+    : ['http://localhost:4200', 'http://localhost:3000', 'http://127.0.0.1:4200'],
+  SUPABASE_URL: (process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || '').trim(),
+  SUPABASE_SERVICE_ROLE_KEY: (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY || '').trim(),
+  SUPABASE_ANON_KEY: (process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || '').trim()
 };
