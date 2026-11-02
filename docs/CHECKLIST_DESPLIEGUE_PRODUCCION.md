@@ -13,9 +13,9 @@
 
 | Etapa | Plataforma | Descripción | Estado |
 | :--- | :--- | :--- | :--- |
-| **Fase 1** | Supabase | Creación de proyecto, base de datos, bucket de storage y credenciales | ⏳ En Proceso |
-| **Fase 2** | Local / Prisma | Ejecución de migraciones (`migrate deploy`) y sembrado inicial (`db seed`) | ⏹️ Pendiente de Fase 1 |
-| **Fase 3** | Render | Configuración de Web Service en subcarpeta `/backend` y variables de entorno | ⏹️ Pendiente de Fase 2 |
+| **Fase 1** | Supabase | Creación de proyecto, base de datos, bucket de storage y credenciales | ✅ Completado |
+| **Fase 2** | Local / Prisma | Ejecución de migraciones (`db push`) y sembrado inicial (`db seed`) | ✅ Completado |
+| **Fase 3** | Render | Configuración de Web Service en subcarpeta `/backend` y variables de entorno | ⏳ En Proceso |
 | **Fase 4** | Git / Frontend | Sincronización de URL de producción del backend en `environment.prod.ts` | ⏹️ Pendiente de Fase 3 |
 | **Fase 5** | Vercel | Despliegue de Angular en subcarpeta `/frontend` con `dist/el-rincon-del-mate/browser` | ⏹️ Pendiente de Fase 4 |
 | **Fase 6** | Render (CORS) | Configuración de `ALLOWED_ORIGINS` y `FRONTEND_URL` con el dominio final de Vercel | ⏹️ Pendiente de Fase 5 |

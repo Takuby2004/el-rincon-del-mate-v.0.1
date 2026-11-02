@@ -95,7 +95,7 @@
 ### Prerrequisitos
 - **Node.js**: v18 o superior.
 - **PostgreSQL**: Instancia local o remota en ejecución.
-- **NPM**: Administrador de paquetes incluido con Node.js.
+- **PNPM**: Administrador de paquetes de alto rendimiento (`npm install -g pnpm`).
 
 ---
 
@@ -106,9 +106,9 @@
    cd backend
    ```
 
-2. Instala las dependencias:
+2. Instala las dependencias con PNPM:
    ```bash
-   npm install
+   pnpm install
    ```
 
 3. Copia el archivo `.env.example` a `.env` en la raíz de `backend/` y configura tus variables:
@@ -122,21 +122,21 @@
    - *En Producción (Render / Cloud): Configura obligatoriamente `SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY` para evitar pérdida de comprobantes e imágenes por reinicio de discos efímeros.*
    - *Define `ADMIN_PASSWORD` con una contraseña robusta; el seed bloquea contraseñas por defecto en modo producción.*
 
-4. Genera el cliente de Prisma y ejecuta las migraciones:
+4. Genera el cliente de Prisma y sincroniza el esquema:
    ```bash
-   npx prisma generate
-   npx prisma migrate dev --name init
+   pnpm exec prisma generate
+   pnpm exec prisma db push
    ```
 
 5. Ejecuta el semillado de datos (*seed* idempotente con usuario admin, categorías y productos iniciales):
    ```bash
-   npx prisma db seed
+   pnpm run prisma:seed
    ```
    *El sembrado es 100% idempotente: no duplica movimientos de inventario ni crea QRs ficticios en producción.*
 
 6. Inicia el servidor de desarrollo:
    ```bash
-   npm run dev
+   pnpm run dev
    ```
    *El servidor API estará disponible en `http://localhost:3000`*.
 
@@ -149,14 +149,14 @@
    cd frontend
    ```
 
-2. Instala las dependencias:
+2. Instala las dependencias con PNPM:
    ```bash
-   npm install
+   pnpm install
    ```
 
 3. Inicia la aplicación Angular:
    ```bash
-   npm start
+   pnpm start
    ```
    *La tienda estará accesible en tu navegador en `http://localhost:4200`*.
 
