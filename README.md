@@ -94,7 +94,7 @@
      ```bash
      node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
      ```
-   - *En Producción (Render / Cloud): Configura obligatoriamente `SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY` para evitar pérdida de comprobantes e imágenes por reinicio de discos efímeros.*
+   - *En Producción (Render / Cloud): Configura obligatoriamente `SUPABASE_URL`, `SUPABASE_ANON_KEY` (para el login y registro seguro de usuarios) y `SUPABASE_SERVICE_ROLE_KEY` (para el almacenamiento en Supabase Storage de comprobantes y productos).*
    - *Define `ADMIN_PASSWORD` con una contraseña robusta; el seed bloquea contraseñas por defecto en modo producción.*
 
 4. Genera el cliente de Prisma y sincroniza el esquema:
