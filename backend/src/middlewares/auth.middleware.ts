@@ -73,7 +73,7 @@ export const optionalAuthenticateToken = async (req: AuthRequest, res: Response,
     const { data, error } = await supabase.auth.getUser(token);
     if (!error && data?.user) {
       const email = data.user.email?.toLowerCase() || '';
-      const adminEmail = (process.env.ADMIN_EMAIL || 'admin@elrincondelmate.com').toLowerCase();
+      const adminEmail = (process.env.ADMIN_EMAIL || 'admin@elrincondelmate2026.com').toLowerCase();
       const isEmailAdmin = email === adminEmail;
 
       const dbUser = await prisma.user.findFirst({
