@@ -143,11 +143,20 @@
 
 ---
 
-## 🔑 Credenciales de Acceso (Demostración / Pruebas)
+## 🔑 Credenciales de Acceso y Gestión de Administrador
 
 | Rol | Correo Electrónico | Contraseña | Acceso |
 | :--- | :--- | :--- | :--- |
-| **Dueño / Administrador** | `admin@elrincondelmate.com` | `admin123` | [http://localhost:4200/admin/login](http://localhost:4200/admin/login) |
+| **Dueño / Administrador** | Configurado en `ADMIN_EMAIL` (`rincondelmatebo@gmail.com`) | Gestionada en Supabase Auth | [http://localhost:4200/admin/login](http://localhost:4200/admin/login) |
+
+### Sincronización y Auto-elevación de Administrador
+El backend cuenta con auto-elevación inmediata: cuando el usuario configurado en `ADMIN_EMAIL` inicia sesión exitosamente en Supabase Auth, el sistema sincroniza y eleva automáticamente su rol a `ADMIN` en la base de datos PostgreSQL.
+
+Para sincronizar o forzar manualmente el rol `ADMIN` en la base de datos sin iniciar sesión:
+```bash
+cd backend
+npm run auth:sync-admin
+```
 
 ---
 

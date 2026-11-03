@@ -14,7 +14,7 @@ export class AdminLoginFeatureComponent {
   private authService = inject(AuthService);
   private router = inject(Router);
 
-  email = 'admin@elrincondelmate.com';
+  email = '';
   password = '';
   loading = false;
   errorMessage = '';
@@ -23,14 +23,21 @@ export class AdminLoginFeatureComponent {
     this.loading = true;
     this.errorMessage = '';
 
-    this.authService.login({ email: this.email, password: this.password }).subscribe({
-      next: () => {
+    const cleanEmail = this.email.trim();
+    const cleanPassword = this.password.trim();
+
+    this.authService.login({ email: cleanEmail, password: cleanPassword }).subscribe({
+      next: (res) => {
         this.loading = false;
+        if (res.user?.role !== 'ADMIN') {
+          this.errorMessage = 'Acceso restringido: Esta cuenta no posee privilegios de administrador.';
+          return;
+        }
         this.router.navigate(['/admin/dashboard']);
       },
       error: (err) => {
         this.loading = false;
-        this.errorMessage = err.error?.error || 'Error al iniciar sesión. Verifique sus datos.';
+        this.errorMessage = err.error?.error || 'Error al iniciar sesión. Verifique sus credenciales.';
       }
     });
   }

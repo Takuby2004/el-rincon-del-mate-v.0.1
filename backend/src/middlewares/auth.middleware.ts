@@ -24,18 +24,20 @@ export const authenticateToken = async (req: AuthRequest, res: Response, next: N
     // 1. Verificación primaria: Bóveda de Supabase Auth
     const { data, error } = await supabase.auth.getUser(token);
     if (!error && data?.user) {
-      const email = data.user.email?.toLowerCase() || '';
-      const adminEmail = (process.env.ADMIN_EMAIL || 'admin@elrincondelmate.com').toLowerCase();
-      const isEmailAdmin = email === adminEmail;
+      const email = data.user.email?.toLowerCase().trim() || '';
+      const adminEmail = (process.env.ADMIN_EMAIL || 'admin@elrincondelmate.com').toLowerCase().trim();
+      const isEmailAdmin = !!email && email === adminEmail;
 
       const dbUser = await prisma.user.findFirst({
-        where: { email }
+        where: { email: { equals: email, mode: 'insensitive' } }
       });
+
+      const effectiveRole = isEmailAdmin ? 'ADMIN' : (dbUser?.role || 'CLIENT');
 
       req.user = {
         id: dbUser?.id || data.user.id,
         email,
-        role: dbUser?.role || (isEmailAdmin ? 'ADMIN' : 'CLIENT')
+        role: effectiveRole
       };
       return next();
     }
@@ -72,18 +74,20 @@ export const optionalAuthenticateToken = async (req: AuthRequest, res: Response,
   try {
     const { data, error } = await supabase.auth.getUser(token);
     if (!error && data?.user) {
-      const email = data.user.email?.toLowerCase() || '';
-      const adminEmail = (process.env.ADMIN_EMAIL || 'admin@elrincondelmate2026.com').toLowerCase();
-      const isEmailAdmin = email === adminEmail;
+      const email = data.user.email?.toLowerCase().trim() || '';
+      const adminEmail = (process.env.ADMIN_EMAIL || 'admin@elrincondelmate.com').toLowerCase().trim();
+      const isEmailAdmin = !!email && email === adminEmail;
 
       const dbUser = await prisma.user.findFirst({
-        where: { email }
+        where: { email: { equals: email, mode: 'insensitive' } }
       });
+
+      const effectiveRole = isEmailAdmin ? 'ADMIN' : (dbUser?.role || 'CLIENT');
 
       req.user = {
         id: dbUser?.id || data.user.id,
         email,
-        role: dbUser?.role || (isEmailAdmin ? 'ADMIN' : 'CLIENT')
+        role: effectiveRole
       };
       return next();
     }

@@ -69,9 +69,11 @@ export class AuthService {
    * Inicio de sesión autenticado contra la bóveda de Supabase Auth
    */
   public static async login(data: { email: string; password: string }) {
+    const normalizedEmail = data.email.trim().toLowerCase();
+
     // 1. Validar correo y contraseña directamente contra Supabase Auth
     const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-      email: data.email,
+      email: normalizedEmail,
       password: data.password
     });
 
@@ -84,26 +86,39 @@ export class AuthService {
       throw AppError.unauthorized(errorMsg);
     }
 
+    const adminEmail = (process.env.ADMIN_EMAIL || 'admin@elrincondelmate.com').trim().toLowerCase();
+    const isEmailAdmin = normalizedEmail === adminEmail;
+
     // 2. Localizar o auto-vincular el perfil en la base de datos de la tienda
-    let user = await prisma.user.findUnique({
-      where: { email: data.email },
+    let user = await prisma.user.findFirst({
+      where: {
+        email: {
+          equals: normalizedEmail,
+          mode: 'insensitive'
+        }
+      },
       include: { clientProfile: true }
     });
-
-    const adminEmail = (process.env.ADMIN_EMAIL || 'admin@elrincondelmate.com').toLowerCase();
-    const isEmailAdmin = data.email.toLowerCase() === adminEmail;
 
     if (!user) {
       // Si el usuario fue creado manualmente en Supabase Dashboard, sincronizar perfil localmente:
       user = await prisma.user.create({
         data: {
-          email: data.email,
+          email: normalizedEmail,
           password: 'SUPABASE_AUTH_MANAGED',
           name: authData.user.user_metadata?.name || (isEmailAdmin ? 'Administrador Dueño' : 'Cliente'),
           role: isEmailAdmin ? 'ADMIN' : 'CLIENT'
         },
         include: { clientProfile: true }
       });
+    } else if (isEmailAdmin && user.role !== 'ADMIN') {
+      // Auto-elevación inmediata: si el correo coincide con el admin configurado, asegurar rol ADMIN
+      user = await prisma.user.update({
+        where: { id: user.id },
+        data: { role: 'ADMIN' },
+        include: { clientProfile: true }
+      });
+      console.log(`[AuthService.login] Rol de usuario ${normalizedEmail} elevado exitosamente a ADMIN.`);
     }
 
     return {
