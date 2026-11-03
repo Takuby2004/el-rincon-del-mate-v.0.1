@@ -62,6 +62,7 @@
 - **Servicios Auxiliares**:
   - Generación de códigos QR con la librería `qrcode`.
   - Generación de 4 reportes ejecutivos oficiales en PDF (Costos, Ventas, Ganancias, Demandas) y comprobantes de pedido con `pdfkit`.
+  - **Notificaciones por Correo Electrónico**: Servicio automatizado de despacho con Nodemailer y SMTP: alertas inmediatas al Dueño/Administrador ante nuevos pedidos entrantes y notificaciones dinámicas de estado de pago al comprador, con remitente (*From*) y receptor de respuestas (*Reply-To*) sincronizados en tiempo real con la cuenta del Administrador.
 
 ---
 

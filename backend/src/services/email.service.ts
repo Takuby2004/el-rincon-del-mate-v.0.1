@@ -1,4 +1,5 @@
 import nodemailer, { Transporter } from 'nodemailer';
+import { prisma } from '../config/prisma';
 
 export interface EmailNotificationResult {
   success: boolean;
@@ -209,7 +210,7 @@ export class EmailService {
                   ¿Tienes alguna duda o necesitas coordinar tu entrega?
                 </p>
                 <p style="margin: 0; font-size: 13px; font-weight: bold; color: #24422e;">
-                  📲 Escríbenos directamente a nuestro WhatsApp de atención al cliente.
+                  📲 Escríbenos a nuestro WhatsApp o responde directamente a este correo.
                 </p>
               </div>
 
@@ -238,6 +239,44 @@ export class EmailService {
   }
 
   /**
+   * Obtiene dinámicamente la información del administrador de la tienda para el remitente
+   */
+  private static async getAdminSender(): Promise<{ email: string; name: string; fromAddress: string }> {
+    try {
+      const adminUser = await prisma.user.findFirst({
+        where: { role: 'ADMIN' },
+        select: { email: true, name: true }
+      });
+
+      const adminEmail =
+        adminUser?.email?.trim() ||
+        process.env.ADMIN_EMAIL?.trim() ||
+        process.env.SMTP_USER?.trim() ||
+        'notificaciones@elrincondelmate.com';
+
+      const brandName = 'El Rincón del Mate';
+      const fromAddress = `"${brandName}" <${adminEmail}>`;
+
+      return {
+        email: adminEmail,
+        name: adminUser?.name || brandName,
+        fromAddress
+      };
+    } catch (err) {
+      console.warn('[EmailService] Advertencia al consultar administrador en BD para remitente:', err);
+      const fallbackEmail =
+        process.env.ADMIN_EMAIL?.trim() ||
+        process.env.SMTP_USER?.trim() ||
+        'notificaciones@elrincondelmate.com';
+      return {
+        email: fallbackEmail,
+        name: 'El Rincón del Mate',
+        fromAddress: `"El Rincón del Mate" <${fallbackEmail}>`
+      };
+    }
+  }
+
+  /**
    * Sends payment status notification to buyer using Nodemailer
    */
   public static async sendPaymentStatusNotification(
@@ -261,14 +300,14 @@ export class EmailService {
     const subject = `[El Rincón del Mate] Estado de Pago: ${statusLabels[finalStatus] || finalStatus} - Pedido #${order.orderNumber}`;
     const htmlContent = this.generatePaymentStatusHtml(order, payment, finalStatus, customNote);
 
-    const fromAddress = process.env.EMAIL_FROM || process.env.SMTP_USER || '"El Rincón del Mate" <no-reply@elrincondelmate.com>';
-
+    const adminSender = await this.getAdminSender();
     const { transporter, isTestAccount } = await this.getTransporter();
 
-    console.log(`[EmailService] 🚀 Despachando correo a: ${recipientEmail} [Estado: ${finalStatus}]...`);
+    console.log(`[EmailService] 🚀 Despachando correo a: ${recipientEmail} [Desde: ${adminSender.fromAddress}] [Estado: ${finalStatus}]...`);
 
     const info = await transporter.sendMail({
-      from: fromAddress,
+      from: adminSender.fromAddress,
+      replyTo: adminSender.email,
       to: recipientEmail,
       subject,
       html: htmlContent
@@ -296,6 +335,237 @@ export class EmailService {
       previewUrl,
       previewText: `Correo ${isTestAccount ? 'enviado a buzón de prueba' : 'enviado exitosamente'} a ${recipientEmail}`
     };
+  }
+
+  /**
+   * Genera la plantilla HTML para notificar al administrador de un nuevo pedido entrante
+   */
+  private static generateNewOrderAdminHtml(order: any, payment: any): string {
+    const frontendBaseUrl = (process.env.FRONTEND_URL || 'http://localhost:4200').replace(/\/$/, '');
+    const adminOrdersUrl = `${frontendBaseUrl}/admin/pedidos`;
+
+    const client = order.client || {};
+    const clientName = client.name || 'Cliente';
+    const clientEmail = client.email || order.phone || 'No especificado';
+    const clientPhone = order.phone || client.phone || 'No especificado';
+    const cleanPhone = clientPhone.replace(/[^0-9]/g, '');
+    const clientAddress = order.address || client.address || 'Recojo en sucursal';
+    const clientCity = order.city || client.city || 'Santa Cruz';
+    const clientNotes = order.notes || 'Sin notas especiales.';
+
+    const items = order.items || [];
+    let itemsHtml = '';
+
+    for (const item of items) {
+      const prodName = item.product?.name || 'Producto';
+      const qty = item.quantity || 1;
+      const subtotal = Number(item.subtotal || item.unitPrice * qty).toFixed(2);
+
+      itemsHtml += `
+        <tr>
+          <td style="padding: 10px 12px; border-bottom: 1px solid #ebdcc5; font-size: 13px; color: #2d1e18;">
+            <strong>${prodName}</strong>
+          </td>
+          <td style="padding: 10px 12px; border-bottom: 1px solid #ebdcc5; font-size: 13px; text-align: center; color: #5c473b;">
+            x${qty}
+          </td>
+          <td style="padding: 10px 12px; border-bottom: 1px solid #ebdcc5; font-size: 13px; text-align: right; color: #2d1e18;">
+            Bs. ${subtotal}
+          </td>
+        </tr>
+      `;
+    }
+
+    const totalBs = Number(order.total || 0).toFixed(2);
+
+    return `
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Nuevo Pedido #${order.orderNumber} - El Rincón del Mate</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f7f4ef; font-family: 'Segoe UI', Helvetica, Arial, sans-serif; color: #2d1e18;">
+  <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f7f4ef; padding: 30px 15px;">
+    <tr>
+      <td align="center">
+        <table width="600" border="0" cellspacing="0" cellpadding="0" style="background-color: #ffffff; border-radius: 20px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.06); border: 1px solid #e8decb;">
+          
+          <!-- Header -->
+          <tr>
+            <td style="background-color: #24422e; padding: 26px 30px; text-align: center;">
+              <h1 style="color: #ffffff; margin: 0; font-size: 22px; font-weight: 800; letter-spacing: 0.5px;">
+                🌿 EL RINCÓN DEL MATE
+              </h1>
+              <p style="color: #d1e7d8; margin: 6px 0 0 0; font-size: 13px; font-weight: 600;">
+                🔔 Notificación para el Administrador
+              </p>
+            </td>
+          </tr>
+
+          <!-- Banner Alerta -->
+          <tr>
+            <td style="padding: 30px 30px 15px 30px;">
+              <div style="background-color: #fefce8; border-left: 5px solid #ca8a04; padding: 18px 20px; border-radius: 12px; margin-bottom: 24px;">
+                <h2 style="color: #854d0e; margin: 0 0 6px 0; font-size: 17px; font-weight: 800;">
+                  🚨 ¡Tienes un Nuevo Pedido Pendiente de Verificación!
+                </h2>
+                <p style="color: #713f12; margin: 0; font-size: 13px; line-height: 1.5;">
+                  El cliente <strong>${clientName}</strong> acaba de completar un pedido en la tienda web y ha adjuntado su comprobante de transferencia bancaria por <strong>Bs. ${totalBs}</strong>.
+                </p>
+              </div>
+
+              <!-- CTA Button Directo a Pedidos -->
+              <div style="text-align: center; margin: 25px 0 30px 0;">
+                <a href="${adminOrdersUrl}" target="_blank" style="background-color: #24422e; color: #ffffff; text-decoration: none; padding: 14px 28px; border-radius: 12px; font-weight: bold; font-size: 14px; display: inline-block; box-shadow: 0 4px 12px rgba(36,66,46,0.3);">
+                  🔍 Ver y Aprobar Pedido en el Panel
+                </a>
+              </div>
+
+              <!-- Ficha del Comprador -->
+              <h3 style="color: #24422e; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 12px 0; border-bottom: 2px solid #ebdcc5; padding-bottom: 6px;">
+                👤 Datos del Comprador
+              </h3>
+              <table width="100%" border="0" cellspacing="0" cellpadding="6" style="margin-bottom: 25px; font-size: 13px;">
+                <tr>
+                  <td width="35%" style="color: #7a6352; font-weight: 600;">Cliente:</td>
+                  <td style="color: #2d1e18; font-weight: bold;">${clientName}</td>
+                </tr>
+                <tr>
+                  <td style="color: #7a6352; font-weight: 600;">Correo:</td>
+                  <td style="color: #2d1e18;">${clientEmail}</td>
+                </tr>
+                <tr>
+                  <td style="color: #7a6352; font-weight: 600;">Teléfono / Celular:</td>
+                  <td>
+                    <a href="https://wa.me/${cleanPhone.startsWith('591') ? cleanPhone : '591' + cleanPhone}" target="_blank" style="color: #15803d; font-weight: bold; text-decoration: none;">
+                      📱 ${clientPhone} (Abrir WhatsApp)
+                    </a>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="color: #7a6352; font-weight: 600;">Ciudad de Entrega:</td>
+                  <td style="color: #2d1e18; font-weight: bold;">${clientCity}</td>
+                </tr>
+                <tr>
+                  <td style="color: #7a6352; font-weight: 600;">Dirección:</td>
+                  <td style="color: #2d1e18;">${clientAddress}</td>
+                </tr>
+                ${order.notes ? `
+                <tr>
+                  <td style="color: #7a6352; font-weight: 600;">Notas del Cliente:</td>
+                  <td style="color: #854d0e; font-style: italic;">"${clientNotes}"</td>
+                </tr>
+                ` : ''}
+              </table>
+
+              <!-- Detalle de Productos -->
+              <h3 style="color: #24422e; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 12px 0; border-bottom: 2px solid #ebdcc5; padding-bottom: 6px;">
+                🧉 Productos del Pedido #${order.orderNumber}
+              </h3>
+              <table width="100%" border="0" cellspacing="0" cellpadding="0" style="border: 1px solid #ebdcc5; border-radius: 12px; overflow: hidden; margin-bottom: 25px;">
+                <thead>
+                  <tr style="background-color: #f1ece4; color: #5c473b; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">
+                    <th style="padding: 10px 12px; text-align: left;">Producto</th>
+                    <th style="padding: 10px 12px; text-align: center;">Cantidad</th>
+                    <th style="padding: 10px 12px; text-align: right;">Subtotal</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${itemsHtml}
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <td colspan="2" style="padding: 14px 12px; text-align: right; font-size: 14px; font-weight: bold; color: #2d1e18; border-top: 2px solid #24422e;">
+                      TOTAL A COBRAR:
+                    </td>
+                    <td style="padding: 14px 12px; text-align: right; font-size: 16px; font-weight: 800; color: #24422e; border-top: 2px solid #24422e;">
+                      Bs. ${totalBs}
+                    </td>
+                  </tr>
+                </tfoot>
+              </table>
+
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: #faf7f2; border-top: 1px solid #ebdcc5; padding: 18px 30px; text-align: center; font-size: 11px; color: #8c7361;">
+              <p style="margin: 0;">
+                Sistema de Notificaciones Administrativas de <strong>El Rincón del Mate</strong>.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+    `;
+  }
+
+  /**
+   * Envía una notificación por correo electrónico al Administrador alertando sobre un nuevo pedido entrante
+   */
+  public static async sendNewOrderAdminAlert(
+    order: any,
+    payment: any
+  ): Promise<EmailNotificationResult | null> {
+    try {
+      const adminSender = await this.getAdminSender();
+      const recipientEmail = adminSender.email;
+
+      if (!recipientEmail) {
+        console.warn('[EmailService] ⚠️ No se encontró correo de administrador para enviar la alerta de nuevo pedido.');
+        return null;
+      }
+
+      const clientName = order.client?.name || 'Cliente';
+      const totalBs = Number(order.total || 0).toFixed(2);
+      const subject = `🚨 [Nuevo Pedido] Orden #${order.orderNumber} (Bs. ${totalBs}) - ${clientName}`;
+      const htmlContent = this.generateNewOrderAdminHtml(order, payment);
+
+      const { transporter, isTestAccount } = await this.getTransporter();
+
+      console.log(`[EmailService] 🚀 Despachando alerta de nuevo pedido al dueño: ${recipientEmail} [Orden: #${order.orderNumber}]...`);
+
+      const info = await transporter.sendMail({
+        from: adminSender.fromAddress,
+        to: recipientEmail,
+        replyTo: order.client?.email || adminSender.email,
+        subject,
+        html: htmlContent
+      });
+
+      let previewUrl: string | undefined;
+      if (isTestAccount) {
+        const testUrl = nodemailer.getTestMessageUrl(info);
+        if (testUrl) {
+          previewUrl = testUrl;
+          console.log(`[EmailService] 🔗 Enlace de vista previa de alerta al dueño (Ethereal): ${testUrl}`);
+        }
+      } else {
+        console.log(`[EmailService] ✅ Alerta de nuevo pedido entregada al dueño. Message ID: ${info.messageId}`);
+      }
+
+      return {
+        success: true,
+        recipient: recipientEmail,
+        subject,
+        status: 'NEW_ORDER_ALERT',
+        orderNumber: order.orderNumber,
+        sentAt: new Date(),
+        messageId: info.messageId,
+        previewUrl,
+        previewText: `Alerta de nuevo pedido enviada al dueño (${recipientEmail})`
+      };
+    } catch (err: any) {
+      console.error('[EmailService] ❌ Error al despachar alerta de nuevo pedido al dueño:', err?.message || err);
+      return null;
+    }
   }
 }
 

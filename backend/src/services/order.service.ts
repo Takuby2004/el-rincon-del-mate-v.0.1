@@ -3,6 +3,7 @@ import { OrderStatus } from '@prisma/client';
 import { prisma } from '../config/prisma';
 import { FileStorageService } from '../utils/fileStorageService';
 import { PaymentQrService } from './paymentQr.service';
+import { EmailService } from './email.service';
 import { AppError } from '../errors/AppError';
 import { parsePaginationParams, buildPaginatedResponse } from '../utils/pagination';
 
@@ -165,7 +166,7 @@ export class OrderService {
     const orderNumber = `ORD-${datePrefix}-${randomHex}`;
 
     // Execute atomic transaction
-    return prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx) => {
       // P0-6: Normalizar email y buscar cliente
       const normalizedEmail = orderData.clientEmail.trim().toLowerCase();
       let client = await tx.client.findFirst({
@@ -272,10 +273,20 @@ export class OrderService {
         include: { paymentProof: true }
       });
 
-      return OrderService.formatOrder({
-        ...order,
+      return {
+        order,
         payment
-      });
+      };
+    });
+
+    // Despacho asíncrono de notificación por correo al Administrador/Dueño
+    EmailService.sendNewOrderAdminAlert(result.order, result.payment).catch((err) => {
+      console.warn('[OrderService] ⚠️ No se pudo enviar el correo de alerta al dueño:', err?.message || err);
+    });
+
+    return OrderService.formatOrder({
+      ...result.order,
+      payment: result.payment
     });
   }
 
