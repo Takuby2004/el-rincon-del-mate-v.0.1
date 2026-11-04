@@ -14,26 +14,48 @@
           <p class="text-xs text-mate-300 mt-0.5">Fecha: {{ order.createdAt | date: 'medium' }}</p>
         </div>
 
-        <div class="flex flex-col items-end">
-          <span class="text-xs font-bold text-mate-300">Estado del Pago:</span>
-          <span class="px-3 py-1 rounded-full text-xs font-bold mt-1 border backdrop-blur-md"
-            [ngClass]="{
-              'bg-amber-950/80 text-amber-300 border-amber-500/30': order.paymentStatus === 'PENDING_VERIFICATION',
-              'bg-emerald-950/80 text-emerald-400 border-emerald-500/30': order.paymentStatus === 'APPROVED',
-              'bg-red-950/80 text-red-400 border-red-500/30': order.paymentStatus === 'REJECTED'
-            }">
-            {{ order.paymentStatus === 'PENDING_VERIFICATION' ? 'Pendiente de verificación' : (order.paymentStatus === 'APPROVED' ? 'Pagado y Verificado' : 'Pago Rechazado') }}
-          </span>
+        <div class="flex flex-col items-end gap-1.5">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-bold text-mate-300">Estado del Pago:</span>
+            @if (isPolling) {
+              <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-3xs text-amber-300 animate-pulse" title="Sondeo activo en segundo plano">
+                <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span> En vivo
+              </span>
+            }
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="px-3 py-1 rounded-full text-xs font-bold border backdrop-blur-md"
+              [ngClass]="{
+                'bg-amber-950/80 text-amber-300 border-amber-500/30': order.paymentStatus === 'PENDING_VERIFICATION',
+                'bg-emerald-950/80 text-emerald-400 border-emerald-500/30': order.paymentStatus === 'APPROVED',
+                'bg-red-950/80 text-red-400 border-red-500/30': order.paymentStatus === 'REJECTED'
+              }">
+              {{ order.paymentStatus === 'PENDING_VERIFICATION' ? 'Pendiente de verificación' : (order.paymentStatus === 'APPROVED' ? 'Pagado y Verificado' : 'Pago Rechazado') }}
+            </span>
+            <button
+              (click)="fetchOrder(false)"
+              [disabled]="isRefreshing"
+              class="p-1.5 rounded-lg border border-wood-500/30 text-wood-300 hover:text-white hover:bg-wood-500/20 transition-all text-xs disabled:opacity-50"
+              title="Comprobar estado ahora"
+            >
+              <i class="fa-solid fa-arrows-rotate" [ngClass]="{ 'fa-spin': isRefreshing }"></i>
+            </button>
+          </div>
         </div>
       </div>
 
       <!-- Alert banner if pending verification -->
       @if (order.paymentStatus === 'PENDING_VERIFICATION') {
         <div class="bg-amber-950/60 border border-amber-500/30 text-amber-200 p-4 rounded-2xl text-xs space-y-1">
-          <div class="font-bold flex items-center gap-2 text-amber-300">
-            <i class="fa-solid fa-clock"></i> Comprobante recibido y en revisión
+          <div class="font-bold flex items-center justify-between text-amber-300">
+            <span class="flex items-center gap-2">
+              <i class="fa-solid fa-clock"></i> Comprobante recibido y en revisión
+            </span>
+            <span class="text-3xs text-amber-400/80 font-normal">
+              <i class="fa-solid fa-signal text-2xs mr-1"></i> Esta pantalla se actualizará automáticamente
+            </span>
           </div>
-          <p class="text-amber-200/90 leading-relaxed">Tu comprobante de pago fue adjuntado correctamente y está siendo verificado por el equipo administrativo. Te avisaremos tan pronto sea aprobado.</p>
+          <p class="text-amber-200/90 leading-relaxed">Tu comprobante de pago fue adjuntado correctamente y está siendo verificado por el equipo administrativo. En cuanto sea aprobado o rechazado, verás el cambio aquí en vivo.</p>
         </div>
       }
 

@@ -1,6 +1,7 @@
-import { Component, OnInit, inject, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Subscription, interval } from 'rxjs';
 import { ApiService } from '../../core/services/api.service';
 import { DialogService } from '../../core/services/dialog.service';
 import { Order } from '../../core/models/models';
@@ -17,7 +18,7 @@ import { ToastService } from '../../core/services/toast.service';
     templateUrl: './admin-orders.component.html',
     styleUrl: './admin-orders.component.css'
 })
-export class AdminOrdersFeatureComponent implements OnInit {
+export class AdminOrdersFeatureComponent implements OnInit, OnDestroy {
   private apiService = inject(ApiService);
   private dialogService = inject(DialogService);
   private toastService = inject(ToastService);
@@ -37,6 +38,10 @@ export class AdminOrdersFeatureComponent implements OnInit {
   zoomLevel = 1;
   rotation = 0;
   notifyBuyerByEmail = true;
+
+  // Sondeo reactivo en tiempo real
+  private pollingSub?: Subscription;
+  private previousTotalOrders = -1;
 
   // Paginación
   currentPage = 1;
@@ -63,7 +68,32 @@ export class AdminOrdersFeatureComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.loadOrders();
+    this.loadOrders(false);
+    this.startPolling();
+  }
+
+  ngOnDestroy() {
+    this.stopPolling();
+  }
+
+  startPolling() {
+    if (this.pollingSub) return;
+
+    // Sondeo reactivo periódico en segundo plano cada 10 segundos
+    this.pollingSub = interval(10000).subscribe(() => {
+      // Si el administrador tiene un modal abierto de comprobante o rechazo, pausar temporalmente para no interrumpirlo
+      if (this.selectedOrder || this.showRejectModal || this.showEmailModal || this.zoomImageUrl) {
+        return;
+      }
+      this.loadOrders(true);
+    });
+  }
+
+  stopPolling() {
+    if (this.pollingSub) {
+      this.pollingSub.unsubscribe();
+      this.pollingSub = undefined;
+    }
   }
 
   normalizeStatus(status: string): any {
@@ -79,8 +109,11 @@ export class AdminOrdersFeatureComponent implements OnInit {
     return 'PENDING_PAYMENT_VERIFICATION';
   }
 
-  loadOrders() {
-    this.loading = true;
+  loadOrders(silent = false) {
+    if (!silent) {
+      this.loading = true;
+    }
+
     this.apiService
       .getOrders({
         paymentStatus: this.filterPaymentStatus,
@@ -90,6 +123,14 @@ export class AdminOrdersFeatureComponent implements OnInit {
       .subscribe({
         next: (res: any) => {
           const list = Array.isArray(res) ? res : (res?.data || []);
+
+          // Notificar en vivo si detectamos un nuevo pedido entrante en segundo plano
+          if (silent && this.previousTotalOrders >= 0 && list.length > this.previousTotalOrders) {
+            const diff = list.length - this.previousTotalOrders;
+            this.showNotification(`🔔 ¡${diff} nuevo pedido recibido en la tienda!`, 'success');
+          }
+          this.previousTotalOrders = list.length;
+
           this.orders = list.map((o: any) => ({
             ...o,
             total: Number(o.total) || 0,

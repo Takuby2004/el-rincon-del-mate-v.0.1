@@ -271,5 +271,13 @@ El ciclo de vida de los pedidos implementa validación estricta de transiciones 
 
 ---
 
+## ⚡ Reactividad en Tiempo Real y Notificaciones Anti-Spam
+
+- **Sondeo Reactivo para Clientes (`/pedido/:orderNumber`):** Mientras el comprobante esté en revisión, la pantalla ejecuta un sondeo inteligente cada 4 segundos. En cuanto el administrador aprueba o rechaza el pago, el estado visual y los mensajes cambian en vivo sin recargar la página.
+- **Sondeo Reactivo para el Administrador (`/admin/pedidos`):** La tabla de pedidos en el panel se actualiza automáticamente en segundo plano cada 10 segundos, detectando y notificando en vivo cuando ingresa una nueva orden sin interrumpir modales activos.
+- **Optimización Anti-Spam Multiformato:** Todos los correos transaccionales (alerta al dueño y cambios de estado de pago al comprador) generan automáticamente tanto versión HTML estilizada como versión en texto plano (`text/plain`), cabeceras `X-Mailer`, `X-Priority`, y limpieza de credenciales SMTP para maximizar la entregabilidad en bandejas de entrada.
+
+---
+
 ## 👥 Desarrollado con Excelencia
 **El Rincón del Mate** - *Comercialización Oficial de Mates Imperiales, Torpedos, Bombillas de Alpaca y Termos Térmicos en Tarija, La Paz y toda Bolivia.*

@@ -7,11 +7,16 @@
         correo electrónico</p>
     </div>
 
-    <button (click)="loadOrders()"
-      class="text-xs font-bold text-wood-700 bg-white hover:bg-wood-50 px-3.5 py-2 rounded-xl border border-wood-200 shadow-xs flex items-center gap-2 transition-all active:scale-95">
-      <i class="fa-solid fa-rotate text-gold-600" [class.fa-spin]="loading"></i>
-      <span>Actualizar</span>
-    </button>
+    <div class="flex items-center gap-2">
+      <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-3xs font-bold text-emerald-700 shadow-xs" title="Sondeo reactivo automático activo">
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> En Vivo
+      </span>
+      <button (click)="loadOrders()"
+        class="text-xs font-bold text-wood-700 bg-white hover:bg-wood-50 px-3.5 py-2 rounded-xl border border-wood-200 shadow-xs flex items-center gap-2 transition-all active:scale-95">
+        <i class="fa-solid fa-rotate text-gold-600" [class.fa-spin]="loading"></i>
+        <span>Actualizar</span>
+      </button>
+    </div>
   </div>
 
   <!-- Feedback Toast / Alert -->

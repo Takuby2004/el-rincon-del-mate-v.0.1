@@ -21,7 +21,9 @@ export class EmailService {
    */
   private static async getTransporter(): Promise<{ transporter: Transporter; isTestAccount: boolean }> {
     const smtpUser = process.env.SMTP_USER?.trim();
-    const smtpPass = process.env.SMTP_PASS?.trim();
+    const rawPass = process.env.SMTP_PASS?.trim() || '';
+    // Sanitizar espacios accidentales propios del formato de Google App Passwords (xxxx xxxx xxxx xxxx)
+    const smtpPass = rawPass.replace(/\s+/g, '');
     const smtpHost = process.env.SMTP_HOST || 'smtp.gmail.com';
     const smtpPort = Number(process.env.SMTP_PORT) || 465;
     const smtpSecure = process.env.SMTP_SECURE === 'true' || smtpPort === 465;
@@ -239,6 +241,42 @@ export class EmailService {
   }
 
   /**
+   * Genera la versión en texto plano para el correo de estado de pago (esencial para evitar filtros de SPAM)
+   */
+  private static generatePaymentStatusPlainText(
+    order: any,
+    payment: any,
+    statusToReport: string,
+    customNote?: string
+  ): string {
+    const isApproved = statusToReport === 'APPROVED';
+    const isRejected = statusToReport === 'REJECTED';
+    const statusText = isApproved ? 'APROBADO ✅' : isRejected ? 'RECHAZADO ❌' : 'PENDIENTE DE VERIFICACIÓN ⏳';
+    const clientName = order.client?.name || 'Cliente';
+    const totalBs = Number(order.total || 0).toFixed(2);
+    const frontendBaseUrl = (process.env.FRONTEND_URL || 'http://localhost:4200').replace(/\/$/, '');
+    const orderUrl = `${frontendBaseUrl}/pedido/${order.orderNumber}`;
+
+    let message = `EL RINCÓN DEL MATE - Notificación de Pedido #${order.orderNumber}\n\n`;
+    message += `Estimado(a) ${clientName},\n\n`;
+    message += `Le informamos que el estado de su pago para el pedido #${order.orderNumber} es: ${statusText}.\n`;
+    message += `Total del pedido: Bs. ${totalBs}\n\n`;
+
+    if (isApproved) {
+      message += `Su comprobante ha sido verificado con éxito. Ya estamos preparando su paquete de mates para el despacho.\n\n`;
+    } else if (isRejected) {
+      const reason = customNote || payment?.rejectionReason || 'Comprobante no legible o monto incorrecto.';
+      message += `Motivo del rechazo: "${reason}".\n`;
+      message += `Por favor, comuníquese con nosotros para reenviar un comprobante válido.\n\n`;
+    }
+
+    message += `Puede consultar el seguimiento de su pedido en el siguiente enlace:\n${orderUrl}\n\n`;
+    message += `Atentamente,\nEl Rincón del Mate\nTarija & La Paz, Bolivia\n`;
+
+    return message;
+  }
+
+  /**
    * Obtiene dinámicamente la información del administrador de la tienda para el remitente
    */
   private static async getAdminSender(): Promise<{ email: string; name: string; fromAddress: string }> {
@@ -299,6 +337,7 @@ export class EmailService {
 
     const subject = `[El Rincón del Mate] Estado de Pago: ${statusLabels[finalStatus] || finalStatus} - Pedido #${order.orderNumber}`;
     const htmlContent = this.generatePaymentStatusHtml(order, payment, finalStatus, customNote);
+    const textContent = this.generatePaymentStatusPlainText(order, payment, finalStatus, customNote);
 
     const adminSender = await this.getAdminSender();
     const { transporter, isTestAccount } = await this.getTransporter();
@@ -310,7 +349,13 @@ export class EmailService {
       replyTo: adminSender.email,
       to: recipientEmail,
       subject,
-      html: htmlContent
+      text: textContent,
+      html: htmlContent,
+      headers: {
+        'X-Mailer': 'El Rincon del Mate Mailer 1.0',
+        'X-Priority': '3',
+        'X-Entity-Ref-ID': `order-${order.orderNumber}`
+      }
     });
 
     let previewUrl: string | undefined;
@@ -508,6 +553,47 @@ export class EmailService {
   }
 
   /**
+   * Genera la versión en texto plano para la alerta de nuevo pedido al dueño (esencial para evitar SPAM)
+   */
+  private static generateNewOrderAdminPlainText(order: any, payment: any): string {
+    const client = order.client || {};
+    const clientName = client.name || 'Cliente';
+    const clientPhone = order.phone || client.phone || 'No especificado';
+    const clientEmail = client.email || 'No especificado';
+    const clientAddress = order.address || client.address || 'Recojo en sucursal';
+    const clientCity = order.city || client.city || 'Santa Cruz';
+    const totalBs = Number(order.total || 0).toFixed(2);
+    const frontendBaseUrl = (process.env.FRONTEND_URL || 'http://localhost:4200').replace(/\/$/, '');
+    const adminOrdersUrl = `${frontendBaseUrl}/admin/pedidos`;
+
+    let message = `🚨 ¡NUEVO PEDIDO RECIBIDO! - El Rincón del Mate\n\n`;
+    message += `Se ha generado una nueva orden en la tienda web:\n`;
+    message += `-----------------------------------------\n`;
+    message += `Número de Pedido: #${order.orderNumber}\n`;
+    message += `Cliente: ${clientName}\n`;
+    message += `Teléfono: ${clientPhone}\n`;
+    message += `Correo: ${clientEmail}\n`;
+    message += `Dirección: ${clientAddress}, ${clientCity}\n`;
+    message += `Total a Cobrar: Bs. ${totalBs}\n`;
+    message += `Estado de Pago: PENDIENTE DE VERIFICACIÓN\n`;
+    message += `-----------------------------------------\n\n`;
+    message += `Productos en el pedido:\n`;
+
+    const items = order.items || [];
+    for (const it of items) {
+      const name = it.product?.name || 'Producto';
+      const qty = it.quantity || 1;
+      const subtotal = Number(it.subtotal || it.unitPrice * qty).toFixed(2);
+      message += `- ${name} x${qty} (Bs. ${subtotal})\n`;
+    }
+
+    message += `\nIngrese al panel administrativo para verificar el comprobante adjunto y aprobar el pedido:\n`;
+    message += `${adminOrdersUrl}\n`;
+
+    return message;
+  }
+
+  /**
    * Envía una notificación por correo electrónico al Administrador alertando sobre un nuevo pedido entrante
    */
   public static async sendNewOrderAdminAlert(
@@ -527,6 +613,7 @@ export class EmailService {
       const totalBs = Number(order.total || 0).toFixed(2);
       const subject = `🚨 [Nuevo Pedido] Orden #${order.orderNumber} (Bs. ${totalBs}) - ${clientName}`;
       const htmlContent = this.generateNewOrderAdminHtml(order, payment);
+      const textContent = this.generateNewOrderAdminPlainText(order, payment);
 
       const { transporter, isTestAccount } = await this.getTransporter();
 
@@ -537,7 +624,13 @@ export class EmailService {
         to: recipientEmail,
         replyTo: order.client?.email || adminSender.email,
         subject,
-        html: htmlContent
+        text: textContent,
+        html: htmlContent,
+        headers: {
+          'X-Mailer': 'El Rincon del Mate Mailer 1.0',
+          'X-Priority': '1',
+          'X-Entity-Ref-ID': `admin-order-${order.orderNumber}`
+        }
       });
 
       let previewUrl: string | undefined;
