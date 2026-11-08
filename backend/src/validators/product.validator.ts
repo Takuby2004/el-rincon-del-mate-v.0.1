@@ -1,5 +1,16 @@
 import { z } from 'zod';
 
+const booleanCoerce = z.preprocess((val) => {
+  if (typeof val === 'string') {
+    const lower = val.trim().toLowerCase();
+    if (lower === 'true' || lower === '1') return true;
+    if (lower === 'false' || lower === '0') return false;
+  }
+  if (typeof val === 'boolean') return val;
+  if (typeof val === 'number') return val !== 0;
+  return val;
+}, z.boolean());
+
 export const createProductSchema = z.object({
   name: z
     .string({ required_error: 'El nombre del producto es obligatorio' })
@@ -26,7 +37,7 @@ export const createProductSchema = z.object({
     .default(0),
   imageUrl: z.string().optional(),
   images: z.any().optional(),
-  active: z.coerce.boolean().optional().default(true)
+  active: booleanCoerce.optional().default(true)
 });
 
 export const updateProductSchema = createProductSchema.partial();

@@ -18,6 +18,21 @@ export class CategoryService {
       include: {
         products: {
           where: { active: true },
+          select: {
+            id: true,
+            categoryId: true,
+            name: true,
+            slug: true,
+            description: true,
+            price: true,
+            stock: true,
+            imageUrl: true,
+            images: true,
+            qrCodeUrl: true,
+            active: true,
+            createdAt: true,
+            updatedAt: true
+          },
           orderBy: { createdAt: 'desc' }
         }
       }

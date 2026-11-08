@@ -10,7 +10,11 @@ const prisma = new PrismaClient();
 async function syncAdmin() {
   console.log('🔄 Iniciando sincronización de permisos de Administrador...\n');
 
-  const adminEmail = (process.env.ADMIN_EMAIL || 'rincondelmatebo@gmail.com').trim().toLowerCase();
+  const adminEmail = (process.env.ADMIN_EMAIL || '').trim().toLowerCase();
+  if (!adminEmail) {
+    console.error('❌ [ERROR] Variable ADMIN_EMAIL no definida en el archivo .env.');
+    process.exit(1);
+  }
 
   console.log(`📌 Correo de Administrador objetivo: ${adminEmail}`);
 

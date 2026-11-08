@@ -7,10 +7,11 @@ export class StatsService {
     const approvedCount = await prisma.payment.count({ where: { status: 'APPROVED' } });
     const rejectedCount = await prisma.payment.count({ where: { status: 'REJECTED' } });
 
-    // 2. Fetch ALL orders where payment is strictly APPROVED
+    // 2. Fetch ALL orders where payment is strictly APPROVED and order is not cancelled/rejected
     const approvedOrders = await prisma.order.findMany({
       where: {
-        payment: { status: 'APPROVED' }
+        payment: { status: 'APPROVED' },
+        status: { in: ['PAID', 'PACKING', 'SHIPPED', 'DELIVERED'] }
       },
       include: {
         items: true

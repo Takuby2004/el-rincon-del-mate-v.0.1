@@ -80,14 +80,23 @@ export class ProfileService {
 
     if (hasAuthChanges && isCloudConfigured) {
       try {
-        const { data: listData, error: listError } = await supabaseAdmin.auth.admin.listUsers();
-        if (listError) {
-          console.error('[ProfileService] Error al listar usuarios en Supabase Auth:', listError);
-        }
+        let supabaseUser: any = null;
+        let page = 1;
+        const perPage = 100;
 
-        const supabaseUser = listData?.users?.find(
-          (u) => u.email?.toLowerCase() === existingUser.email.toLowerCase()
-        );
+        while (!supabaseUser) {
+          const { data: pageData, error: listError } = await supabaseAdmin.auth.admin.listUsers({ page, perPage });
+          if (listError) {
+            console.error('[ProfileService] Error al listar usuarios en Supabase Auth:', listError);
+            throw AppError.internal(`Error al consultar usuarios en Supabase Auth: ${listError.message}`);
+          }
+          const users = pageData?.users || [];
+          supabaseUser = users.find(
+            (u) => u.email?.toLowerCase() === existingUser.email.toLowerCase()
+          );
+          if (users.length < perPage) break;
+          page++;
+        }
 
         if (supabaseUser) {
           const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
@@ -102,21 +111,11 @@ export class ProfileService {
           }
           console.log(`[ProfileService] Credenciales sincronizadas con éxito en Supabase Auth para UID: ${supabaseUser.id}`);
         } else {
-          // Si el usuario no existía en Supabase Auth, crearlo sincronizado
-          const targetEmail = updateData.email || existingUser.email;
-          const targetPassword = data.password || 'TempPassword_2026!';
-          const { error: createError } = await supabaseAdmin.auth.admin.createUser({
-            email: targetEmail,
-            password: targetPassword,
-            email_confirm: true,
-            user_metadata: {
-              name: updateData.name || existingUser.name,
-              phone: updateData.phone || existingUser.phone || ''
-            }
-          });
-          if (createError) {
-            console.warn('[ProfileService] Advertencia al crear usuario en Supabase Auth:', createError.message);
-          }
+          // El usuario no existe en Supabase Auth: abortar con error explícito sin contraseñas fijas
+          console.error(`[ProfileService] Cuenta no localizada en Supabase Auth para: ${existingUser.email}`);
+          throw AppError.notFound(
+            'No se encontró la cuenta correspondiente en Supabase Auth para sincronizar las credenciales. Verifique su sesión o comuníquese con soporte.'
+          );
         }
       } catch (err: any) {
         if (err instanceof AppError) throw err;

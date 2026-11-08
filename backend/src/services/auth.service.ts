@@ -1,5 +1,6 @@
 import { prisma } from '../config/prisma';
 import { supabase } from '../config/supabase';
+import { env } from '../config/env';
 import { AppError } from '../errors/AppError';
 
 export class AuthService {
@@ -86,7 +87,7 @@ export class AuthService {
       throw AppError.unauthorized(errorMsg);
     }
 
-    const adminEmail = (process.env.ADMIN_EMAIL || 'admin@elrincondelmate.com').trim().toLowerCase();
+    const adminEmail = env.ADMIN_EMAIL;
     const isEmailAdmin = normalizedEmail === adminEmail;
 
     // 2. Localizar o auto-vincular el perfil en la base de datos de la tienda

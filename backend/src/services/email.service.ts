@@ -61,6 +61,19 @@ export class EmailService {
   }
 
   /**
+   * Sanitiza entradas de usuario para prevenir ataques de inyección HTML en correos
+   */
+  public static escapeHtml(input: any): string {
+    if (input === null || input === undefined) return '';
+    return String(input)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  /**
    * Generates a modern, responsive HTML email template for order and payment status notification
    */
   private static generatePaymentStatusHtml(order: any, payment: any, statusToReport: string, customNote?: string): string {
@@ -78,18 +91,23 @@ export class EmailService {
     const statusBg = isApproved ? '#dcfce7' : isRejected ? '#fee2e2' : '#fef3c7';
     const statusIcon = isApproved ? '✅' : isRejected ? '❌' : '⏳';
 
-    const clientName = order.client?.name || 'Estimado(a) Cliente';
-    const orderNumber = order.orderNumber || 'N/A';
+    const esc = EmailService.escapeHtml;
+    const clientName = esc(order.client?.name || 'Estimado(a) Cliente');
+    const orderNumber = esc(order.orderNumber || 'N/A');
     const totalBs = Number(order.total || 0).toFixed(2);
+    const sanitizedCustomNote = esc(customNote || (isRejected ? payment?.rejectionReason : ''));
+    const deliveryAddress = esc(order.address || 'N/A');
+    const deliveryCity = esc(order.city || 'Santa Cruz');
+    const contactPhone = esc(order.phone || 'N/A');
     const items = order.items || [];
 
     const itemsHtml = items.map((item: any) => `
       <tr>
         <td style="padding: 10px 12px; border-bottom: 1px solid #f1ece4; font-size: 13px; color: #2d1e18;">
-          <strong>${item.product?.name || 'Producto'}</strong>
+          <strong>${esc(item.product?.name || 'Producto')}</strong>
         </td>
         <td style="padding: 10px 12px; border-bottom: 1px solid #f1ece4; font-size: 13px; text-align: center; color: #5c473b;">
-          ${item.quantity} un.
+          ${Number(item.quantity) || 1} un.
         </td>
         <td style="padding: 10px 12px; border-bottom: 1px solid #f1ece4; font-size: 13px; text-align: right; font-weight: bold; color: #2d1e18;">
           Bs. ${Number(item.subtotal || 0).toFixed(2)}
@@ -140,11 +158,11 @@ export class EmailService {
               </div>
 
               <!-- Rejection Reason or Custom Note if any -->
-              ${(customNote || (isRejected && payment?.rejectionReason)) ? `
+              ${sanitizedCustomNote ? `
                 <div style="background-color: #fff1f2; border: 1px solid #fecdd3; border-radius: 12px; padding: 14px 18px; margin-bottom: 24px;">
                   <strong style="color: #9f1239; font-size: 12px; text-transform: uppercase;">Nota del Administrador:</strong>
                   <p style="color: #881337; margin: 4px 0 0 0; font-size: 13px; line-height: 1.4;">
-                    ${customNote || payment?.rejectionReason}
+                    ${sanitizedCustomNote}
                   </p>
                 </div>
               ` : ''}
@@ -168,11 +186,11 @@ export class EmailService {
                       </tr>
                       <tr>
                         <td style="font-size: 12px; color: #785e4d; padding-top: 8px;">Dirección de Entrega:</td>
-                        <td style="font-size: 12px; color: #2d1e18; text-align: right; padding-top: 8px;">${order.address || 'N/A'}, ${order.city || 'Santa Cruz'}</td>
+                        <td style="font-size: 12px; color: #2d1e18; text-align: right; padding-top: 8px;">${deliveryAddress}, ${deliveryCity}</td>
                       </tr>
                       <tr>
                         <td style="font-size: 12px; color: #785e4d; padding-top: 8px;">Teléfono de Contacto:</td>
-                        <td style="font-size: 12px; color: #2d1e18; text-align: right; padding-top: 8px;">${order.phone || 'N/A'}</td>
+                        <td style="font-size: 12px; color: #2d1e18; text-align: right; padding-top: 8px;">${contactPhone}</td>
                       </tr>
                     </table>
                   </td>
@@ -389,22 +407,25 @@ export class EmailService {
     const frontendBaseUrl = (process.env.FRONTEND_URL || 'http://localhost:4200').replace(/\/$/, '');
     const adminOrdersUrl = `${frontendBaseUrl}/admin/pedidos`;
 
+    const esc = EmailService.escapeHtml;
     const client = order.client || {};
-    const clientName = client.name || 'Cliente';
-    const clientEmail = client.email || order.phone || 'No especificado';
-    const clientPhone = order.phone || client.phone || 'No especificado';
-    const cleanPhone = clientPhone.replace(/[^0-9]/g, '');
-    const clientAddress = order.address || client.address || 'Recojo en sucursal';
-    const clientCity = order.city || client.city || 'Santa Cruz';
-    const clientNotes = order.notes || 'Sin notas especiales.';
+    const clientName = esc(client.name || 'Cliente');
+    const clientEmail = esc(client.email || order.phone || 'No especificado');
+    const rawPhone = order.phone || client.phone || '';
+    const clientPhone = esc(rawPhone || 'No especificado');
+    const cleanPhone = rawPhone.replace(/[^0-9]/g, '');
+    const clientAddress = esc(order.address || client.address || 'Recojo en sucursal');
+    const clientCity = esc(order.city || client.city || 'Santa Cruz');
+    const clientNotes = esc(order.notes || 'Sin notas especiales.');
+    const orderNumber = esc(order.orderNumber || 'N/A');
 
     const items = order.items || [];
     let itemsHtml = '';
 
     for (const item of items) {
-      const prodName = item.product?.name || 'Producto';
-      const qty = item.quantity || 1;
-      const subtotal = Number(item.subtotal || item.unitPrice * qty).toFixed(2);
+      const prodName = esc(item.product?.name || 'Producto');
+      const qty = Number(item.quantity) || 1;
+      const subtotal = Number(item.subtotal || (item.unitPrice || 0) * qty).toFixed(2);
 
       itemsHtml += `
         <tr>
@@ -428,7 +449,7 @@ export class EmailService {
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Nuevo Pedido #${order.orderNumber} - El Rincón del Mate</title>
+  <title>Nuevo Pedido #${orderNumber} - El Rincón del Mate</title>
 </head>
 <body style="margin: 0; padding: 0; background-color: #f7f4ef; font-family: 'Segoe UI', Helvetica, Arial, sans-serif; color: #2d1e18;">
   <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f7f4ef; padding: 30px 15px;">
@@ -506,7 +527,7 @@ export class EmailService {
 
               <!-- Detalle de Productos -->
               <h3 style="color: #24422e; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 12px 0; border-bottom: 2px solid #ebdcc5; padding-bottom: 6px;">
-                🧉 Productos del Pedido #${order.orderNumber}
+                🧉 Productos del Pedido #${orderNumber}
               </h3>
               <table width="100%" border="0" cellspacing="0" cellpadding="0" style="border: 1px solid #ebdcc5; border-radius: 12px; overflow: hidden; margin-bottom: 25px;">
                 <thead>

@@ -107,8 +107,12 @@
           class="w-full px-3 py-2.5 rounded-xl border border-wood-300 focus:outline-none focus:ring-2 focus:ring-mate-600 text-xs bg-white font-medium cursor-pointer">
           <option value="">📦 Todos los Estados</option>
           <option value="PENDING_PAYMENT_VERIFICATION">⏳ Pendiente de verificación</option>
-          <option value="PAID">✅ Aprobado</option>
-          <option value="PAYMENT_REJECTED">❌ Rechazado</option>
+          <option value="PAID">✅ Pagado</option>
+          <option value="PACKING">📦 En Empaque</option>
+          <option value="SHIPPED">🚚 Enviado</option>
+          <option value="DELIVERED">🎉 Entregado</option>
+          <option value="PAYMENT_REJECTED">❌ Pago Rechazado</option>
+          <option value="CANCELLED">🚫 Cancelado</option>
         </select>
 
         @if (searchQuery || filterPaymentStatus || filterOrderStatus) {
@@ -465,9 +469,13 @@
       <div class="flex gap-2">
         <select [(ngModel)]="selectedOrder.status"
           class="px-3 py-2 rounded-xl border border-wood-300 text-xs bg-white flex-1 focus:ring-2 focus:ring-mate-700 outline-none font-medium">
-          <option value="PENDING_PAYMENT_VERIFICATION">Pendiente de verificación</option>
-          <option value="PAID">Aprobado</option>
-          <option value="PAYMENT_REJECTED">Rechazado</option>
+          <option value="PENDING_PAYMENT_VERIFICATION">⏳ Pendiente de verificación</option>
+          <option value="PAID">✅ Pagado</option>
+          <option value="PACKING">📦 En Empaque</option>
+          <option value="SHIPPED">🚚 Enviado</option>
+          <option value="DELIVERED">🎉 Entregado</option>
+          <option value="PAYMENT_REJECTED">❌ Pago Rechazado</option>
+          <option value="CANCELLED">🚫 Cancelado</option>
         </select>
         <button (click)="updateOrderStatus()"
           class="px-4 py-2 bg-mate-700 hover:bg-mate-800 text-white text-xs font-bold rounded-xl transition-colors">

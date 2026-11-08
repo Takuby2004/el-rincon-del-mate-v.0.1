@@ -50,9 +50,9 @@ export class OrderService {
       total: Number(order.total) || 0,
       payment: order.payment
         ? {
-            ...order.payment,
-            amount: Number(order.payment.amount) || 0
-          }
+          ...order.payment,
+          amount: Number(order.payment.amount) || 0
+        }
         : order.payment,
       items: order.items?.map((i: any) => ({
         ...i,
@@ -61,10 +61,10 @@ export class OrderService {
         subtotal: Number(i.subtotal) || 0,
         product: i.product
           ? {
-              ...i.product,
-              price: Number(i.product.price) || 0,
-              ...(i.product.cost !== undefined && i.product.cost !== null ? { cost: Number(i.product.cost) || 0 } : {})
-            }
+            ...i.product,
+            price: Number(i.product.price) || 0,
+            ...(i.product.cost !== undefined && i.product.cost !== null ? { cost: Number(i.product.cost) || 0 } : {})
+          }
           : i.product
       }))
     };
@@ -181,7 +181,7 @@ export class OrderService {
             email: normalizedEmail,
             phone: orderData.clientPhone.trim(),
             address: orderData.clientAddress.trim(),
-            city: (orderData.clientCity || 'Santa Cruz').trim(),
+            city: (orderData.clientCity || '').trim(),
             ciNit: (orderData.clientCiNit || '').trim()
           }
         });
@@ -213,7 +213,7 @@ export class OrderService {
           status: 'PENDING_PAYMENT_VERIFICATION',
           paymentStatus: 'PENDING_VERIFICATION',
           address: orderData.clientAddress,
-          city: orderData.clientCity || 'Santa Cruz',
+          city: orderData.clientCity,
           phone: orderData.clientPhone,
           notes: orderData.notes || '',
           items: {
@@ -482,7 +482,7 @@ export class OrderService {
             }
           });
         }
-      } else if (newStatus === 'PAYMENT_REJECTED') {
+      } else if (newStatus === 'PAYMENT_REJECTED' || newStatus === 'CANCELLED') {
         paymentStatus = 'REJECTED';
         if (order.payment) {
           await tx.payment.update({
@@ -491,7 +491,10 @@ export class OrderService {
               status: 'REJECTED',
               reviewedAt: new Date(),
               reviewedBy: userId || null,
-              rejectionReason: rejectionReason || order.payment.rejectionReason || 'Comprobante no verificado'
+              rejectionReason:
+                rejectionReason ||
+                order.payment.rejectionReason ||
+                (newStatus === 'CANCELLED' ? 'Pedido cancelado / anulación de compra' : 'Comprobante no verificado')
             }
           });
         }

@@ -65,6 +65,7 @@ export class ReportService {
     const approvedOrders = await prisma.order.findMany({
       where: {
         payment: { status: 'APPROVED' },
+        status: { in: ['PAID', 'PACKING', 'SHIPPED', 'DELIVERED'] },
         ...(filter ? { createdAt: filter } : {})
       },
       include: { client: true },
@@ -93,6 +94,7 @@ export class ReportService {
     const approvedOrders = await prisma.order.findMany({
       where: {
         payment: { status: 'APPROVED' },
+        status: { in: ['PAID', 'PACKING', 'SHIPPED', 'DELIVERED'] },
         ...(filter ? { createdAt: filter } : {})
       },
       include: { items: true }
@@ -150,6 +152,7 @@ export class ReportService {
     const approvedOrders = await prisma.order.findMany({
       where: {
         payment: { status: 'APPROVED' },
+        status: { in: ['PAID', 'PACKING', 'SHIPPED', 'DELIVERED'] },
         ...(filter ? { createdAt: filter } : {})
       },
       include: {
@@ -237,6 +240,7 @@ export class ReportService {
     const approvedOrders = await prisma.order.findMany({
       where: {
         payment: { status: 'APPROVED' },
+        status: { in: ['PAID', 'PACKING', 'SHIPPED', 'DELIVERED'] },
         ...(filter ? { createdAt: filter } : {})
       },
       include: { items: true }

@@ -135,7 +135,7 @@ export class AdminOrdersFeatureComponent implements OnInit, OnDestroy {
             ...o,
             total: Number(o.total) || 0,
             subtotal: Number(o.subtotal) || 0,
-            status: this.normalizeStatus(o.status),
+            status: o.status,
             payment: o.payment
               ? {
                   ...o.payment,
@@ -194,28 +194,41 @@ export class AdminOrdersFeatureComponent implements OnInit, OnDestroy {
   }
 
   getOrderStatusLabel(status: string): string {
-    const map: any = {
+    const map: Record<string, string> = {
       PENDING_PAYMENT_VERIFICATION: 'Pendiente de verificación',
-      PAID: 'Aprobado',
-      APPROVED: 'Aprobado',
-      PACKING: 'Aprobado',
-      SHIPPED: 'Aprobado',
-      DELIVERED: 'Aprobado',
-      PAYMENT_REJECTED: 'Rechazado',
-      REJECTED: 'Rechazado',
-      CANCELLED: 'Rechazado'
+      PAID: 'Pagado',
+      APPROVED: 'Pagado',
+      PACKING: 'En Empaque',
+      SHIPPED: 'Enviado',
+      DELIVERED: 'Entregado',
+      PAYMENT_REJECTED: 'Pago Rechazado',
+      REJECTED: 'Pago Rechazado',
+      CANCELLED: 'Cancelado'
     };
     return map[status] || status;
   }
 
   getOrderStatusBadgeClass(status: string): string {
-    if (status === 'PENDING_PAYMENT_VERIFICATION') {
-      return 'bg-amber-100 text-amber-800';
+    switch (status) {
+      case 'PENDING_PAYMENT_VERIFICATION':
+        return 'bg-amber-100 text-amber-800 border border-amber-300';
+      case 'PAID':
+      case 'APPROVED':
+        return 'bg-emerald-100 text-emerald-800 border border-emerald-300';
+      case 'PACKING':
+        return 'bg-blue-100 text-blue-800 border border-blue-300';
+      case 'SHIPPED':
+        return 'bg-purple-100 text-purple-800 border border-purple-300';
+      case 'DELIVERED':
+        return 'bg-teal-100 text-teal-800 border border-teal-300';
+      case 'PAYMENT_REJECTED':
+      case 'REJECTED':
+        return 'bg-rose-100 text-rose-800 border border-rose-300';
+      case 'CANCELLED':
+        return 'bg-gray-100 text-gray-800 border border-gray-300';
+      default:
+        return 'bg-slate-100 text-slate-800 border border-slate-300';
     }
-    if (['PAID', 'APPROVED', 'PACKING', 'SHIPPED', 'DELIVERED'].includes(status)) {
-      return 'bg-emerald-100 text-emerald-800';
-    }
-    return 'bg-red-100 text-red-800';
   }
 
   cleanPhone(phone: string): string {
@@ -242,7 +255,7 @@ export class AdminOrdersFeatureComponent implements OnInit, OnDestroy {
       ...order,
       total: Number(order.total) || 0,
       subtotal: Number(order.subtotal) || 0,
-      status: this.normalizeStatus(order.status),
+      status: order.status,
       items: (order.items || []).map((it: any) => ({
         ...it,
         unitPrice: Number(it.unitPrice) || 0,
