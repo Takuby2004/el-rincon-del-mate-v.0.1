@@ -8,6 +8,9 @@ export interface ToastItem {
   title?: string;
   message: string;
   duration: number; // en milisegundos
+  image?: string;
+  badge?: string;
+  time?: string;
 }
 
 export interface ToastOptions {
@@ -15,6 +18,9 @@ export interface ToastOptions {
   title?: string;
   type?: ToastType;
   duration?: number;
+  image?: string;
+  badge?: string;
+  time?: string;
 }
 
 @Injectable({
@@ -36,11 +42,14 @@ export class ToastService {
       type,
       title: options.title,
       message: options.message,
-      duration
+      duration,
+      image: options.image,
+      badge: options.badge,
+      time: options.time
     };
 
-    // Agregar el nuevo toast al inicio o al final (máximo 5 concurrentes)
-    this.toastsSignal.update((current) => [...current.slice(-4), item]);
+    // Agregar el nuevo toast al inicio o al final (máximo 4 concurrentes)
+    this.toastsSignal.update((current) => [...current.slice(-3), item]);
 
     if (duration > 0) {
       setTimeout(() => {
@@ -49,6 +58,18 @@ export class ToastService {
     }
 
     return id;
+  }
+
+  cartSuccess(productName: string, image?: string, duration: number = 3800): string {
+    return this.show({
+      type: 'success',
+      badge: 'El Rincón del Mate • Carrito',
+      time: 'Ahora',
+      title: '¡Agregado al Carrito!',
+      message: `Producto "${productName}" agregado con éxito`,
+      image,
+      duration
+    });
   }
 
   success(message: string, title: string = '¡Operación Exitosa!', duration: number = 4000): string {

@@ -1,11 +1,12 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { ToastService, ToastItem } from '../../../core/services/toast.service';
 
 @Component({
   selector: 'app-toast-container',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink],
   templateUrl: './toast-container.component.html',
   styleUrl: './toast-container.component.css'
 })
@@ -29,21 +30,21 @@ export class ToastContainerComponent {
   getBorderClass(type: string): string {
     switch (type) {
       case 'success':
-        return 'border-emerald-500/40 bg-slate-900/95 text-emerald-50 shadow-emerald-950/50';
+        return 'border-wood-500/50 text-wood-50 shadow-wood-950/60 shadow-2xl';
       case 'error':
-        return 'border-red-500/40 bg-slate-900/95 text-red-50 shadow-red-950/50';
+        return 'border-red-500/40 text-red-50 shadow-red-950/50 shadow-2xl';
       case 'warning':
-        return 'border-amber-500/40 bg-slate-900/95 text-amber-50 shadow-amber-950/50';
+        return 'border-amber-500/40 text-amber-50 shadow-amber-950/50 shadow-2xl';
       case 'info':
       default:
-        return 'border-sky-500/40 bg-slate-900/95 text-sky-50 shadow-sky-950/50';
+        return 'border-sky-500/40 text-sky-50 shadow-sky-950/50 shadow-2xl';
     }
   }
 
   getProgressBarClass(type: string): string {
     switch (type) {
       case 'success':
-        return 'bg-emerald-500';
+        return 'bg-gradient-to-r from-wood-500 to-wood-300';
       case 'error':
         return 'bg-red-500';
       case 'warning':

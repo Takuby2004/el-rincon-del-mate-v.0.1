@@ -19,50 +19,18 @@
       }
     </div>
 
-    <!-- Seamless Deep Black Fusion Gradient: Solid Dark on Left -> Transparent on Right -->
+    <!-- Seamless Soft Fusion Gradient: Reduced opacity to display the mate photography clearly -->
     <div
-      class="absolute inset-0 bg-gradient-to-r from-mate-950 via-mate-950/90 sm:via-mate-950/60 to-transparent w-full pointer-events-none z-10">
+      class="absolute inset-0 bg-gradient-to-r from-mate-950/90 via-mate-950/50 sm:via-mate-950/25 to-transparent w-full pointer-events-none z-10">
     </div>
     <div
-      class="absolute inset-0 bg-gradient-to-t from-mate-950/90 via-transparent to-transparent pointer-events-none z-10">
+      class="absolute inset-0 bg-gradient-to-t from-mate-950/60 via-transparent to-transparent pointer-events-none z-10">
     </div>
     <div
-      class="absolute inset-0 bg-gradient-to-b from-mate-950/70 via-transparent to-transparent pointer-events-none z-10">
-    </div>
-
-    <!-- Floating Navigation Controls (Previous / Next & Dots Counter) -->
-    <div class="absolute bottom-6 right-4 sm:right-10 lg:right-16 z-30 flex items-center gap-3 sm:gap-4">
-      <!-- Dots & Slide Counter Badge -->
-      <div
-        class="flex items-center gap-2 sm:gap-2.5 bg-mate-950/85 backdrop-blur-md px-3.5 sm:px-4 py-2 rounded-full border border-wood-500/30 shadow-2xl">
-        @for (slide of heroSvgSlides; track slide.src; let idx = $index) {
-        <button (click)="goToHeroSlide(idx)" class="slider-dot-btn transition-all duration-500 rounded-full"
-          [class.active-dot]="idx === activeHeroIndex" [class.inactive-dot]="idx !== activeHeroIndex"
-          [title]="slide.name" [attr.aria-label]="slide.name">
-        </button>
-        }
-        <span class="text-3xs font-bold text-mate-300 tracking-wider ml-1">
-          0{{ activeHeroIndex + 1 }} / 0{{ heroSvgSlides.length }}
-        </span>
-      </div>
-
-      <!-- Arrow Controls -->
-      <div class="flex items-center gap-1.5 sm:gap-2">
-        <button (click)="prevHeroSlide()"
-          class="hero-nav-arrow w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-xs sm:text-sm shadow-xl transition-all"
-          title="Ver mate anterior" aria-label="Ver mate anterior">
-          <i class="fa-solid fa-chevron-left"></i>
-        </button>
-        <button (click)="nextHeroSlide()"
-          class="hero-nav-arrow w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-xs sm:text-sm shadow-xl transition-all"
-          title="Ver siguiente mate" aria-label="Ver siguiente mate">
-          <i class="fa-solid fa-chevron-right"></i>
-        </button>
-      </div>
+      class="absolute inset-0 bg-gradient-to-b from-mate-950/40 via-transparent to-transparent pointer-events-none z-10">
     </div>
   </div>
 
-  <!-- Left Hero Copy Column Content -->
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-28 lg:py-36 relative z-20 w-full">
     <div class="max-w-xl lg:max-w-2xl space-y-6 animate-fade-in">
       <div
@@ -73,11 +41,13 @@
 
       <h1 class="text-4xl sm:text-6xl font-black tracking-tight leading-tight text-white drop-shadow-md">
         La Experiencia Auténtica del <span
-          class="text-transparent bg-clip-text bg-gradient-to-r from-wood-300 via-wood-400 to-wood-200">Buen Mate</span>
+          class="text-transparent bg-clip-text bg-gradient-to-r from-wood-300 via-wood-400 to-wood-200">Buen
+          Mate</span>
       </h1>
 
       <p class="text-mate-200 text-base sm:text-lg leading-relaxed font-normal drop-shadow">
-        Descubre nuestra colección seleccionada de Mates Imperiales de calabaza forrada en cuero vacuno, termos térmicos
+        Descubre nuestra colección seleccionada de Mates Imperiales de calabaza forrada en cuero vacuno, termos
+        térmicos
         de conservación 24h y bombillas de alpaca fina cinceladas a mano.
       </p>
 
@@ -113,18 +83,23 @@
      ========================================================== -->
 <section class="relative bg-mate-950 text-white py-20 sm:py-24 border-b border-wood-500/20 overflow-hidden">
   <!-- Subtle Ambient Glow -->
-  <div class="absolute -top-32 left-1/2 -translate-x-1/2 w-[600px] h-96 bg-wood-500/5 rounded-full blur-3xl pointer-events-none"></div>
+  <div
+    class="absolute -top-32 left-1/2 -translate-x-1/2 w-[600px] h-96 bg-wood-500/5 rounded-full blur-3xl pointer-events-none">
+  </div>
 
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
     <div class="text-center max-w-2xl mx-auto mb-14 space-y-3 animate-fade-in">
-      <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-mate-900/90 border border-wood-500/30 text-wood-300 text-3xs font-extrabold uppercase tracking-widest shadow-md">
+      <div
+        class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-mate-900/90 border border-wood-500/30 text-wood-300 text-3xs font-extrabold uppercase tracking-widest shadow-md">
         <i class="fa-solid fa-shapes text-wood-400"></i>
         <span>Colecciones Especiales</span>
       </div>
       <h2 class="text-3xl sm:text-4xl font-black text-white tracking-tight">
-        Categorías <span class="text-transparent bg-clip-text bg-gradient-to-r from-wood-300 via-wood-400 to-wood-200">Principales</span>
+        Categorías <span
+          class="text-transparent bg-clip-text bg-gradient-to-r from-wood-300 via-wood-400 to-wood-200">Principales</span>
       </h2>
-      <p class="text-mate-200 text-sm max-w-lg mx-auto">Explora los elementos esenciales para tu ritual diario del buen mate</p>
+      <p class="text-mate-200 text-sm max-w-lg mx-auto">Explora los elementos esenciales para tu ritual diario del buen
+        mate</p>
     </div>
 
     @if (loadingCategories) {
@@ -146,8 +121,11 @@
         <div class="h-60 overflow-hidden relative bg-mate-950 flex items-center justify-center p-4">
           <img [src]="getCategoryDisplayImage(category) | assetUrl" [alt]="category.name" appImgFallback
             class="w-full h-full object-contain group-hover:scale-108 transition-transform duration-700 filter drop-shadow-[0_12px_24px_rgba(0,0,0,0.6)]">
-          <div class="absolute inset-0 bg-gradient-to-t from-mate-900 via-transparent to-transparent opacity-85 pointer-events-none"></div>
-          <span class="absolute top-3.5 right-3.5 bg-mate-950/85 backdrop-blur-md text-wood-300 text-3xs font-extrabold px-3 py-1 rounded-full border border-wood-500/30 shadow-md">
+          <div
+            class="absolute inset-0 bg-gradient-to-t from-mate-900 via-transparent to-transparent opacity-85 pointer-events-none">
+          </div>
+          <span
+            class="absolute top-3.5 right-3.5 bg-mate-950/85 backdrop-blur-md text-wood-300 text-3xs font-extrabold px-3 py-1 rounded-full border border-wood-500/30 shadow-md">
             Selección Oficial
           </span>
         </div>
@@ -162,9 +140,11 @@
             class="flex items-center justify-between text-xs font-bold text-wood-300 pt-3 border-t border-wood-500/20 group-hover:text-wood-200">
             <span class="flex items-center gap-1.5">
               <span>Ver productos</span>
-              <i class="fa-solid fa-arrow-right text-3xs group-hover:translate-x-1.5 transition-transform duration-300"></i>
+              <i
+                class="fa-solid fa-arrow-right text-3xs group-hover:translate-x-1.5 transition-transform duration-300"></i>
             </span>
-            <span class="w-7 h-7 rounded-full bg-wood-500/10 border border-wood-500/30 flex items-center justify-center group-hover:bg-wood-500 group-hover:text-white transition-all duration-300">
+            <span
+              class="w-7 h-7 rounded-full bg-wood-500/10 border border-wood-500/30 flex items-center justify-center group-hover:bg-wood-500 group-hover:text-white transition-all duration-300">
               <i class="fa-solid fa-chevron-right text-3xs"></i>
             </span>
           </div>
@@ -183,12 +163,14 @@
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-12 gap-4">
       <div class="space-y-1">
-        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-wood-500/15 border border-wood-500/30 text-wood-300 text-3xs font-extrabold uppercase tracking-widest shadow-sm">
+        <div
+          class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-wood-500/15 border border-wood-500/30 text-wood-300 text-3xs font-extrabold uppercase tracking-widest shadow-sm">
           <i class="fa-solid fa-fire text-wood-400"></i>
           <span>Lo Más Vendido</span>
         </div>
         <h2 class="text-3xl sm:text-4xl font-black text-white tracking-tight pt-1">
-          Productos <span class="text-transparent bg-clip-text bg-gradient-to-r from-wood-300 via-wood-400 to-wood-200">Destacados</span>
+          Productos <span
+            class="text-transparent bg-clip-text bg-gradient-to-r from-wood-300 via-wood-400 to-wood-200">Destacados</span>
         </h2>
         <p class="text-mate-200 text-sm mt-1">Calidad artesanal con envío garantizado a toda Bolivia</p>
       </div>
@@ -242,13 +224,14 @@
         <div class="p-6 flex-1 flex flex-col justify-between space-y-4 bg-mate-900/90 border-t border-wood-500/15">
           <div>
             @if (product.category?.slug) {
-              <a [routerLink]="['/categorias', product.category?.slug]"
-                class="text-3xs font-extrabold text-wood-400 hover:text-wood-300 transition-colors uppercase tracking-widest block cursor-pointer"
-                [title]="'Ver categoría ' + product.category?.name">
-                {{ product.category?.name }}
-              </a>
+            <a [routerLink]="['/categorias', product.category?.slug]"
+              class="text-3xs font-extrabold text-wood-400 hover:text-wood-300 transition-colors uppercase tracking-widest block cursor-pointer"
+              [title]="'Ver categoría ' + product.category?.name">
+              {{ product.category?.name }}
+            </a>
             } @else {
-              <span class="text-3xs font-extrabold text-wood-400 uppercase tracking-widest block">{{ product.category?.name }}</span>
+            <span class="text-3xs font-extrabold text-wood-400 uppercase tracking-widest block">{{
+              product.category?.name }}</span>
             }
             <a [routerLink]="['/productos', product.slug]"
               class="block font-black text-base text-white hover:text-wood-300 transition-colors mt-1 line-clamp-1">
@@ -283,17 +266,20 @@
 <section class="relative bg-mate-950 text-white py-20 sm:py-24 overflow-hidden">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
     <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-      <div class="bg-mate-900/80 backdrop-blur-md p-8 rounded-3xl border border-wood-500/25 shadow-xl hover:border-wood-400/60 hover:-translate-y-2 transition-all duration-500 space-y-3.5 text-center group">
+      <div
+        class="bg-mate-900/80 backdrop-blur-md p-8 rounded-3xl border border-wood-500/25 shadow-xl hover:border-wood-400/60 hover:-translate-y-2 transition-all duration-500 space-y-3.5 text-center group">
         <div
           class="w-14 h-14 rounded-2xl bg-wood-500/15 text-wood-400 group-hover:bg-wood-500 group-hover:text-white border border-wood-500/30 mx-auto flex items-center justify-center text-2xl shadow-lg transition-all duration-300">
           <i class="fa-solid fa-truck-fast"></i>
         </div>
-        <h3 class="font-black text-white text-base group-hover:text-wood-300 transition-colors">Envíos a toda Bolivia</h3>
+        <h3 class="font-black text-white text-base group-hover:text-wood-300 transition-colors">Envíos a toda Bolivia
+        </h3>
         <p class="text-xs text-mate-300 leading-relaxed">Despachamos tu pedido con embalaje protegido a Santa Cruz, La
           Paz, Cochabamba y todo el país.</p>
       </div>
 
-      <div class="bg-mate-900/80 backdrop-blur-md p-8 rounded-3xl border border-wood-500/25 shadow-xl hover:border-wood-400/60 hover:-translate-y-2 transition-all duration-500 space-y-3.5 text-center group">
+      <div
+        class="bg-mate-900/80 backdrop-blur-md p-8 rounded-3xl border border-wood-500/25 shadow-xl hover:border-wood-400/60 hover:-translate-y-2 transition-all duration-500 space-y-3.5 text-center group">
         <div
           class="w-14 h-14 rounded-2xl bg-wood-500/15 text-wood-400 group-hover:bg-wood-500 group-hover:text-white border border-wood-500/30 mx-auto flex items-center justify-center text-2xl shadow-lg transition-all duration-300">
           <i class="fa-solid fa-qrcode"></i>
@@ -303,7 +289,8 @@
           escaneando el código QR sin comisiones extra.</p>
       </div>
 
-      <div class="bg-mate-900/80 backdrop-blur-md p-8 rounded-3xl border border-wood-500/25 shadow-xl hover:border-wood-400/60 hover:-translate-y-2 transition-all duration-500 space-y-3.5 text-center group">
+      <div
+        class="bg-mate-900/80 backdrop-blur-md p-8 rounded-3xl border border-wood-500/25 shadow-xl hover:border-wood-400/60 hover:-translate-y-2 transition-all duration-500 space-y-3.5 text-center group">
         <div
           class="w-14 h-14 rounded-2xl bg-wood-500/15 text-wood-400 group-hover:bg-wood-500 group-hover:text-white border border-wood-500/30 mx-auto flex items-center justify-center text-2xl shadow-lg transition-all duration-300">
           <i class="fa-solid fa-award"></i>

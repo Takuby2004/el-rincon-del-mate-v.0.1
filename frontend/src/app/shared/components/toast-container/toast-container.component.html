@@ -1,47 +1,80 @@
 <aside
-  class="fixed top-5 right-5 z-[9999] flex flex-col gap-3 w-full max-w-sm pointer-events-none px-4 sm:px-0"
+  class="fixed top-4 left-1/2 -translate-x-1/2 z-[9999] flex flex-col items-center gap-2.5 w-full max-w-[92vw] sm:max-w-md pointer-events-none"
   role="status"
   aria-live="polite"
 >
   @for (toast of toastService.toasts(); track toast.id) {
     <div
-      class="pointer-events-auto relative overflow-hidden rounded-2xl border p-4 shadow-2xl backdrop-blur-md transition-all duration-300 animate-slide-in group"
+      class="pointer-events-auto relative w-full overflow-hidden rounded-2xl border p-3.5 sm:p-4 shadow-2xl backdrop-blur-xl transition-all duration-300 animate-push-in group bg-mate-950/95"
       [ngClass]="getBorderClass(toast.type)"
     >
-      <div class="flex items-start gap-3.5">
-        <!-- Icono con halo suave -->
-        <div class="flex-shrink-0 mt-0.5 text-xl">
-          <i [class]="getIconClass(toast.type)"></i>
+      <!-- Cabecera estilo Push Notification de Red Social / Móvil -->
+      <div class="flex items-center justify-between gap-2 mb-2 pb-1.5 border-b border-mate-800/80 text-3xs sm:text-2xs">
+        <div class="flex items-center gap-2">
+          <span class="w-5 h-5 rounded-full bg-wood-500/20 border border-wood-500/40 flex items-center justify-center text-wood-300 text-xs shadow-sm">
+            🧉
+          </span>
+          <span class="font-bold text-mate-200 uppercase tracking-wider">
+            {{ toast.badge || 'El Rincón del Mate' }}
+          </span>
+          <span class="text-mate-500">•</span>
+          <span class="text-mate-400 font-medium">
+            {{ toast.time || 'Ahora' }}
+          </span>
         </div>
 
-        <!-- Contenido textual -->
-        <div class="flex-1 min-w-0 pr-2">
-          @if (toast.title) {
-            <h4 class="text-sm font-semibold tracking-wide text-white mb-0.5">
-              {{ toast.title }}
-            </h4>
-          }
-          <p class="text-xs text-slate-300 leading-relaxed break-words">
-            {{ toast.message }}
-          </p>
-        </div>
-
-        <!-- Botón para cerrar -->
         <button
           type="button"
           (click)="dismiss(toast.id)"
           class="flex-shrink-0 text-slate-400 hover:text-white transition-colors p-1 rounded-lg hover:bg-white/10"
           aria-label="Cerrar notificación"
         >
-          <i class="fa-solid fa-xmark text-sm"></i>
+          <i class="fa-solid fa-xmark text-xs"></i>
         </button>
+      </div>
+
+      <!-- Contenido de la notificación -->
+      <div class="flex items-center gap-3">
+        <!-- Miniatura del Producto o Ícono de Alerta -->
+        @if (toast.image) {
+          <div class="w-12 h-12 rounded-xl bg-mate-900 border border-wood-500/30 overflow-hidden flex-shrink-0 flex items-center justify-center p-0.5 shadow-md">
+            <img [src]="toast.image" [alt]="toast.title || 'Producto'" class="w-full h-full object-cover rounded-lg" />
+          </div>
+        } @else {
+          <div class="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0 text-lg">
+            <i [class]="getIconClass(toast.type)"></i>
+          </div>
+        }
+
+        <!-- Textos principales -->
+        <div class="flex-1 min-w-0 pr-1">
+          @if (toast.title) {
+            <h4 class="text-xs font-bold tracking-wide text-wood-300 flex items-center gap-1.5 mb-0.5">
+              <i class="fa-solid fa-circle-check text-emerald-400 text-3xs"></i>
+              <span>{{ toast.title }}</span>
+            </h4>
+          }
+          <p class="text-xs text-white font-medium leading-snug break-words">
+            {{ toast.message }}
+          </p>
+        </div>
+
+        <!-- Botón rápido hacia el carrito si es notificación de compra -->
+        @if (toast.badge?.includes('Carrito') || toast.title?.includes('Carrito')) {
+          <a
+            routerLink="/carrito"
+            (click)="dismiss(toast.id)"
+            class="flex-shrink-0 px-3 py-1.5 rounded-xl bg-gradient-to-r from-wood-500 to-wood-600 hover:from-wood-600 hover:to-wood-700 text-white font-extrabold text-3xs sm:text-2xs shadow-md shadow-wood-950/40 hover:scale-105 active:scale-95 transition-all duration-200 flex items-center gap-1.5"
+          >
+            <span>Ver Carrito</span>
+            <i class="fa-solid fa-chevron-right text-3xs"></i>
+          </a>
+        }
       </div>
 
       <!-- Barra de progreso con cuenta regresiva -->
       @if (toast.duration > 0) {
-        <div
-          class="absolute bottom-0 left-0 h-1 w-full rounded-full overflow-hidden bg-white/10"
-        >
+        <div class="absolute bottom-0 left-0 h-1 w-full overflow-hidden bg-white/5">
           <div
             class="h-full toast-progress"
             [ngClass]="getProgressBarClass(toast.type)"

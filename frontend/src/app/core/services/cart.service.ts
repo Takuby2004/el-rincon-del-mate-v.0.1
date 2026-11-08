@@ -1,5 +1,6 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, signal, computed, inject } from '@angular/core';
 import { Product } from '../models/models';
+import { ToastService } from './toast.service';
 
 export interface CartItem {
   product: Product;
@@ -10,6 +11,7 @@ export interface CartItem {
   providedIn: 'root'
 })
 export class CartService {
+  private toastService = inject(ToastService);
   public items = signal<CartItem[]>(this.loadCart());
 
   public totalItems = computed(() => {
@@ -43,6 +45,10 @@ export class CartService {
 
     this.items.set(current);
     this.saveCart();
+
+    // Notificación flotante tipo push de celular / red social
+    const displayImg = product.images?.[0] || product.imageUrl || '/assets/images/hero-mate-imperial.svg';
+    this.toastService.cartSuccess(product.name, displayImg);
   }
 
   public updateQuantity(productId: string, quantity: number) {

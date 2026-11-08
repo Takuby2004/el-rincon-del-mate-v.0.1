@@ -45,24 +45,24 @@
   z-index: 1;
 }
 
-/* Full-bleed responsive image focused on the right side */
+/* Full-bleed responsive image centered for balanced visual harmony */
 .hero-fullbleed-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: 85% center;
-  filter: brightness(0.98) contrast(1.04);
+  object-position: center center;
+  filter: brightness(1) contrast(1.04);
 }
 
 @media (min-width: 768px) {
   .hero-fullbleed-img {
-    object-position: 92% center;
+    object-position: 65% center;
   }
 }
 
 @media (min-width: 1024px) {
   .hero-fullbleed-img {
-    object-position: 96% center;
+    object-position: 62% center;
   }
 }
 
