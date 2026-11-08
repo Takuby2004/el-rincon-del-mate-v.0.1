@@ -106,7 +106,9 @@
             class="bg-mate-900/80 backdrop-blur-md rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl hover:shadow-wood-950/80 hover:-translate-y-2 border border-wood-500/20 hover:border-wood-400/60 transition-all duration-500 flex flex-col group animate-fade-in"
             [ngClass]="'stagger-' + ((idx % 4) + 1)"
           >
-            <div class="relative h-60 bg-mate-950/80 overflow-hidden flex items-center justify-center p-4">
+            <a [routerLink]="['/productos', product.slug]"
+              class="block relative h-60 bg-mate-950/80 overflow-hidden flex items-center justify-center p-4 cursor-pointer focus:outline-none focus:ring-2 focus:ring-wood-500/50"
+              [title]="'Ver detalle de ' + product.name">
               <img 
                 [src]="product.imageUrl | assetUrl" 
                 [alt]="product.name" 
@@ -116,7 +118,7 @@
               <span class="absolute top-3.5 right-3.5 bg-mate-950/90 backdrop-blur-md text-wood-300 text-xs font-black px-3.5 py-1.5 rounded-full shadow-lg border border-wood-500/35">
                 Bs. {{ (product.price || 0) | number:'1.2-2' }}
               </span>
-            </div>
+            </a>
             <div class="p-5 flex-1 flex flex-col justify-between space-y-4 bg-mate-900/90 border-t border-wood-500/15">
               <div>
                 <a [routerLink]="['/productos', product.slug]" class="block font-black text-base text-white hover:text-wood-300 transition-colors line-clamp-1">

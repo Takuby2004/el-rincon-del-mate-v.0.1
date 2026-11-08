@@ -251,6 +251,7 @@ Toda la experiencia pública y de compra del cliente se encuentra 100% unificada
 - **Bordes y Acentos Cálidos:** Delicados marcos y etiquetas en oro y madera artesanal (`border-wood-500/25` y `text-wood-400`).
 - **Botones de Conversión:** Gradiente cálido de cuero y madera (`from-wood-500 to-wood-600`) con sombras profundas y transiciones suaves.
 - **Skeletons Oscuros:** Componentes de carga (`.skeleton-box-dark`) con ondas de brillo sutiles para transiciones fluidas sin destellos blancos.
+- **Navegación Intuitiva por Imágenes:** Todas las fotos y miniaturas de productos y categorías (en Inicio, Catálogo, Categorías, Detalle y Carrito) son enlaces interactivos clickeables directos con micro-animaciones al cursor.
 - **Vistas Comprendidas:** Barra de navegación (Header), Catálogo de Productos (`/productos`), Categorías (`/categorias`), Detalle de Producto (`/productos/:slug`), Carrito de Compras (`/carrito`), Checkout de Envío (`/checkout`), Pago QR (`/checkout/pago`) y Confirmación de Pedido (`/pedido/:orderNumber`).
 
 ---

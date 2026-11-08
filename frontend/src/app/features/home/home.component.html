@@ -222,7 +222,9 @@
       <div
         class="bg-mate-900/80 backdrop-blur-md rounded-3xl overflow-hidden border border-wood-500/20 hover:border-wood-400/60 shadow-xl hover:shadow-2xl hover:shadow-wood-950/80 hover:-translate-y-2 transition-all duration-500 flex flex-col group animate-fade-in"
         [ngClass]="'stagger-' + ((idx % 4) + 1)">
-        <div class="relative h-64 bg-mate-950/80 overflow-hidden flex items-center justify-center p-4">
+        <a [routerLink]="['/productos', product.slug]"
+          class="block relative h-64 bg-mate-950/80 overflow-hidden flex items-center justify-center p-4 cursor-pointer focus:outline-none focus:ring-2 focus:ring-wood-500/50"
+          [title]="'Ver detalle de ' + product.name">
           <img [src]="getProductDisplayImage(product) | assetUrl" [alt]="product.name" appImgFallback
             class="w-full h-full object-contain group-hover:scale-108 transition-transform duration-700 filter drop-shadow-[0_10px_20px_rgba(0,0,0,0.55)]">
           <span
@@ -235,11 +237,19 @@
             En Stock
           </span>
           }
-        </div>
+        </a>
 
         <div class="p-6 flex-1 flex flex-col justify-between space-y-4 bg-mate-900/90 border-t border-wood-500/15">
           <div>
-            <span class="text-3xs font-extrabold text-wood-400 uppercase tracking-widest block">{{ product.category?.name }}</span>
+            @if (product.category?.slug) {
+              <a [routerLink]="['/categorias', product.category?.slug]"
+                class="text-3xs font-extrabold text-wood-400 hover:text-wood-300 transition-colors uppercase tracking-widest block cursor-pointer"
+                [title]="'Ver categoría ' + product.category?.name">
+                {{ product.category?.name }}
+              </a>
+            } @else {
+              <span class="text-3xs font-extrabold text-wood-400 uppercase tracking-widest block">{{ product.category?.name }}</span>
+            }
             <a [routerLink]="['/productos', product.slug]"
               class="block font-black text-base text-white hover:text-wood-300 transition-colors mt-1 line-clamp-1">
               {{ product.name }}
